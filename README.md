@@ -97,11 +97,11 @@ an AI duplicate check and a local similarity guard before creation.
 ## Deploy
 
 ```bash
-./scripts/deploy-install.sh check    # then install, then status
+./scripts/deploy-install.sh install
 ```
 
-The installer starts the stack and one host timer that redeploys a clean local
-revision confirmed on `origin/main`, for every profile listed in
+The installer validates the host, starts the stack, and enables one timer that
+redeploys a clean local revision confirmed on `origin/main`, for every profile listed in
 `data/tenants.conf` (copy `deploy/tenants.conf.example`). Optional Compose
 profiles: `tunnel` (Cloudflare), `sync` (Syncthing), `backup` (Restic
 snapshots of `vault` and `data` — set a strong `RESTIC_PASSWORD` and keep the
