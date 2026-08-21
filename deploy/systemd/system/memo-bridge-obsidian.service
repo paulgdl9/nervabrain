@@ -1,0 +1,36 @@
+[Unit]
+Description=Memo bridge Obsidian second brain (Claude/Codex brief engine, port 8089)
+After=network-online.target
+Wants=network-online.target
+
+# Root-installed template only. Replace @SERVICE_USER@, @USER_HOME@ and
+# @PROJECT_ROOT@ before copying it to /etc/systemd/system.
+
+[Service]
+Type=simple
+User=@SERVICE_USER@
+Group=@SERVICE_USER@
+Environment=HOME=@USER_HOME@
+Environment=PATH=@USER_HOME@/.local/bin:/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=@PROJECT_ROOT@/.env
+RuntimeDirectory=nerva-ai-bridge
+RuntimeDirectoryMode=0700
+WorkingDirectory=/run/nerva-ai-bridge
+ExecStart=/usr/bin/python3 "@PROJECT_ROOT@/bridge/memo-bridge.py"
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=true
+# "full" not "strict": the claude/codex CLIs need to write their own state
+# under their home directory (~/.claude, ~/.codex, caches). /usr /boot /etc stay RO.
+ProtectSystem=full
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+LockPersonality=true
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

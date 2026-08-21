@@ -1,0 +1,20 @@
+# syntax=docker/dockerfile:1
+
+FROM python:3.13-slim-bookworm
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates tzdata \
+  && rm -rf /var/lib/apt/lists/* \
+  && pip install --no-cache-dir garminconnect==0.3.6
+
+WORKDIR /sync
+COPY scripts/garmin-sync-profile.py scripts/run-garmin-sync.sh ./
+RUN chmod 755 /sync/run-garmin-sync.sh /sync/*.py
+
+ENV VAULT_PATH=/vault \
+    GARMINTOKENS=/tokens \
+    GARMIN_SYNC_SCRIPT=/sync/garmin-sync-profile.py \
+    GARMIN_SYNC_TIMES=06:40,21:40 \
+    PYTHONUNBUFFERED=1
+
+CMD ["/sync/run-garmin-sync.sh"]

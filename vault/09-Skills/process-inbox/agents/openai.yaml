@@ -1,0 +1,4 @@
+interface:
+  display_name: "Process Inbox"
+  short_description: "Trier les captures du vault avec tracabilite"
+  default_prompt: "Use $process-inbox to process pending vault captures into traceable knowledge and actions."

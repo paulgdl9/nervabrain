@@ -1,0 +1,4 @@
+# Docker Compose project | absolute profile root
+# The file used in production is data/tenants.conf and stays outside Git.
+customer-a|/srv/second-brain/customer-a
+customer-b|/srv/second-brain/customer-b

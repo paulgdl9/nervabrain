@@ -1,0 +1,2538 @@
+{
+  "version": 1,
+  "generated_by": "fallback",
+  "objective": {
+    "sport": "trail",
+    "title": "UTMB · 171 km / 10 000 m D+",
+    "event_date": "2026-08-30",
+    "start_date": "2026-04-13",
+    "weeks_total": 20,
+    "event_distance_km": 171,
+    "event_elevation_m": 10000,
+    "weekly_volume_km": 80,
+    "longest_session_km": 50,
+    "experience": "Three 80 km finishes, one DNF at 100 miles in 2025.",
+    "recent_reference": "80 km / 4 500 m gain in 11h40, June 2026",
+    "level": "advanced",
+    "days_per_week": 6,
+    "constraints": "Sessions in the morning, long run on Sunday, one recovery week every four weeks."
+  },
+  "phases": [
+    {
+      "id": 1,
+      "name": "Foundations & robustness",
+      "description": "Settle into mostly easy endurance, consistency and muscular robustness before adding demanding terrain."
+    },
+    {
+      "id": 2,
+      "name": "Trail-specific & durability",
+      "description": "Build vertical gain, power hiking, controlled descents, durability and the aid-station strategy, step by step."
+    },
+    {
+      "id": 3,
+      "name": "Taper",
+      "description": "Cut the load while keeping short specific reminders, to arrive fresh and confident on race day."
+    }
+  ],
+  "weeks": [
+    {
+      "week": 1,
+      "dates": "Apr 13 - Apr 19",
+      "phase": 1,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 0,
+      "run_min_target": 299,
+      "sessions": [
+        {
+          "id": "w1-d0-ride-optional",
+          "sport": "ride",
+          "title": "Optional aerobic ride",
+          "subtitle": "46 easy min · no impact",
+          "duration_min": 46,
+          "intensity": "Z1-Z2 · RPE 2-3",
+          "details": [
+            "10 min easing in with a fluid cadence",
+            "26 min of easy endurance, no pushing on the climbs",
+            "10 min very light, to finish fresher than you started",
+            "First session to drop if fatigue, sleep or a niggle gets worse"
+          ],
+          "optional": true,
+          "weekday": 0
+        },
+        {
+          "id": "w1-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "41 min at conversational effort",
+          "duration_min": 41,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 26 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w1-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "41 min at conversational effort",
+          "duration_min": 41,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 26 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w1-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 40,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w1-d4-run",
+          "sport": "run",
+          "title": "Uphill economy",
+          "subtitle": "52 min · precise, controlled blocks",
+          "duration_min": 52,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 10 min easy with ankle mobility",
+            "Main block: 22 min in Z2, then 6 x 45 s uphill with a snappy stride",
+            "Recovery: 75 s of brisk walking after each rep",
+            "Cool-down: 8 min easy",
+            "Intent: improve climbing economy without piling up fatigue"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w1-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 30,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w1-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "165 min on rolling terrain · 0 m gain this week",
+          "duration_min": 165,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 148 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "dates": "Apr 20 - Apr 26",
+      "phase": 1,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 0,
+      "run_min_target": 317,
+      "sessions": [
+        {
+          "id": "w2-d0-ride-optional",
+          "sport": "ride",
+          "title": "Optional aerobic ride",
+          "subtitle": "48 easy min · no impact",
+          "duration_min": 48,
+          "intensity": "Z1-Z2 · RPE 2-3",
+          "details": [
+            "10 min easing in with a fluid cadence",
+            "28 min of easy endurance, no pushing on the climbs",
+            "10 min very light, to finish fresher than you started",
+            "First session to drop if fatigue, sleep or a niggle gets worse"
+          ],
+          "optional": true,
+          "weekday": 0
+        },
+        {
+          "id": "w2-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "44 min at conversational effort",
+          "duration_min": 44,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 29 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w2-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "44 min at conversational effort",
+          "duration_min": 44,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 29 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w2-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 40,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w2-d4-run",
+          "sport": "run",
+          "title": "Uphill economy",
+          "subtitle": "55 min · precise, controlled blocks",
+          "duration_min": 55,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 10 min easy with ankle mobility",
+            "Main block: 25 min in Z2, then 6 x 45 s uphill with a snappy stride",
+            "Recovery: 75 s of brisk walking after each rep",
+            "Cool-down: 8 min easy",
+            "Intent: improve climbing economy without piling up fatigue"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w2-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 30,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w2-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "174 min on rolling terrain · 0 m gain this week",
+          "duration_min": 174,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 157 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "dates": "Apr 27 - May 3",
+      "phase": 1,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 0,
+      "run_min_target": 333,
+      "sessions": [
+        {
+          "id": "w3-d0-ride-optional",
+          "sport": "ride",
+          "title": "Optional aerobic ride",
+          "subtitle": "51 easy min · no impact",
+          "duration_min": 51,
+          "intensity": "Z1-Z2 · RPE 2-3",
+          "details": [
+            "10 min easing in with a fluid cadence",
+            "31 min of easy endurance, no pushing on the climbs",
+            "10 min very light, to finish fresher than you started",
+            "First session to drop if fatigue, sleep or a niggle gets worse"
+          ],
+          "optional": true,
+          "weekday": 0
+        },
+        {
+          "id": "w3-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "46 min at conversational effort",
+          "duration_min": 46,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 31 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w3-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "46 min at conversational effort",
+          "duration_min": 46,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 31 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w3-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 40,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w3-d4-run",
+          "sport": "run",
+          "title": "Uphill economy",
+          "subtitle": "58 min · precise, controlled blocks",
+          "duration_min": 58,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 10 min easy with ankle mobility",
+            "Main block: 28 min in Z2, then 6 x 45 s uphill with a snappy stride",
+            "Recovery: 75 s of brisk walking after each rep",
+            "Cool-down: 8 min easy",
+            "Intent: improve climbing economy without piling up fatigue"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w3-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 30,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w3-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "183 min on rolling terrain · 0 m gain this week",
+          "duration_min": 183,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 166 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "dates": "May 4 - May 10",
+      "phase": 1,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 0,
+      "run_min_target": 285,
+      "sessions": [
+        {
+          "id": "w4-d0-ride-optional",
+          "sport": "ride",
+          "title": "Optional aerobic ride",
+          "subtitle": "44 easy min · no impact",
+          "duration_min": 44,
+          "intensity": "Z1-Z2 · RPE 2-3",
+          "details": [
+            "10 min easing in with a fluid cadence",
+            "24 min of easy endurance, no pushing on the climbs",
+            "10 min very light, to finish fresher than you started",
+            "First session to drop if fatigue, sleep or a niggle gets worse"
+          ],
+          "optional": true,
+          "weekday": 0
+        },
+        {
+          "id": "w4-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "39 min at conversational effort",
+          "duration_min": 39,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 24 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w4-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "39 min at conversational effort",
+          "duration_min": 39,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 24 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w4-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 40,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w4-d4-run",
+          "sport": "run",
+          "title": "Uphill economy",
+          "subtitle": "50 min · precise, controlled blocks",
+          "duration_min": 50,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 10 min easy with ankle mobility",
+            "Main block: 20 min in Z2, then 6 x 45 s uphill with a snappy stride",
+            "Recovery: 75 s of brisk walking after each rep",
+            "Cool-down: 8 min easy",
+            "Intent: improve climbing economy without piling up fatigue"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w4-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 30,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w4-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "157 min on rolling terrain · 0 m gain this week",
+          "duration_min": 157,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 140 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "dates": "May 11 - May 17",
+      "phase": 1,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 0,
+      "run_min_target": 365,
+      "sessions": [
+        {
+          "id": "w5-d0-ride-optional",
+          "sport": "ride",
+          "title": "Optional aerobic ride",
+          "subtitle": "56 easy min · no impact",
+          "duration_min": 56,
+          "intensity": "Z1-Z2 · RPE 2-3",
+          "details": [
+            "10 min easing in with a fluid cadence",
+            "36 min of easy endurance, no pushing on the climbs",
+            "10 min very light, to finish fresher than you started",
+            "First session to drop if fatigue, sleep or a niggle gets worse"
+          ],
+          "optional": true,
+          "weekday": 0
+        },
+        {
+          "id": "w5-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "50 min at conversational effort",
+          "duration_min": 50,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 35 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w5-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "50 min at conversational effort",
+          "duration_min": 50,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 35 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w5-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 40,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w5-d4-run",
+          "sport": "run",
+          "title": "Uphill economy",
+          "subtitle": "64 min · precise, controlled blocks",
+          "duration_min": 64,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 10 min easy with ankle mobility",
+            "Main block: 34 min in Z2, then 6 x 45 s uphill with a snappy stride",
+            "Recovery: 75 s of brisk walking after each rep",
+            "Cool-down: 8 min easy",
+            "Intent: improve climbing economy without piling up fatigue"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w5-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 30,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w5-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "201 min on rolling terrain · 0 m gain this week",
+          "duration_min": 201,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 184 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "dates": "May 18 - May 24",
+      "phase": 1,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 0,
+      "run_min_target": 383,
+      "sessions": [
+        {
+          "id": "w6-d0-ride-optional",
+          "sport": "ride",
+          "title": "Optional aerobic ride",
+          "subtitle": "58 easy min · no impact",
+          "duration_min": 58,
+          "intensity": "Z1-Z2 · RPE 2-3",
+          "details": [
+            "10 min easing in with a fluid cadence",
+            "38 min of easy endurance, no pushing on the climbs",
+            "10 min very light, to finish fresher than you started",
+            "First session to drop if fatigue, sleep or a niggle gets worse"
+          ],
+          "optional": true,
+          "weekday": 0
+        },
+        {
+          "id": "w6-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "53 min at conversational effort",
+          "duration_min": 53,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 38 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w6-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "53 min at conversational effort",
+          "duration_min": 53,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 38 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w6-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 40,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w6-d4-run",
+          "sport": "run",
+          "title": "Uphill economy",
+          "subtitle": "67 min · precise, controlled blocks",
+          "duration_min": 67,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 10 min easy with ankle mobility",
+            "Main block: 37 min in Z2, then 6 x 45 s uphill with a snappy stride",
+            "Recovery: 75 s of brisk walking after each rep",
+            "Cool-down: 8 min easy",
+            "Intent: improve climbing economy without piling up fatigue"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w6-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 30,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w6-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "210 min on rolling terrain · 0 m gain this week",
+          "duration_min": 210,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 193 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "dates": "May 25 - May 31",
+      "phase": 1,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 0,
+      "run_min_target": 398,
+      "sessions": [
+        {
+          "id": "w7-d0-ride-optional",
+          "sport": "ride",
+          "title": "Optional aerobic ride",
+          "subtitle": "60 easy min · no impact",
+          "duration_min": 60,
+          "intensity": "Z1-Z2 · RPE 2-3",
+          "details": [
+            "10 min easing in with a fluid cadence",
+            "40 min of easy endurance, no pushing on the climbs",
+            "10 min very light, to finish fresher than you started",
+            "First session to drop if fatigue, sleep or a niggle gets worse"
+          ],
+          "optional": true,
+          "weekday": 0
+        },
+        {
+          "id": "w7-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "55 min at conversational effort",
+          "duration_min": 55,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 40 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w7-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "55 min at conversational effort",
+          "duration_min": 55,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 40 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w7-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 40,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w7-d4-run",
+          "sport": "run",
+          "title": "Uphill economy",
+          "subtitle": "69 min · precise, controlled blocks",
+          "duration_min": 69,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 10 min easy with ankle mobility",
+            "Main block: 39 min in Z2, then 6 x 45 s uphill with a snappy stride",
+            "Recovery: 75 s of brisk walking after each rep",
+            "Cool-down: 8 min easy",
+            "Intent: improve climbing economy without piling up fatigue"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w7-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 30,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w7-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "219 min on rolling terrain · 0 m gain this week",
+          "duration_min": 219,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 202 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "dates": "Jun 1 - Jun 7",
+      "phase": 1,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 0,
+      "run_min_target": 340,
+      "gate": "Porte : 40 minutes de course continue sans douleur",
+      "sessions": [
+        {
+          "id": "w8-d0-ride-optional",
+          "sport": "ride",
+          "title": "Optional aerobic ride",
+          "subtitle": "52 easy min · no impact",
+          "duration_min": 52,
+          "intensity": "Z1-Z2 · RPE 2-3",
+          "details": [
+            "10 min easing in with a fluid cadence",
+            "32 min of easy endurance, no pushing on the climbs",
+            "10 min very light, to finish fresher than you started",
+            "First session to drop if fatigue, sleep or a niggle gets worse"
+          ],
+          "optional": true,
+          "weekday": 0
+        },
+        {
+          "id": "w8-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "47 min at conversational effort",
+          "duration_min": 47,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 32 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w8-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "47 min at conversational effort",
+          "duration_min": 47,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 32 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w8-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 40,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w8-d4-run",
+          "sport": "run",
+          "title": "Uphill economy",
+          "subtitle": "59 min · precise, controlled blocks",
+          "duration_min": 59,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 10 min easy with ankle mobility",
+            "Main block: 29 min in Z2, then 6 x 45 s uphill with a snappy stride",
+            "Recovery: 75 s of brisk walking after each rep",
+            "Cool-down: 8 min easy",
+            "Intent: improve climbing economy without piling up fatigue"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w8-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 30,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w8-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "187 min on rolling terrain · 0 m gain this week",
+          "duration_min": 187,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 170 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "dates": "Jun 8 - Jun 14",
+      "phase": 2,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 1975,
+      "run_min_target": 430,
+      "sessions": [
+        {
+          "id": "w9-d0-ride-optional",
+          "sport": "ride",
+          "title": "Optional aerobic ride",
+          "subtitle": "60 easy min · no impact",
+          "duration_min": 60,
+          "intensity": "Z1-Z2 · RPE 2-3",
+          "details": [
+            "10 min easing in with a fluid cadence",
+            "40 min of easy endurance, no pushing on the climbs",
+            "10 min very light, to finish fresher than you started",
+            "First session to drop if fatigue, sleep or a niggle gets worse"
+          ],
+          "optional": true,
+          "weekday": 0
+        },
+        {
+          "id": "w9-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "59 min at conversational effort",
+          "duration_min": 59,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 44 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w9-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "59 min at conversational effort",
+          "duration_min": 59,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 44 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w9-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 40,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w9-d4-run",
+          "sport": "run",
+          "title": "Climbing & technique",
+          "subtitle": "75 min · precise, controlled blocks",
+          "duration_min": 75,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 12 min easy with ankle work and running drills",
+            "Main block: 24 min in Z2, then 3 x 5 min climbing at a controlled hard effort",
+            "Recovery: 3 min of brisk walking or easy jogging between reps",
+            "Technique: 10 min of controlled descending, short steps and eyes up",
+            "Cool-down: 8 min easy",
+            "Intent: develop climbing power and downhill ease without crossing threshold"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w9-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 30,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w9-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "237 min on rolling terrain · 1975 m gain this week",
+          "duration_min": 237,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 220 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Vertical: spread roughly 1975 m of gain across the week, without stacking it all if fatigue climbs",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "dates": "Jun 15 - Jun 21",
+      "phase": 2,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 2050,
+      "run_min_target": 448,
+      "sessions": [
+        {
+          "id": "w10-d0-ride-optional",
+          "sport": "ride",
+          "title": "Optional aerobic ride",
+          "subtitle": "60 easy min · no impact",
+          "duration_min": 60,
+          "intensity": "Z1-Z2 · RPE 2-3",
+          "details": [
+            "10 min easing in with a fluid cadence",
+            "40 min of easy endurance, no pushing on the climbs",
+            "10 min very light, to finish fresher than you started",
+            "First session to drop if fatigue, sleep or a niggle gets worse"
+          ],
+          "optional": true,
+          "weekday": 0
+        },
+        {
+          "id": "w10-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "62 min at conversational effort",
+          "duration_min": 62,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 47 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w10-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "62 min at conversational effort",
+          "duration_min": 62,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 47 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w10-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 40,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w10-d4-run",
+          "sport": "run",
+          "title": "Trail-specific durability",
+          "subtitle": "78 min · precise, controlled blocks",
+          "duration_min": 78,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 10 min easy on rolling terrain",
+            "Main block: 20 min in Z2, then 2 x 12 min at the top of Z2 on a race-like gradient",
+            "Recovery: 4 min of brisk walking between the two blocks",
+            "Technique: 12 min of smooth, controlled descending, not chasing top speed",
+            "Cool-down: 8 min easy",
+            "Intent: hold a stable stride and a clear head under fatigue, without copying elite volume"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w10-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 30,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w10-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "246 min on rolling terrain · 2050 m gain this week",
+          "duration_min": 246,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 229 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Vertical: spread roughly 2050 m of gain across the week, without stacking it all if fatigue climbs",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "dates": "Jun 22 - Jun 28",
+      "phase": 2,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 2125,
+      "run_min_target": 463,
+      "sessions": [
+        {
+          "id": "w11-d0-ride-optional",
+          "sport": "ride",
+          "title": "Optional aerobic ride",
+          "subtitle": "60 easy min · no impact",
+          "duration_min": 60,
+          "intensity": "Z1-Z2 · RPE 2-3",
+          "details": [
+            "10 min easing in with a fluid cadence",
+            "40 min of easy endurance, no pushing on the climbs",
+            "10 min very light, to finish fresher than you started",
+            "First session to drop if fatigue, sleep or a niggle gets worse"
+          ],
+          "optional": true,
+          "weekday": 0
+        },
+        {
+          "id": "w11-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "64 min at conversational effort",
+          "duration_min": 64,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 49 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w11-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "64 min at conversational effort",
+          "duration_min": 64,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 49 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w11-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 40,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w11-d4-run",
+          "sport": "run",
+          "title": "Climbing & technique",
+          "subtitle": "80 min · precise, controlled blocks",
+          "duration_min": 80,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 12 min easy with ankle work and running drills",
+            "Main block: 29 min in Z2, then 3 x 5 min climbing at a controlled hard effort",
+            "Recovery: 3 min of brisk walking or easy jogging between reps",
+            "Technique: 10 min of controlled descending, short steps and eyes up",
+            "Cool-down: 8 min easy",
+            "Intent: develop climbing power and downhill ease without crossing threshold"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w11-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 30,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w11-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "255 min on rolling terrain · 2125 m gain this week",
+          "duration_min": 255,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 238 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Vertical: spread roughly 2125 m of gain across the week, without stacking it all if fatigue climbs",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "dates": "Jun 29 - Jul 5",
+      "phase": 2,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 1804,
+      "run_min_target": 393,
+      "gate": "Porte : sortie longue avec dénivelé validée sans douleur le lendemain",
+      "sessions": [
+        {
+          "id": "w12-d0-ride-optional",
+          "sport": "ride",
+          "title": "Optional aerobic ride",
+          "subtitle": "60 easy min · no impact",
+          "duration_min": 60,
+          "intensity": "Z1-Z2 · RPE 2-3",
+          "details": [
+            "10 min easing in with a fluid cadence",
+            "40 min of easy endurance, no pushing on the climbs",
+            "10 min very light, to finish fresher than you started",
+            "First session to drop if fatigue, sleep or a niggle gets worse"
+          ],
+          "optional": true,
+          "weekday": 0
+        },
+        {
+          "id": "w12-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "54 min at conversational effort",
+          "duration_min": 54,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 39 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w12-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "54 min at conversational effort",
+          "duration_min": 54,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 39 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w12-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 40,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w12-d4-run",
+          "sport": "run",
+          "title": "Trail-specific durability",
+          "subtitle": "69 min · precise, controlled blocks",
+          "duration_min": 69,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 10 min easy on rolling terrain",
+            "Main block: 11 min in Z2, then 2 x 12 min at the top of Z2 on a race-like gradient",
+            "Recovery: 4 min of brisk walking between the two blocks",
+            "Technique: 12 min of smooth, controlled descending, not chasing top speed",
+            "Cool-down: 8 min easy",
+            "Intent: hold a stable stride and a clear head under fatigue, without copying elite volume"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w12-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 30,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w12-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "216 min on rolling terrain · 1804 m gain this week",
+          "duration_min": 216,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 199 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Vertical: spread roughly 1804 m of gain across the week, without stacking it all if fatigue climbs",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 13,
+      "dates": "Jul 6 - Jul 12",
+      "phase": 2,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 2275,
+      "run_min_target": 489,
+      "sessions": [
+        {
+          "id": "w13-d0-ride-optional",
+          "sport": "ride",
+          "title": "Optional aerobic ride",
+          "subtitle": "60 easy min · no impact",
+          "duration_min": 60,
+          "intensity": "Z1-Z2 · RPE 2-3",
+          "details": [
+            "10 min easing in with a fluid cadence",
+            "40 min of easy endurance, no pushing on the climbs",
+            "10 min very light, to finish fresher than you started",
+            "First session to drop if fatigue, sleep or a niggle gets worse"
+          ],
+          "optional": true,
+          "weekday": 0
+        },
+        {
+          "id": "w13-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "68 min at conversational effort",
+          "duration_min": 68,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 53 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w13-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "68 min at conversational effort",
+          "duration_min": 68,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 53 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w13-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 40,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w13-d4-run",
+          "sport": "run",
+          "title": "Climbing & technique",
+          "subtitle": "80 min · precise, controlled blocks",
+          "duration_min": 80,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 12 min easy with ankle work and running drills",
+            "Main block: 29 min in Z2, then 3 x 5 min climbing at a controlled hard effort",
+            "Recovery: 3 min of brisk walking or easy jogging between reps",
+            "Technique: 10 min of controlled descending, short steps and eyes up",
+            "Cool-down: 8 min easy",
+            "Intent: develop climbing power and downhill ease without crossing threshold"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w13-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 30,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w13-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "273 min on rolling terrain · 2275 m gain this week",
+          "duration_min": 273,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 256 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Vertical: spread roughly 2275 m of gain across the week, without stacking it all if fatigue climbs",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 14,
+      "dates": "Jul 13 - Jul 19",
+      "phase": 2,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 2350,
+      "run_min_target": 504,
+      "sessions": [
+        {
+          "id": "w14-d0-ride-optional",
+          "sport": "ride",
+          "title": "Optional aerobic ride",
+          "subtitle": "60 easy min · no impact",
+          "duration_min": 60,
+          "intensity": "Z1-Z2 · RPE 2-3",
+          "details": [
+            "10 min easing in with a fluid cadence",
+            "40 min of easy endurance, no pushing on the climbs",
+            "10 min very light, to finish fresher than you started",
+            "First session to drop if fatigue, sleep or a niggle gets worse"
+          ],
+          "optional": true,
+          "weekday": 0
+        },
+        {
+          "id": "w14-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "71 min at conversational effort",
+          "duration_min": 71,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 56 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w14-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "71 min at conversational effort",
+          "duration_min": 71,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 56 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w14-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 40,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w14-d4-run",
+          "sport": "run",
+          "title": "Trail-specific durability",
+          "subtitle": "80 min · precise, controlled blocks",
+          "duration_min": 80,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 10 min easy on rolling terrain",
+            "Main block: 22 min in Z2, then 2 x 12 min at the top of Z2 on a race-like gradient",
+            "Recovery: 4 min of brisk walking between the two blocks",
+            "Technique: 12 min of smooth, controlled descending, not chasing top speed",
+            "Cool-down: 8 min easy",
+            "Intent: hold a stable stride and a clear head under fatigue, without copying elite volume"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w14-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 30,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w14-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "282 min on rolling terrain · 2350 m gain this week",
+          "duration_min": 282,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 265 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Vertical: spread roughly 2350 m of gain across the week, without stacking it all if fatigue climbs",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 15,
+      "dates": "Jul 20 - Jul 26",
+      "phase": 2,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 2425,
+      "run_min_target": 517,
+      "sessions": [
+        {
+          "id": "w15-d0-ride-optional",
+          "sport": "ride",
+          "title": "Optional aerobic ride",
+          "subtitle": "60 easy min · no impact",
+          "duration_min": 60,
+          "intensity": "Z1-Z2 · RPE 2-3",
+          "details": [
+            "10 min easing in with a fluid cadence",
+            "40 min of easy endurance, no pushing on the climbs",
+            "10 min very light, to finish fresher than you started",
+            "First session to drop if fatigue, sleep or a niggle gets worse"
+          ],
+          "optional": true,
+          "weekday": 0
+        },
+        {
+          "id": "w15-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "73 min at conversational effort",
+          "duration_min": 73,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 58 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w15-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "73 min at conversational effort",
+          "duration_min": 73,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 58 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w15-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 40,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w15-d4-run",
+          "sport": "run",
+          "title": "Climbing & technique",
+          "subtitle": "80 min · precise, controlled blocks",
+          "duration_min": 80,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 12 min easy with ankle work and running drills",
+            "Main block: 29 min in Z2, then 3 x 5 min climbing at a controlled hard effort",
+            "Recovery: 3 min of brisk walking or easy jogging between reps",
+            "Technique: 10 min of controlled descending, short steps and eyes up",
+            "Cool-down: 8 min easy",
+            "Intent: develop climbing power and downhill ease without crossing threshold"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w15-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 30,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w15-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "291 min on rolling terrain · 2425 m gain this week",
+          "duration_min": 291,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 274 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Vertical: spread roughly 2425 m of gain across the week, without stacking it all if fatigue climbs",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 16,
+      "dates": "Jul 27 - Aug 2",
+      "phase": 2,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 2500,
+      "run_min_target": 530,
+      "sessions": [
+        {
+          "id": "w16-d0-ride-optional",
+          "sport": "ride",
+          "title": "Optional aerobic ride",
+          "subtitle": "60 easy min · no impact",
+          "duration_min": 60,
+          "intensity": "Z1-Z2 · RPE 2-3",
+          "details": [
+            "10 min easing in with a fluid cadence",
+            "40 min of easy endurance, no pushing on the climbs",
+            "10 min very light, to finish fresher than you started",
+            "First session to drop if fatigue, sleep or a niggle gets worse"
+          ],
+          "optional": true,
+          "weekday": 0
+        },
+        {
+          "id": "w16-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "75 min at conversational effort",
+          "duration_min": 75,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 60 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w16-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "75 min at conversational effort",
+          "duration_min": 75,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 60 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w16-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 40,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w16-d4-run",
+          "sport": "run",
+          "title": "Trail-specific durability",
+          "subtitle": "80 min · precise, controlled blocks",
+          "duration_min": 80,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 10 min easy on rolling terrain",
+            "Main block: 22 min in Z2, then 2 x 12 min at the top of Z2 on a race-like gradient",
+            "Recovery: 4 min of brisk walking between the two blocks",
+            "Technique: 12 min of smooth, controlled descending, not chasing top speed",
+            "Cool-down: 8 min easy",
+            "Intent: hold a stable stride and a clear head under fatigue, without copying elite volume"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w16-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 30,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w16-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "300 min on rolling terrain · 2500 m gain this week",
+          "duration_min": 300,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 283 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Vertical: spread roughly 2500 m of gain across the week, without stacking it all if fatigue climbs",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 17,
+      "dates": "Aug 3 - Aug 9",
+      "phase": 3,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 2188,
+      "run_min_target": 445,
+      "sessions": [
+        {
+          "id": "w17-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "66 min at conversational effort",
+          "duration_min": 66,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 51 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w17-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "66 min at conversational effort",
+          "duration_min": 66,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 51 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w17-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 25,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w17-d4-run",
+          "sport": "run",
+          "title": "Race-pace reminder",
+          "subtitle": "50 min · precise, controlled blocks",
+          "duration_min": 50,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 10 min very easy with dynamic mobility",
+            "Main block: 24 min in Z1/Z2, then 4 x 1 min at race effort",
+            "Recovery: 1 min very easy after each rep",
+            "Cool-down: 8 min easy",
+            "Intent: keep the feel without leaving residual fatigue"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w17-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 25,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w17-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "263 min on rolling terrain · 2188 m gain this week",
+          "duration_min": 263,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 246 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Vertical: spread roughly 2188 m of gain across the week, without stacking it all if fatigue climbs",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 18,
+      "dates": "Aug 10 - Aug 16",
+      "phase": 3,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 1875,
+      "run_min_target": 387,
+      "sessions": [
+        {
+          "id": "w18-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "56 min at conversational effort",
+          "duration_min": 56,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 41 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w18-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "56 min at conversational effort",
+          "duration_min": 56,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 41 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w18-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 25,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w18-d4-run",
+          "sport": "run",
+          "title": "Race-pace reminder",
+          "subtitle": "50 min · precise, controlled blocks",
+          "duration_min": 50,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 10 min very easy with dynamic mobility",
+            "Main block: 24 min in Z1/Z2, then 4 x 1 min at race effort",
+            "Recovery: 1 min very easy after each rep",
+            "Cool-down: 8 min easy",
+            "Intent: keep the feel without leaving residual fatigue"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w18-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 25,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w18-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "225 min on rolling terrain · 1875 m gain this week",
+          "duration_min": 225,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 208 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Vertical: spread roughly 1875 m of gain across the week, without stacking it all if fatigue climbs",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 19,
+      "dates": "Aug 17 - Aug 23",
+      "phase": 3,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 1563,
+      "run_min_target": 332,
+      "sessions": [
+        {
+          "id": "w19-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "47 min at conversational effort",
+          "duration_min": 47,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 32 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w19-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "47 min at conversational effort",
+          "duration_min": 47,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 32 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w19-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 25,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w19-d4-run",
+          "sport": "run",
+          "title": "Race-pace reminder",
+          "subtitle": "50 min · precise, controlled blocks",
+          "duration_min": 50,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 10 min very easy with dynamic mobility",
+            "Main block: 24 min in Z1/Z2, then 4 x 1 min at race effort",
+            "Recovery: 1 min very easy after each rep",
+            "Cool-down: 8 min easy",
+            "Intent: keep the feel without leaving residual fatigue"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w19-d5-strength-2",
+          "sport": "strength",
+          "title": "Supplementary strength",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 25,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip, ankle and trunk mobility",
+            "Block: 2 x 10 single-leg glute bridges + 2 x 12 bent-knee calf raises per side",
+            "Block: 2 x 30 s side plank per side + single-leg balance",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: consolidate without soreness before the running sessions"
+          ],
+          "weekday": 5
+        },
+        {
+          "id": "w19-d6-run",
+          "sport": "run",
+          "title": "Long trail run",
+          "subtitle": "188 min on rolling terrain · 1563 m gain this week",
+          "duration_min": 188,
+          "intensity": "Z1-Z2 · endurance",
+          "details": [
+            "Warm-up: 10 min very easy, walking allowed at the start",
+            "Main block: 171 min in Z1/Z2, conversational and steady",
+            "Recovery: walk 2 min and cut the target if your stride falls apart",
+            "Cool-down: 5 min very easy, then your usual hydration",
+            "Terrain: pick a race-like profile; efficient power hiking on the steep sections",
+            "Vertical: spread roughly 1563 m of gain across the week, without stacking it all if fatigue climbs",
+            "Descents: short, relaxed, controlled steps; no chasing top speed",
+            "Nutrition: work up the drink and carbs you tolerate, and the kit you plan to race in",
+            "Intent: build endurance and finish able to carry on a few more minutes"
+          ],
+          "weekday": 6
+        }
+      ]
+    },
+    {
+      "week": 20,
+      "dates": "Aug 24 - Aug 30",
+      "phase": 3,
+      "c1": "",
+      "c2": "",
+      "c3": "",
+      "dplus": 10000,
+      "run_min_target": 2340,
+      "sessions": [
+        {
+          "id": "w20-d1-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "38 min at conversational effort",
+          "duration_min": 38,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 23 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 1
+        },
+        {
+          "id": "w20-d2-run",
+          "sport": "run",
+          "title": "Easy endurance",
+          "subtitle": "38 min at conversational effort",
+          "duration_min": 38,
+          "intensity": "Z1-Z2 · RPE 2-4",
+          "details": [
+            "Warm-up: 8 min very easy with dynamic mobility",
+            "Main block: 23 min in Z1/Z2, breathing stays conversational",
+            "Recovery: 2 min of walking if needed, with no catching up afterwards",
+            "Cool-down: 5 min very easy",
+            "Intent: bank useful volume with a relaxed stride"
+          ],
+          "weekday": 2
+        },
+        {
+          "id": "w20-d3-strength",
+          "sport": "strength",
+          "title": "Strength & prehab",
+          "subtitle": "Legs, ankles and downhill resilience",
+          "duration_min": 25,
+          "intensity": "Technique · 2-3 reps in reserve",
+          "details": [
+            "Warm-up: 5 min of hip and ankle mobility plus bodyweight squats",
+            "Block: 3 x 8 lunges or split squats per leg, controlled movement",
+            "Block: 3 x 10 single-leg deadlifts + 3 x 12 straight- and bent-knee calf raises",
+            "Trail-specific: 3 x 8 slow step-downs per leg to prepare the descents",
+            "Cool-down: 5 min of gentle mobility",
+            "Intent: build robustness, never train to failure"
+          ],
+          "weekday": 3
+        },
+        {
+          "id": "w20-d4-run",
+          "sport": "run",
+          "title": "Race-pace reminder",
+          "subtitle": "42 min · precise, controlled blocks",
+          "duration_min": 42,
+          "intensity": "Z2-Z3 · controlled",
+          "details": [
+            "Warm-up: 10 min very easy with dynamic mobility",
+            "Main block: 16 min in Z1/Z2, then 4 x 1 min at race effort",
+            "Recovery: 1 min very easy after each rep",
+            "Cool-down: 8 min easy",
+            "Intent: keep the feel without leaving residual fatigue"
+          ],
+          "weekday": 4
+        },
+        {
+          "id": "w20-d6-run-event",
+          "sport": "run",
+          "title": "Race day · UTMB · 171 km / 10 000 m D+",
+          "subtitle": "171 km · 10000 m gain · ≈ 37h02 estimated",
+          "duration_min": 2222,
+          "intensity": "Controlled race effort",
+          "details": [
+            "Warm-up: 10-15 min very easy, then a few strides only if they are part of your usual routine",
+            "Main block / strategy: start conservative, power-hike the steep sections and keep the descents flowing",
+            "Nutrition: follow the drink and carb protocol proven on the long runs, nothing new on race day",
+            "Recovery between efforts: ease off briefly at aid stations rather than take a hard hit later",
+            "Cool-down: walk a few minutes past the finish, drink and eat as tolerated",
+            "Intent: run a steady, adaptable strategy, not chase time from the gun"
+          ],
+          "weekday": 6
+        }
+      ]
+    }
+  ]
+}

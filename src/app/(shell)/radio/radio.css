@@ -1,0 +1,1347 @@
+.radio-shell {
+  --radio-radius-lg: 24px;
+  --radio-radius-md: 16px;
+  --radio-cyan: var(--teal);
+  --radio-pink: var(--purple);
+  width: min(1500px, 100%);
+  margin: 0 auto;
+  padding: 28px clamp(18px, 3vw, 44px) 64px;
+  color: var(--ink);
+}
+
+.radio-shell button,
+.radio-shell a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.radio-shell button:focus-visible,
+.radio-shell a:focus-visible {
+  outline: 2px solid var(--dash-accent);
+  outline-offset: 3px;
+}
+
+.radio-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(460px, 0.95fr);
+  gap: 28px;
+  align-items: end;
+  margin-bottom: 24px;
+}
+
+.radio-hero-copy {
+  max-width: 720px;
+}
+
+.radio-overline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  color: var(--dash-accent);
+  font-size: 0.74rem;
+  font-weight: 660;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.radio-hero h1 {
+  margin: 0;
+  font-size: clamp(2.4rem, 5vw, 5.2rem);
+  font-weight: 660;
+  letter-spacing: -0.065em;
+  line-height: 0.95;
+}
+
+.radio-hero-copy > p:last-child {
+  max-width: 560px;
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+
+.radio-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radio-radius-lg);
+  background: var(--card-surface);
+  box-shadow: var(--card-inner), var(--card-elev);
+  backdrop-filter: var(--card-blur);
+}
+
+.radio-hero-stats > div {
+  min-width: 0;
+  padding: 20px;
+  border-left: 1px solid var(--line-soft);
+}
+
+.radio-hero-stats > div:first-child {
+  border-left: 0;
+}
+
+.radio-hero-stats span,
+.radio-hero-stats small {
+  display: block;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.radio-hero-stats strong {
+  display: block;
+  margin: 7px 0 5px;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+.radio-main-tabs {
+  position: sticky;
+  z-index: 8;
+  top: 12px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  max-width: 720px;
+  margin: 0 0 28px;
+  padding: 5px;
+  border: 1px solid var(--card-border);
+  border-radius: 15px;
+  background: var(--menu-surface);
+  box-shadow: var(--card-inner), var(--shadow-brand);
+  backdrop-filter: var(--surface-backdrop);
+}
+
+.radio-main-tabs button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 13px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 580;
+  transition: background 180ms var(--ease-apple), color 180ms var(--ease-apple), transform 180ms var(--ease-apple);
+}
+
+.radio-main-tabs button:hover {
+  background: var(--nav-hover-bg);
+  color: var(--ink-soft);
+}
+
+.radio-main-tabs button.is-active {
+  background: var(--nav-active-bg);
+  box-shadow: var(--shadow-nav-active);
+  color: var(--ink);
+}
+
+.radio-today-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 22px;
+  align-items: start;
+}
+
+.radio-today-main,
+.radio-progress-card,
+.radio-next-card,
+.radio-study-panel,
+.radio-planning-panel {
+  border: 1px solid var(--card-border);
+  background: var(--card-surface);
+  box-shadow: var(--card-inner), var(--card-elev);
+  backdrop-filter: var(--card-blur);
+}
+
+.radio-today-main,
+.radio-study-panel,
+.radio-planning-panel {
+  border-radius: var(--radio-radius-lg);
+}
+
+.radio-today-main {
+  padding: clamp(20px, 3vw, 32px);
+}
+
+.radio-section-title,
+.radio-study-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.radio-section-title span,
+.radio-study-heading span,
+.radio-progress-card span,
+.radio-next-card > span,
+.radio-module-picker > span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 620;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.radio-section-title h2,
+.radio-study-heading h2 {
+  margin: 4px 0 0;
+  font-size: clamp(1.35rem, 2.5vw, 2rem);
+  letter-spacing: -0.035em;
+}
+
+.radio-section-title > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.radio-time-pill,
+.radio-phase,
+.radio-calendar-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.radio-time-pill {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 7px 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  font-weight: 620;
+}
+
+.radio-plan-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 24px 0 18px;
+  padding: clamp(18px, 3vw, 28px);
+  border: 1px solid rgba(var(--dash-accent-rgb), 0.22);
+  border-radius: 20px;
+  background: linear-gradient(130deg, rgba(var(--dash-accent-rgb), 0.15), var(--surface-sunken-4));
+}
+
+.radio-plan-banner h3 {
+  margin: 12px 0 5px;
+  font-size: clamp(1.2rem, 2.5vw, 1.75rem);
+  letter-spacing: -0.03em;
+}
+
+.radio-plan-banner p,
+.radio-next-card p,
+.radio-progress-card p,
+.radio-calendar-list p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.radio-phase {
+  min-height: 25px;
+  padding: 4px 9px;
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--ink-soft);
+  font-size: 0.64rem;
+  font-weight: 660;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.radio-phase.phase-apprentissage {
+  border-color: rgba(var(--dash-accent-rgb), 0.25);
+  background: rgba(var(--dash-accent-rgb), 0.12);
+}
+
+.radio-phase.phase-voyage {
+  color: var(--teal);
+}
+
+.radio-phase.phase-consolidation {
+  color: var(--amber);
+}
+
+.radio-phase.phase-simulation {
+  color: var(--purple);
+}
+
+.radio-phase.phase-exam {
+  color: var(--green);
+}
+
+.radio-today-grid.is-exam {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.radio-exam-message {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  min-height: 90px;
+  padding: 20px;
+  border: 1px solid rgba(var(--dash-accent-rgb), 0.24);
+  border-radius: 16px;
+  background: var(--surface-sunken-4);
+  color: var(--dash-accent);
+}
+
+.radio-exam-message div {
+  display: grid;
+  gap: 5px;
+}
+
+.radio-exam-message strong {
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.radio-exam-message span {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.radio-ring {
+  --progress: 0%;
+  position: relative;
+  display: grid;
+  width: 90px;
+  height: 90px;
+  flex: 0 0 auto;
+  place-content: center;
+  border-radius: 50%;
+  background: conic-gradient(var(--dash-accent) var(--progress), var(--line) 0);
+  text-align: center;
+}
+
+.radio-ring::before {
+  position: absolute;
+  inset: 6px;
+  border-radius: inherit;
+  background: var(--menu-surface-strong);
+  content: "";
+}
+
+.radio-ring strong,
+.radio-ring span {
+  position: relative;
+  z-index: 1;
+}
+
+.radio-ring strong {
+  font-size: 1.15rem;
+}
+
+.radio-ring span {
+  color: var(--muted);
+  font-size: 0.58rem;
+}
+
+.radio-action-list {
+  display: grid;
+  gap: 9px;
+}
+
+.radio-action-list article {
+  display: grid;
+  grid-template-columns: 36px 42px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 76px;
+  padding: 11px 13px;
+  border: 1px solid var(--line-soft);
+  border-radius: 15px;
+  background: var(--surface-sunken-4);
+  transition: border-color 180ms ease, background 180ms ease;
+}
+
+.radio-action-list article:hover {
+  border-color: var(--line-strong);
+  background: var(--interactive-card-hover);
+}
+
+.radio-action-list article.is-done {
+  opacity: 0.62;
+}
+
+.radio-action-list article.is-done strong {
+  text-decoration: line-through;
+}
+
+.radio-check {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-content: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--green);
+  cursor: pointer;
+}
+
+.is-done .radio-check {
+  border-color: var(--green);
+  background: color-mix(in srgb, var(--green) 16%, transparent);
+}
+
+.radio-action-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-content: center;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--ink-soft);
+}
+
+.radio-action-list article > div {
+  min-width: 0;
+}
+
+.radio-action-list strong,
+.radio-action-list small {
+  display: block;
+}
+
+.radio-action-list strong {
+  font-size: 0.92rem;
+}
+
+.radio-action-list small {
+  overflow: hidden;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.radio-open-action {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 11px;
+  background: var(--button-bg-1);
+  color: var(--ink-soft);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 580;
+}
+
+.radio-open-action:hover {
+  background: var(--button-bg-1-hover);
+  color: var(--ink);
+}
+
+.radio-today-side {
+  display: grid;
+  gap: 14px;
+}
+
+.radio-progress-card,
+.radio-next-card {
+  padding: 20px;
+  border-radius: var(--radio-radius-md);
+}
+
+.radio-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  color: var(--green);
+}
+
+.radio-progress-card h3,
+.radio-next-card h3 {
+  margin: 5px 0 0;
+  color: var(--ink);
+  font-size: 1.5rem;
+  letter-spacing: -0.04em;
+}
+
+.radio-progress-track {
+  height: 7px;
+  overflow: hidden;
+  margin: 20px 0 12px;
+  border-radius: 99px;
+  background: var(--line);
+}
+
+.radio-progress-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--green);
+  transition: width 260ms var(--ease-apple);
+}
+
+.radio-progress-card button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding: 9px 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+}
+
+.radio-next-card h3 {
+  margin: 12px 0 7px;
+  font-size: 1.15rem;
+}
+
+.radio-study-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.radio-module-picker {
+  position: sticky;
+  top: 84px;
+  display: grid;
+  gap: 7px;
+  padding: 15px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radio-radius-md);
+  background: var(--card-surface);
+  box-shadow: var(--card-inner), var(--card-elev);
+  backdrop-filter: var(--card-blur);
+}
+
+.radio-module-picker > span {
+  padding: 3px 8px 8px;
+}
+
+.radio-module-picker button {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  min-height: 52px;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.radio-module-picker button:hover,
+.radio-module-picker button.is-active {
+  border-color: var(--line-soft);
+  background: var(--nav-hover-bg);
+  color: var(--ink);
+}
+
+.radio-module-picker button i {
+  grid-row: 1 / 3;
+  width: 7px;
+  height: 28px;
+  align-self: center;
+  border-radius: 99px;
+  background: var(--domain-accent);
+}
+
+.radio-module-picker .tone-blue i { background: var(--blue); }
+.radio-module-picker .tone-green i { background: var(--green); }
+.radio-module-picker .tone-amber i { background: var(--amber); }
+.radio-module-picker .tone-red i { background: var(--red); }
+.radio-module-picker .tone-violet i,
+.radio-module-picker .tone-pink i { background: var(--purple); }
+.radio-module-picker .tone-cyan i { background: var(--radio-cyan); }
+
+.radio-module-picker button span {
+  overflow: hidden;
+  align-self: end;
+  font-size: 0.79rem;
+  font-weight: 580;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.radio-module-picker button small {
+  color: var(--muted-2);
+  font-size: 0.65rem;
+}
+
+.radio-study-panel {
+  min-width: 0;
+  padding: clamp(18px, 3vw, 30px);
+}
+
+.radio-study-heading {
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.radio-study-heading a {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 0.74rem;
+  text-decoration: none;
+}
+
+.radio-subtabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin: 18px 0;
+  padding-bottom: 2px;
+}
+
+.radio-subtabs button {
+  min-height: 40px;
+  flex: 0 0 auto;
+  padding: 8px 13px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 580;
+}
+
+.radio-subtabs button.is-active {
+  border-color: rgba(var(--dash-accent-rgb), 0.28);
+  background: rgba(var(--dash-accent-rgb), 0.11);
+  color: var(--ink);
+}
+
+.radio-course-reader {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 4px clamp(0px, 2vw, 24px) 20px;
+}
+
+.radio-course-reader .markdown > h1:first-child {
+  display: none;
+}
+
+.radio-session-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 22px 0 14px;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 580;
+}
+
+.radio-flashcard-panel,
+.radio-quiz-panel {
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.radio-flashcard {
+  display: flex;
+  min-height: 390px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(28px, 6vw, 68px);
+  border: 1px solid var(--line-soft);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 50% 10%, rgba(var(--dash-accent-rgb), 0.12), transparent 48%),
+    var(--surface-sunken-4);
+  text-align: center;
+}
+
+.radio-flashcard > span,
+.radio-card-answer span,
+.radio-question-card > span {
+  color: var(--dash-accent);
+  font-size: 0.68rem;
+  font-weight: 660;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.radio-flashcard h3 {
+  max-width: 720px;
+  margin: 18px 0;
+  font-size: clamp(1.45rem, 3.3vw, 2.55rem);
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+}
+
+.radio-flashcard > button,
+.radio-card-controls button,
+.radio-quiz-actions button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 15px;
+  border: 1px solid var(--line-soft);
+  border-radius: 11px;
+  background: var(--button-bg-1);
+  color: var(--ink-soft);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 580;
+}
+
+.radio-card-answer {
+  width: 100%;
+  max-width: 720px;
+  margin-top: 18px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.radio-card-answer p {
+  margin: 12px 0 0;
+  color: var(--ink-soft);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.65;
+}
+
+.radio-card-controls,
+.radio-quiz-actions {
+  display: flex;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.radio-card-controls button:first-child {
+  width: 44px;
+  padding: 0;
+}
+
+.radio-card-controls .is-again {
+  color: var(--amber);
+}
+
+.radio-card-controls .is-known {
+  color: var(--green);
+}
+
+.radio-question-card {
+  padding: clamp(20px, 4vw, 36px);
+  border: 1px solid var(--line-soft);
+  border-radius: 20px;
+  background: var(--surface-sunken-4);
+}
+
+.radio-question-card h3 {
+  margin: 10px 0 5px;
+  font-size: clamp(1.15rem, 2.5vw, 1.65rem);
+  letter-spacing: -0.025em;
+  line-height: 1.35;
+}
+
+.radio-question-card > p {
+  margin: 0 0 22px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.radio-options {
+  display: grid;
+  gap: 9px;
+}
+
+.radio-options button {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 18px;
+  gap: 12px;
+  min-height: 58px;
+  align-items: center;
+  padding: 10px 13px;
+  border: 1px solid var(--line-soft);
+  border-radius: 13px;
+  background: var(--surface-sunken-5);
+  color: var(--ink-soft);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.radio-options button:hover:not(:disabled),
+.radio-options button.is-selected {
+  border-color: rgba(var(--dash-accent-rgb), 0.4);
+  background: rgba(var(--dash-accent-rgb), 0.1);
+}
+
+.radio-options button.is-correct {
+  border-color: color-mix(in srgb, var(--green) 58%, transparent);
+  background: color-mix(in srgb, var(--green) 12%, transparent);
+}
+
+.radio-options button.is-wrong {
+  border-color: color-mix(in srgb, var(--red) 58%, transparent);
+  background: color-mix(in srgb, var(--red) 10%, transparent);
+}
+
+.radio-options button b {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-content: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  color: var(--ink);
+  font-size: 0.78rem;
+}
+
+.radio-options button span {
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.radio-feedback {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 15px;
+  border: 1px solid var(--line-soft);
+  border-radius: 13px;
+  color: var(--amber);
+}
+
+.radio-feedback.is-correct {
+  color: var(--green);
+}
+
+.radio-feedback svg {
+  flex: 0 0 auto;
+}
+
+.radio-feedback p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.radio-quiz-actions button {
+  min-width: 150px;
+  background: var(--dash-accent);
+  color: var(--button-primary-color, var(--bg));
+}
+
+.radio-quiz-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.radio-planning-panel {
+  padding: clamp(18px, 3vw, 30px);
+}
+
+.radio-calendar-list {
+  display: grid;
+  gap: 7px;
+  margin-top: 22px;
+}
+
+.radio-calendar-list article {
+  position: relative;
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr) 210px auto;
+  gap: 16px;
+  align-items: center;
+  min-height: 82px;
+  padding: 12px 15px;
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: var(--surface-sunken-4);
+}
+
+.radio-calendar-list article.is-today {
+  border-color: rgba(var(--dash-accent-rgb), 0.38);
+  background: rgba(var(--dash-accent-rgb), 0.08);
+}
+
+.radio-calendar-list article.is-done {
+  opacity: 0.55;
+}
+
+.radio-calendar-list time {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-content: center;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: var(--surface-sunken);
+  text-align: center;
+}
+
+.radio-calendar-list time strong,
+.radio-calendar-list time span {
+  display: block;
+}
+
+.radio-calendar-list time strong {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.radio-calendar-list time span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+}
+
+.radio-calendar-list h3 {
+  margin: 6px 0 2px;
+  font-size: 0.93rem;
+}
+
+.radio-calendar-meta {
+  color: var(--ink-soft);
+  font-size: 0.75rem;
+  text-align: right;
+}
+
+.radio-calendar-meta small {
+  display: block;
+  overflow: hidden;
+  margin-top: 5px;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.radio-calendar-list article > b {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--ink-soft);
+  font-size: 0.64rem;
+}
+
+.radio-empty {
+  display: grid;
+  min-height: 260px;
+  place-content: center;
+  padding: 24px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.revision-setup {
+  max-width: 1040px;
+}
+
+.revision-setup-hero {
+  max-width: 720px;
+  margin-bottom: 28px;
+}
+
+.revision-setup-hero h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 5vw, 4.5rem);
+  letter-spacing: -0.055em;
+  line-height: 1;
+}
+
+.revision-setup-hero > p:last-child,
+.revision-setup-heading p {
+  margin: 14px 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.revision-setup-card,
+.revision-setup-sources {
+  margin-top: 18px;
+  padding: clamp(20px, 3vw, 32px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radio-radius-lg);
+  background: var(--menu-surface-strong);
+  box-shadow: var(--card-elev);
+}
+
+.revision-setup-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.revision-setup-heading > svg {
+  flex: 0 0 auto;
+  margin-top: 3px;
+  color: var(--dash-accent);
+}
+
+.revision-setup-heading h2,
+.revision-setup-module-list h3 {
+  margin: 0;
+}
+
+.revision-setup-heading p {
+  margin-top: 4px;
+}
+
+.revision-setup-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.4fr);
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.revision-setup-form label {
+  display: grid;
+  gap: 8px;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  font-weight: 620;
+}
+
+.revision-setup-form input,
+.revision-setup-form textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--field-bg);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 500;
+}
+
+.revision-setup-form input {
+  min-height: 44px;
+  padding: 0 12px;
+}
+
+.revision-setup-form textarea {
+  min-height: 120px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.revision-setup-form small {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.revision-setup-modules {
+  grid-column: 1 / -1;
+}
+
+.revision-setup-form button {
+  display: inline-flex;
+  min-height: 44px;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--dash-accent);
+  color: var(--button-primary-color, var(--bg));
+  font-weight: 660;
+  cursor: pointer;
+}
+
+.revision-setup-module-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.revision-setup-module-list article {
+  padding: 16px;
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: var(--field-bg);
+}
+
+.revision-setup-module-list article > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.revision-setup-module-list a {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--menu-surface-strong);
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  font-weight: 620;
+  text-decoration: none;
+}
+
+@media (max-width: 1050px) {
+  .radio-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .radio-hero-stats {
+    max-width: 760px;
+  }
+
+  .radio-calendar-list article {
+    grid-template-columns: 56px minmax(0, 1fr) auto;
+  }
+
+  .radio-calendar-meta {
+    grid-column: 2 / 3;
+    text-align: left;
+  }
+
+  .radio-calendar-list article > b {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
+
+@media (max-width: 820px) {
+  .radio-shell {
+    padding-top: 20px;
+  }
+
+  .radio-main-tabs {
+    top: 8px;
+    max-width: none;
+  }
+
+  .radio-main-tabs button {
+    padding-inline: 8px;
+  }
+
+  .radio-main-tabs button span {
+    font-size: 0.72rem;
+  }
+
+  .radio-today-grid,
+  .radio-study-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .revision-setup-form {
+    grid-template-columns: 1fr;
+  }
+
+  .radio-today-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .radio-module-picker {
+    position: static;
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .radio-module-picker > span {
+    display: none;
+  }
+
+  .radio-module-picker button {
+    min-width: 145px;
+    flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 580px) {
+  .radio-shell {
+    width: 100%;
+    padding: 18px 12px 48px;
+  }
+
+  .radio-hero {
+    gap: 22px;
+    margin-bottom: 18px;
+  }
+
+  .radio-hero h1 {
+    font-size: 3.3rem;
+  }
+
+  .radio-hero-copy > p:last-child {
+    margin-top: 12px;
+    font-size: 0.9rem;
+  }
+
+  .radio-hero-stats > div {
+    padding: 14px 10px;
+  }
+
+  .radio-hero-stats strong {
+    font-size: 1.45rem;
+  }
+
+  .radio-main-tabs {
+    grid-template-columns: repeat(5, 54px);
+    justify-content: space-between;
+    overflow-x: auto;
+    margin-bottom: 16px;
+  }
+
+  .radio-main-tabs button {
+    min-width: 52px;
+    flex-direction: column;
+    gap: 2px;
+    padding: 5px 2px;
+  }
+
+  .radio-main-tabs button span {
+    max-width: 50px;
+    overflow: hidden;
+    font-size: 0.58rem;
+    text-overflow: ellipsis;
+  }
+
+  .radio-today-main,
+  .radio-study-panel,
+  .radio-planning-panel {
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .radio-section-title {
+    align-items: flex-start;
+  }
+
+  .radio-section-title > p {
+    display: none;
+  }
+
+  .radio-plan-banner {
+    align-items: flex-start;
+    margin-top: 18px;
+    padding: 17px;
+  }
+
+  .radio-ring {
+    width: 70px;
+    height: 70px;
+  }
+
+  .radio-ring span {
+    display: none;
+  }
+
+  .radio-action-list article {
+    grid-template-columns: 34px 38px minmax(0, 1fr);
+  }
+
+  .radio-action-icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .radio-open-action {
+    grid-column: 2 / -1;
+    justify-content: space-between;
+  }
+
+  .radio-today-side {
+    grid-template-columns: 1fr;
+  }
+
+  .radio-study-heading {
+    align-items: flex-start;
+  }
+
+  .radio-study-heading a {
+    width: 44px;
+    flex: 0 0 auto;
+    justify-content: center;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .radio-flashcard {
+    min-height: 360px;
+    padding: 26px 18px;
+  }
+
+  .radio-card-controls {
+    flex-wrap: wrap;
+  }
+
+  .radio-card-controls button:first-child {
+    order: 4;
+  }
+
+  .radio-options button {
+    grid-template-columns: 32px minmax(0, 1fr) 16px;
+    padding-inline: 10px;
+  }
+
+  .radio-calendar-list article {
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 11px;
+    padding: 11px;
+  }
+
+  .radio-calendar-meta {
+    grid-column: 2;
+  }
+
+  .radio-calendar-list article > b {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radio-main-tabs button,
+  .radio-progress-track i {
+    transition: none;
+  }
+}

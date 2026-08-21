@@ -1,0 +1,520 @@
+/* Chat fills the viewport below the header instead of growing with content:
+   .dash normally flows top-to-bottom and lets the page scroll, but a chat
+   input needs to stay put. The 80/130px allowances are the fixed shell chrome
+   outside .dash (mobile topbar, .main padding); the flex column then lets the
+   header take its natural height and the card claim the rest via flex:1. */
+.dash.assistant-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: max(360px, calc(100dvh - 80px));
+}
+
+@media (max-width: 920px) {
+  .dash.assistant-page {
+    height: max(360px, calc(100dvh - 130px));
+  }
+}
+
+/* Chat wants the input docked near the bottom edge, not floating above the
+   page's usual generous bottom padding. */
+.main:has(.assistant-page) {
+  padding-bottom: 20px;
+}
+
+.assistant-page > header {
+  flex: 0 0 auto;
+}
+
+.assistant-card {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.assistant-route-loading {
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--muted);
+}
+
+.assistant-card-head {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* .icon-button is 36px tall globally; this page's own controls hold the
+   44px tap-target floor instead of touching the shared rule. */
+.assistant-card-head .icon-button {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Groups the new-conversation and history-toggle buttons as one flex child
+   so .assistant-card-head's space-between puts the gap before them, not
+   between them. */
+.assistant-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.assistant-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.assistant-chat-pane {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.assistant-history {
+  display: flex;
+  flex: 0 0 260px;
+  flex-direction: column;
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+  padding: 6px;
+}
+
+.assistant-history-title {
+  margin: 0;
+  padding: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+@media (min-width: 921px) {
+  .assistant-history-toggle {
+    display: none;
+  }
+}
+
+@media (max-width: 920px) {
+  .assistant-body {
+    flex-direction: column;
+  }
+
+  .assistant-history {
+    display: none;
+    flex: 0 0 auto;
+    max-height: 40dvh;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .assistant-history.is-open {
+    display: flex;
+  }
+}
+
+.assistant-history-empty {
+  margin: 0;
+  padding: 10px 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.assistant-history-item-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.assistant-history-item-row:hover {
+  background: var(--panel-2);
+  border-radius: var(--radius-sm);
+}
+
+.assistant-history-item {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: none;
+  background: transparent;
+  padding: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.assistant-history-item-title {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 13.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assistant-history-item-meta {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.assistant-history-delete {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.assistant-history-delete:hover {
+  color: var(--red);
+}
+
+.assistant-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.assistant-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* The house select defaults to 100% of its parent; cap it here so two
+   selects plus the clear button can share one row on desktop and still
+   wrap cleanly at 390px without the trigger stretching edge to edge. */
+.assistant-option .custom-select {
+  width: auto;
+  min-width: 130px;
+  max-width: 220px;
+}
+
+@media (max-width: 480px) {
+  .assistant-option .custom-select {
+    min-width: 0;
+    max-width: 150px;
+  }
+}
+
+.assistant-messages {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  overflow-y: auto;
+}
+
+.assistant-empty {
+  margin: auto;
+  max-width: 40ch;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.assistant-bubble {
+  max-width: 85%;
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+@media (min-width: 700px) {
+  .assistant-bubble {
+    max-width: 70ch;
+  }
+
+  .assistant-bubble-user-wrap,
+  .assistant-edit-row {
+    max-width: 70ch;
+  }
+}
+
+.assistant-bubble-user {
+  align-self: flex-end;
+  min-width: 0;
+  max-width: 100%;
+  border: 1px solid var(--line-strong);
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+/* Wraps a user bubble with its edit button so the pair aligns and clips as
+   one flex-end block; the bubble itself grows to fill it (max-width: 100%
+   above) instead of computing its own percentage against the page. */
+.assistant-bubble-user-wrap {
+  display: flex;
+  align-self: flex-end;
+  align-items: flex-end;
+  gap: 2px;
+  min-width: 0;
+  max-width: 85%;
+}
+
+.assistant-edit-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  opacity: 0;
+  transition: opacity 130ms ease, color 130ms ease;
+  cursor: pointer;
+}
+
+.assistant-bubble-user-wrap:hover .assistant-edit-button,
+.assistant-bubble-user-wrap:focus-within .assistant-edit-button {
+  opacity: 1;
+}
+
+.assistant-edit-button:hover:not(:disabled) {
+  color: var(--ink);
+}
+
+.assistant-edit-button:disabled {
+  cursor: not-allowed;
+}
+
+/* Touch devices have no hover to reveal the button on, so it stays visible
+   at reduced opacity instead of hidden until a hover that will never come. */
+@media (hover: none) {
+  .assistant-edit-button {
+    opacity: 0.6;
+  }
+}
+
+.assistant-edit-row {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-end;
+  gap: 8px;
+  width: 100%;
+  max-width: 85%;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  padding: 10px 14px;
+}
+
+.assistant-edit-textarea {
+  width: 100%;
+  min-height: 24px;
+  max-height: 152px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.55;
+  resize: none;
+  overflow-y: auto;
+}
+
+.assistant-edit-textarea:focus {
+  outline: none;
+}
+
+.assistant-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.assistant-edit-cancel,
+.assistant-edit-send {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.assistant-edit-cancel {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+}
+
+.assistant-edit-send {
+  border: none;
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.assistant-edit-cancel:disabled,
+.assistant-edit-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.assistant-bubble-assistant {
+  align-self: flex-start;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  color: var(--ink-soft);
+  /* Markdown supplies its own block spacing; inheriting the bubble's
+     pre-wrap would render source newlines as extra blank lines. */
+  white-space: normal;
+}
+
+.assistant-bubble-assistant .markdown {
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.assistant-bubble-assistant .markdown > :first-child {
+  margin-top: 0;
+}
+
+.assistant-bubble-assistant .markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.assistant-bubble-assistant .markdown p {
+  margin: 0 0 10px;
+}
+
+.assistant-thinking {
+  color: var(--muted);
+  font-style: italic;
+  animation: assistant-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes assistant-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+/* Same red-surface recipe as .setup-error, sized for an inline chat bubble. */
+.assistant-error {
+  align-self: stretch;
+  margin: 0;
+  border: 1px solid color-mix(in srgb, var(--red) 35%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--red) 8%, transparent);
+  color: var(--red);
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.assistant-input-row {
+  flex: 0 0 auto;
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--line);
+}
+
+.assistant-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 56px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--panel-2);
+  padding: 10px 52px 10px 16px;
+}
+
+/* Focus ring lives on the wrapper, not the textarea (see .assistant-textarea
+   below) — the rounded input rectangle lighting up reads as one control. */
+.assistant-input-wrap:focus-within {
+  border-color: rgba(var(--accent-rgb), 0.58);
+}
+
+.assistant-textarea {
+  flex: 1 1 auto;
+  min-height: 24px;
+  max-height: 152px;
+  padding: 6px 0;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.5;
+  resize: none;
+  overflow-y: auto;
+}
+
+.assistant-textarea::placeholder {
+  color: var(--muted);
+}
+
+.assistant-textarea:focus {
+  outline: none;
+}
+
+.assistant-send {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.assistant-send-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg);
+  transition: transform 130ms ease, opacity 130ms ease;
+}
+
+.assistant-send:hover:not(:disabled) .assistant-send-circle {
+  transform: scale(1.05);
+}
+
+.assistant-send:disabled {
+  cursor: not-allowed;
+}
+
+.assistant-send:disabled .assistant-send-circle {
+  opacity: 0.4;
+}

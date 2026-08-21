@@ -1,0 +1,4 @@
+interface:
+  display_name: Synthesize Weekly
+  short_description: Produce a sourced, non-destructive weekly review.
+  default_prompt: Review the current week using only vault evidence, propose maintenance without applying it, and identify one highest-leverage next move.

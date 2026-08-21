@@ -1,0 +1,12 @@
+[Unit]
+Description=Deploy a pushed Second Brain main revision
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=@PROJECT_ROOT@
+ExecStart="@PROJECT_ROOT@/scripts/deploy-on-main.sh"
+TimeoutStartSec=30min
+UMask=0077
+SyslogIdentifier=second-brain-code-update

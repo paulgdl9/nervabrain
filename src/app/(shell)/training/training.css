@@ -1,0 +1,1248 @@
+/* Sport palette: familiar semantic colours on neutral surfaces. This block was
+   defined three times in this file (here, and twice near the "professional
+   sport palette" comment further down), so the values that actually rendered
+   depended on selector specificity rather than intent — one of the three even
+   keyed off [data-theme="dark"], which never matches because dark is the
+   default and carries no attribute. Consolidated here; edit these, not a copy.
+   --run-color is the workspace's primary tint (metrics, charts, running) and
+   follows the accent/scheme chosen in Settings. The other sports keep fixed
+   hues so the sport of a session stays readable at a glance, and --done-color
+   keeps completion green. */
+.training-dashboard,
+.trail-page-header,
+.objective-setup-form,
+.feedback-overlay {
+  --run-color: var(--accent);
+  --run-rgb: var(--accent-rgb);
+  /* Completion stays green whatever the accent or scheme is: "done" is a
+     status, not a brand colour, and reading it depends on that association.
+     A scheme supplies its own green through --seed-green; without one this
+     falls back to a plain green. */
+  --done-color: var(--seed-green, #22c55e);
+  /* Each sport keeps its meaning but takes the scheme's matching hue when one
+     is active; the literal is the built-in themes' value. --*-rgb stay literal
+     because rgba() needs a triplet — the rules that tint with them fall back
+     to the default hue, which is why new tints use color-mix instead. */
+  --ride-color: var(--seed-blue, #2563eb);
+  --ride-rgb: 37, 99, 235;
+  --strength-color: var(--seed-orange, #d97706);
+  --strength-rgb: 217, 119, 6;
+  --recovery-color: var(--seed-cyan, #64748b);
+  --recovery-rgb: 100, 116, 139;
+  --heart-color: var(--seed-red, #dc2626);
+  --zone1-color: color-mix(in srgb, var(--ink) 45%, var(--bg));
+  --zone3-color: var(--seed-green, #16a34a);
+  --zone4-color: var(--seed-yellow, #d97706);
+  --zone5-color: var(--seed-red, #dc2626);
+  --sport-card: var(--card-surface);
+  --sport-card-raised: var(--menu-surface-strong);
+}
+
+.trail-workspace { width: min(100%, 1480px); margin: 0 auto; gap: 20px; }
+
+[data-theme="light"] .training-dashboard,
+[data-theme="light"] .trail-page-header,
+[data-theme="light"] .objective-setup-form,
+[data-theme="light"] .feedback-overlay {
+  /* Darker green: #22c55e measured under 3:1 on the light card. */
+  --done-color: var(--seed-green, #16a34a);
+  --ride-color: var(--seed-blue, #087da7);
+  --ride-rgb: 8, 125, 167;
+  --strength-color: var(--seed-magenta, #6951c7);
+  --strength-rgb: 105, 81, 199;
+  --recovery-color: var(--seed-orange, #a66200);
+  --recovery-rgb: 166, 98, 0;
+  --heart-color: var(--seed-red, #d6445d);
+  --zone3-color: var(--seed-green, #2e8b40);
+  --zone4-color: var(--seed-yellow, #b26a00);
+  --zone5-color: var(--seed-red, #c62828);
+  --sport-card: var(--card-surface);
+  --sport-card-raised: var(--menu-surface-strong);
+}
+
+.trail-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 4px 0 8px;
+}
+.trail-page-header .button { min-height: 44px; }
+
+.trail-title-block { min-width: 0; }
+.trail-overline {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 12px;
+  color: var(--run-color);
+  font-size: 11px;
+  font-weight: 660;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.trail-title-block h1 {
+  margin: 0;
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 700;
+  letter-spacing: -.045em;
+  line-height: .95;
+}
+.trail-title-block > p:last-child { margin: 13px 0 0; color: var(--muted); font-size: 14px; }
+
+.trail-race-summary {
+  display: flex;
+  align-items: stretch;
+  min-height: 72px;
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  background: var(--sport-card);
+  box-shadow: inset 0 1px rgba(255,255,255,.07), var(--shadow-panel);
+  overflow: hidden;
+}
+.race-countdown { display: flex; min-width: 102px; flex-direction: column; justify-content: center; padding: 10px 18px; background: rgba(var(--run-rgb), .08); }
+.race-countdown span, .race-details span { color: var(--muted); font-size: 10px; font-weight: 620; letter-spacing: .08em; text-transform: uppercase; }
+.race-countdown strong { color: var(--run-color); font-size: 28px; line-height: 1; letter-spacing: -.04em; }
+.race-details { display: flex; min-width: 185px; flex-direction: column; justify-content: center; gap: 3px; border-left: 1px solid var(--line-soft); padding: 10px 18px; }
+.race-details span { display: flex; align-items: center; gap: 6px; }
+.race-details strong { font-size: 13px; }
+.sync-indicator { display: flex; align-items: center; gap: 6px; border-left: 1px solid var(--line-soft); color: var(--muted); font-size: 11px; font-weight: 580; padding: 0 16px; white-space: nowrap; }
+.sync-indicator.is-synced { color: var(--run-color); }
+
+.training-dashboard { display: grid; gap: 18px; }
+
+.today-board {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  background: var(--sport-card);
+  box-shadow: inset 0 1px rgba(255,255,255,.09), var(--shadow-panel);
+  padding: 26px;
+}
+.today-board::before { display: none; }
+.today-board-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
+.today-label { display: flex; align-items: center; gap: 7px; margin-bottom: 9px; color: var(--run-color); font-size: 11px; font-weight: 660; letter-spacing: .07em; text-transform: uppercase; }
+.today-board h2 { margin: 0; font-size: clamp(24px, 3vw, 34px); font-weight: 660; letter-spacing: -.035em; }
+.today-title-row { display: flex; align-items: center; gap: 14px; }
+.today-board-head p { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+.today-week-badge { display: flex; align-items: baseline; gap: 4px; border: 1px solid var(--line-strong); border-radius: 14px; background: color-mix(in srgb, var(--tint-ink) 3.5%, transparent); padding: 10px 14px; }
+.today-week-badge span { margin-right: 5px; color: var(--muted); font-size: 10px; font-weight: 620; text-transform: uppercase; }
+.today-week-badge strong { font-size: 23px; line-height: 1; }
+.today-week-badge small { color: var(--muted); font-size: 11px; }
+.today-nav { display: grid; flex: 0 0 auto; justify-items: end; gap: 7px; }
+.today-nav-label { color: var(--muted-2); font-size: 9px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+.today-week-nav, .today-day-nav { display: inline-flex; align-items: center; gap: 8px; }
+.today-week-nav > button, .today-day-nav > button { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--line-soft); border-radius: 999px; background: color-mix(in srgb, var(--tint-ink) 3%, transparent); color: var(--muted); cursor: pointer; transition: border-color 150ms var(--ease-apple), color 150ms var(--ease-apple), background 150ms var(--ease-apple); }
+.today-week-nav > button:hover:not(:disabled), .today-day-nav > button:hover:not(:disabled) { border-color: var(--line-strong); background: color-mix(in srgb, var(--tint-ink) 5.5%, transparent); color: var(--ink); }
+.today-week-nav > button:disabled, .today-day-nav > button:disabled { opacity: .35; cursor: default; }
+.today-day-nav { flex: 0 0 auto; justify-content: center; border: 1px solid var(--line-soft); border-radius: 12px; background: rgba(0,0,0,.12); padding: 3px; }
+.today-day-nav > button { width: 32px; height: 32px; }
+.today-day-chip { display: grid; min-width: 108px; justify-items: center; gap: 1px; }
+.today-day-chip span { color: var(--run-color); font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.today-day-chip strong { color: var(--ink-soft); font-size: 13px; font-weight: 620; text-transform: capitalize; }
+.plan-adjustment-list { display: grid; gap: 8px; margin: -4px 0 18px; }
+.plan-adjustment { display: flex; align-items: flex-start; gap: 8px; border: 1px solid color-mix(in srgb, var(--recovery-color) 18%, transparent); border-radius: 13px; background: color-mix(in srgb, var(--recovery-color) 7%, transparent); color: var(--ink-soft); padding: 10px 12px; }
+.plan-adjustment > svg { flex: 0 0 auto; margin-top: 2px; color: var(--recovery-color); }
+.plan-adjustment span { display: grid; gap: 2px; font-size: 12px; font-weight: 620; line-height: 1.35; }
+.plan-adjustment small { color: var(--muted); font-size: 11px; font-weight: 500; line-height: 1.35; }
+
+.today-session-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.today-session { position: relative; min-width: 0; overflow: hidden; border: 1px solid var(--line-soft); border-radius: 17px; background: rgba(0,0,0,.16); padding: 17px; }
+[data-theme="light"] .today-session { background: rgba(255,255,255,.52); }
+.today-session::before { position: absolute; inset: 0 auto 0 0; width: 2px; background: var(--line-soft); content: ""; }
+.sport-border-run::before { background: var(--line-soft); }
+.sport-border-ride::before { background: var(--line-soft); }
+.sport-border-strength::before { background: var(--line-soft); }
+.sport-border-recovery::before { background: var(--line-soft); }
+.today-session.is-complete { border-color: color-mix(in srgb, var(--done-color) 26%, transparent); }
+.today-session.rest-card { border-style: dashed; background: color-mix(in srgb, var(--recovery-color) 4%, transparent); }
+.today-session.is-cancelled { opacity: .7; }
+.today-session.is-cancelled h3 { color: var(--muted); text-decoration: line-through; }
+.today-session-top { display: flex; align-items: flex-start; gap: 12px; }
+.sport-icon { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border: 1px solid var(--line-soft); border-radius: 10px; background: color-mix(in srgb, var(--tint-ink) 4.5%, transparent); color: var(--muted); }
+.sport-icon.sport-run { border-color: rgba(var(--run-rgb), .2); background: rgba(var(--run-rgb), .09); color: var(--run-color); }
+.sport-icon.sport-ride { border-color: color-mix(in srgb, var(--ride-color) 20%, transparent); background: color-mix(in srgb, var(--ride-color) 9%, transparent); color: var(--ride-color); }
+.sport-icon.sport-strength { border-color: color-mix(in srgb, var(--strength-color) 20%, transparent); background: color-mix(in srgb, var(--strength-color) 9%, transparent); color: var(--strength-color); }
+.sport-icon.sport-recovery { border-color: color-mix(in srgb, var(--recovery-color) 20%, transparent); background: color-mix(in srgb, var(--recovery-color) 9%, transparent); color: var(--recovery-color); }
+.today-session-title { min-width: 0; flex: 1; }
+.today-session-meta { display: flex; align-items: center; gap: 7px; margin-bottom: 2px; color: var(--muted); font-size: 9px; font-weight: 660; letter-spacing: .08em; text-transform: uppercase; }
+.optional-label { border: 1px solid var(--line-strong); border-radius: 999px; padding: 1px 5px; }
+.optional-label.is-rescheduled { border-color: color-mix(in srgb, var(--recovery-color) 35%, transparent); color: var(--recovery-color); }
+.today-session h3 { margin: 0; font-size: 16px; font-weight: 620; letter-spacing: -.015em; }
+.today-session-title p { margin: 2px 0 0; color: var(--muted); font-size: 11px; }
+.session-status { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line-strong); border-radius: 999px; color: var(--muted); font-size: 10px; font-weight: 620; padding: 4px 8px; white-space: nowrap; }
+.session-status.is-done { border-color: color-mix(in srgb, var(--done-color) 30%, transparent); background: color-mix(in srgb, var(--done-color) 10%, transparent); color: var(--done-color); }
+.session-status.is-cancelled { border-color: color-mix(in srgb, var(--recovery-color) 30%, transparent); background: color-mix(in srgb, var(--recovery-color) 8%, transparent); color: var(--recovery-color); }
+
+/* Per-session action menu (Valider / Déplacer / Annuler / Rétablir) */
+.session-menu-root { position: relative; flex: 0 0 auto; margin-left: 6px; }
+.session-menu-button { display: grid; place-items: center; width: 30px; height: 30px; min-width: 44px; min-height: 44px; margin: -7px; border: 1px solid transparent; border-radius: 999px; background: transparent; color: var(--muted); cursor: pointer; transition: border-color 150ms var(--ease-apple), background 150ms var(--ease-apple), color 150ms var(--ease-apple); }
+.session-menu-button:hover { border-color: var(--line-strong); background: color-mix(in srgb, var(--tint-ink) 5%, transparent); color: var(--ink); }
+.session-menu-button:focus-visible { outline: 2px solid var(--run-color); outline-offset: 2px; }
+.session-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 5; display: grid; min-width: 180px; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--sport-card-raised); box-shadow: var(--shadow-panel); overflow: hidden; padding: 4px; }
+.session-menu button, .session-menu form button { display: flex; align-items: center; width: 100%; min-height: 44px; border: 0; border-radius: 8px; background: transparent; color: var(--ink-soft); cursor: pointer; font-size: 13px; font-weight: 540; padding: 0 12px; text-align: left; }
+.session-menu button:hover, .session-menu form button:hover { background: rgba(255,255,255,.06); }
+.session-menu button:focus-visible, .session-menu form button:focus-visible { outline: 2px solid var(--run-color); outline-offset: -2px; }
+.session-menu button.is-undo { color: var(--recovery-color); }
+.session-menu form { display: contents; }
+
+/* Move-day picker inside the "Déplacer" modal */
+.move-day-picker { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin: 4px 0 2px; }
+.move-day-chip { display: grid; place-items: center; min-height: 44px; border: 1px solid var(--line-soft); border-radius: 10px; color: var(--ink-soft); cursor: pointer; font-size: 12px; font-weight: 620; }
+.move-day-chip:has(input:checked) { border-color: rgba(var(--run-rgb), .45); background: rgba(var(--run-rgb), .1); color: var(--run-color); }
+.move-day-chip.is-disabled { opacity: .4; cursor: not-allowed; }
+.move-day-chip input { position: absolute; opacity: 0; pointer-events: none; }
+.move-day-chip:focus-within { outline: 2px solid var(--run-color); outline-offset: 2px; }
+
+/* Activity picker inside the "Valider" modal */
+.validate-session-dialog {
+  width: min(520px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: hidden;
+}
+.validate-session-dialog > h3,
+.validate-session-dialog > p,
+.validate-session-dialog > .modal-actions { flex: 0 0 auto; }
+.validate-activity-list {
+  display: grid;
+  min-height: 0;
+  max-height: clamp(120px, calc(100dvh - 250px), 420px);
+  gap: 7px;
+  margin: 4px -4px 2px 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px 6px 2px 0;
+  scrollbar-gutter: stable;
+}
+.validate-activity-option {
+  display: grid;
+  grid-template-columns: 18px 34px minmax(0, 1fr);
+  min-height: 58px;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  padding: 8px 12px;
+}
+.validate-activity-option > input[type="radio"] {
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--run-color);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.validate-activity-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--tint-ink) 3.5%, transparent);
+  color: var(--muted);
+}
+.validate-activity-icon.sport-run { color: var(--run-color); }
+.validate-activity-icon.sport-ride { color: var(--ride-color); }
+.validate-activity-icon.sport-strength { color: var(--strength-color); }
+.validate-activity-copy { display: grid; min-width: 0; gap: 2px; text-align: left; }
+.validate-activity-copy strong { overflow: hidden; color: var(--ink); font-size: 12.5px; font-weight: 620; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
+.validate-activity-copy small { color: var(--muted); font-size: 11px; font-weight: 550; line-height: 1.4; overflow-wrap: anywhere; }
+.validate-activity-option:has(input:checked) { border-color: color-mix(in srgb, var(--done-color) 48%, transparent); background: color-mix(in srgb, var(--done-color) 10%, transparent); }
+.validate-activity-option:focus-within { outline: 2px solid var(--run-color); outline-offset: 2px; }
+
+@media (max-width: 640px) {
+  .validate-session-dialog { width: min(520px, calc(100vw - 20px)); max-height: calc(100dvh - 20px); padding: 20px 16px 16px; }
+  .validate-activity-list { max-height: clamp(96px, calc(100dvh - 228px), 420px); }
+  .validate-activity-option { grid-template-columns: 18px 30px minmax(0, 1fr); min-height: 54px; gap: 8px; padding: 7px 9px; }
+  .validate-activity-icon { width: 30px; height: 30px; border-radius: 9px; }
+}
+
+/* Reason input inside the "Annuler" modal */
+.cancel-reason-input { width: 100%; min-height: 44px; border: 1px solid var(--line-soft); border-radius: 10px; background: color-mix(in srgb, var(--tint-ink) 3%, transparent); color: var(--ink); font-size: 13px; padding: 0 12px; }
+.cancel-reason-input:focus-visible { outline: 2px solid var(--run-color); outline-offset: 2px; }
+
+.session-prescription { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 15px 0 13px 46px; }
+.session-prescription div { display: flex; align-items: center; gap: 6px; color: var(--ink-soft); font-size: 11px; font-weight: 580; }
+.session-prescription svg { color: var(--muted); }
+.session-downloads { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; }
+/* 44px is the tap-target floor, not a visual choice: these are the only two
+   links inside a dense metrics row and a 25px chip is missed by a thumb. */
+.session-fit-download { display: inline-flex; min-height: 44px; align-items: center; gap: 5px; border: 1px solid color-mix(in srgb, var(--ride-color) 20%, transparent); border-radius: 8px; background: color-mix(in srgb, var(--ride-color) 7%, transparent); color: var(--ride-color); font-size: 9px; font-weight: 660; padding: 0 10px; text-decoration: none; }
+.session-fit-download:focus-visible { outline: 2px solid var(--ride-color); outline-offset: 2px; }
+.session-fit-download:hover { border-color: color-mix(in srgb, var(--ride-color) 42%, transparent); background: color-mix(in srgb, var(--ride-color) 13%, transparent); }
+.session-fit-download.is-json { border-color: rgba(var(--run-rgb), .22); background: rgba(var(--run-rgb), .07); color: var(--run-color); }
+.session-fit-download.is-json:hover { border-color: rgba(var(--run-rgb), .42); background: rgba(var(--run-rgb), .13); }
+.session-steps { display: grid; gap: 7px; margin: 0 0 0 46px; padding: 0; list-style: none; }
+.session-steps li { display: flex; align-items: flex-start; gap: 8px; color: var(--muted); font-size: 11px; line-height: 1.4; }
+.session-steps li > span { display: grid; width: 17px; height: 17px; flex: 0 0 auto; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; color: var(--ink-soft); font-size: 8px; font-weight: 660; }
+.session-adjustment { display: flex; align-items: flex-start; gap: 7px; margin: 12px 0 0 46px; border-top: 1px solid var(--line-soft); color: var(--recovery-color); font-size: 11px; font-weight: 580; line-height: 1.4; padding-top: 10px; }
+.session-adjustment svg { flex: 0 0 auto; margin-top: 1px; }
+.session-result { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 14px 0 0 46px; border-top: 1px solid var(--line-soft); padding-top: 11px; font-size: 10px; }
+.session-result span { color: var(--done-color); font-weight: 660; text-transform: uppercase; }
+.session-result strong { color: var(--ink-soft); font-weight: 540; text-align: right; }
+.next-session-line { display: flex; align-items: center; gap: 8px; margin-top: 17px; border-top: 1px solid var(--line-soft); color: var(--muted); font-size: 11px; padding-top: 15px; }
+.next-session-line svg { color: var(--run-color); }
+.next-session-line span { font-size: 9px; font-weight: 660; letter-spacing: .08em; text-transform: uppercase; }
+.next-session-line strong { color: var(--ink-soft); font-weight: 540; }
+
+.training-metrics { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+.training-metric { position: relative; min-width: 0; overflow: hidden; border: 1px solid var(--glass-border); border-radius: 15px; background: var(--sport-card); box-shadow: inset 0 1px rgba(255,255,255,.05); padding: 16px; }
+.metric-cyan { --metric-color: var(--seed-cyan, #74ddd0); }
+.metric-run { --metric-color: var(--run-color); }
+.metric-ride { --metric-color: var(--ride-color); }
+.metric-strength { --metric-color: var(--strength-color); }
+.metric-elevation { --metric-color: var(--recovery-color); }
+.metric-consistency { --metric-color: var(--seed-magenta, #a993ff); }
+.training-metric-head { display: flex; align-items: center; gap: 7px; margin-bottom: 15px; color: var(--metric-color); }
+.training-metric-head > span { display: grid; place-items: center; }
+.training-metric-head small { overflow: hidden; color: var(--muted); font-size: 9px; font-weight: 660; letter-spacing: .07em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.training-metric > strong { display: block; overflow: hidden; font-size: clamp(21px, 2.2vw, 29px); font-weight: 660; letter-spacing: -.035em; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
+.training-metric > p { margin: 6px 0 0; overflow: hidden; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+
+.analysis-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 420px); align-items: start; gap: 18px; }
+.analysis-main, .analysis-side { display: grid; min-width: 0; align-content: start; gap: 18px; }
+
+.training-main { display: grid; min-width: 0; gap: 18px; }
+.trail-card { position: relative; min-width: 0; border: 1px solid var(--glass-border); border-radius: 20px; background: var(--sport-card); box-shadow: inset 0 1px rgba(255,255,255,.065), var(--shadow-panel); padding: 20px; }
+.trail-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.trail-card-head h2 { margin: 2px 0 0; font-size: 16px; font-weight: 620; letter-spacing: -.018em; }
+.trail-card-kicker { display: block; color: var(--muted); font-size: 9px; font-weight: 660; letter-spacing: .09em; text-transform: uppercase; }
+.trail-card-head > svg { color: var(--muted); }
+.trail-text-link { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: 10px; font-weight: 580; text-decoration: none; }
+.trail-text-link:hover { color: var(--ink); }
+.interactive-data-badge { display: inline-flex; align-items: center; gap: 5px; border: 1px solid rgba(var(--run-rgb), .2); border-radius: 999px; background: rgba(var(--run-rgb), .06); color: var(--run-color); font-size: 8px; font-weight: 620; letter-spacing: .04em; padding: 4px 8px; text-transform: uppercase; white-space: nowrap; }
+.interactive-data-badge::before { width: 5px; height: 5px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; content: ""; }
+.trail-chart-head-actions { display: flex; align-items: center; justify-content: flex-end; gap: 9px; }
+.chart-fullscreen-button { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; border: 1px solid var(--line-strong); border-radius: 12px; background: color-mix(in srgb, var(--tint-ink) 3.5%, transparent); color: var(--muted); cursor: pointer; transition: border-color 160ms var(--ease-apple), background 160ms var(--ease-apple), color 160ms var(--ease-apple); }
+.chart-fullscreen-button:hover { border-color: color-mix(in srgb, var(--run-color) 40%, var(--line-strong)); background: rgba(var(--run-rgb), .08); color: var(--run-color); }
+.chart-fullscreen-button:focus-visible { outline: 2px solid var(--run-color); outline-offset: 2px; }
+
+.chart-card { overflow: hidden; padding-bottom: 12px; }
+.chart-card svg { display: block; width: 100%; height: auto; overflow: visible; }
+/* Lucide icons inside tab/action buttons are not charts: keep their intrinsic
+   size instead of the width:100% meant for the chart canvases. */
+.chart-card button svg { display: inline-block; width: auto; height: auto; flex: 0 0 auto; }
+.chart-card:fullscreen { width: 100vw; height: 100vh; display: flex; flex-direction: column; overflow: hidden; border: 0; border-radius: 0; background: var(--bg); padding: clamp(18px, 3vw, 42px); }
+.chart-card:fullscreen::backdrop { background: var(--bg); }
+.chart-card:fullscreen .trail-card-head { flex: 0 0 auto; }
+.chart-card:fullscreen .load-explorer { display: flex; min-height: 0; flex: 1; flex-direction: column; }
+.chart-card:fullscreen .interactive-chart-wrap { min-height: 0; flex: 1; grid-template-columns: minmax(0, 1fr) 280px; }
+.chart-card:fullscreen .interactive-chart-wrap svg { width: 100%; height: 100%; }
+.chart-card:fullscreen .chart-explainer { flex: 0 0 auto; }
+.chart-legend { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 10px; }
+.chart-legend span { display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 11px; white-space: nowrap; }
+.chart-legend i { display: block; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.chart-legend .legend-run i { background: var(--run-color); }
+.chart-legend .legend-ride i { background: var(--ride-color); }
+.chart-legend .legend-strength i { background: var(--strength-color); }
+.chart-legend .legend-heart i { background: var(--heart-color); }
+.chart-legend .legend-target i { width: 10px; height: 2px; border-radius: 0; background: var(--muted); }
+.chart-grid-line { stroke: var(--line-soft); stroke-width: 1; }
+.chart-axis-label, .chart-week-label { fill: var(--muted-2); font-family: inherit; font-size: 11px; }
+.chart-week-label { font-size: 11px; font-weight: 580; }
+.chart-strength { fill: var(--strength-color); }
+.chart-ride { fill: var(--ride-color); }
+.chart-run { fill: var(--run-color); }
+.chart-target-path { fill: none; stroke: var(--muted-2); stroke-width: 1.4; stroke-dasharray: 3 4; stroke-linecap: round; opacity: .75; pointer-events: none; }
+/* Objective corridor (±10% around the plan target), tinted per discipline. */
+.chart-target-band { fill: color-mix(in srgb, var(--view-color, var(--run-color)) 13%, transparent); pointer-events: none; }
+.chart-grid-dotted { stroke: var(--line-soft); stroke-width: 1; stroke-dasharray: 2 5; }
+.chart-baseline { stroke: var(--line-strong); stroke-width: 1; }
+.chart-current-column { fill: color-mix(in srgb, var(--view-color, var(--run-color)) 4.5%, transparent); pointer-events: none; }
+.chart-phase-line { stroke: var(--line-soft); stroke-width: 1; stroke-dasharray: 2 5; }
+.chart-phase-label { fill: var(--muted-2); font-family: inherit; font-size: 7.5px; font-weight: 660; letter-spacing: .09em; text-transform: uppercase; }
+.chart-gate-marker { fill: var(--recovery-color); opacity: .9; }
+.chart-tick-mark { stroke: var(--muted-2); stroke-width: 1; }
+.chart-axis-unit { fill: var(--muted-2); font-family: inherit; font-size: 10px; font-weight: 660; letter-spacing: .07em; text-transform: uppercase; }
+.chart-tooltip-gate { display: flex; align-items: flex-start; gap: 4px; margin: 10px 0 0; border-top: 1px solid var(--line-soft); color: var(--recovery-color); font-size: 11px; font-weight: 580; line-height: 1.45; padding-top: 9px; }
+.is-current-week .chart-week-label { fill: var(--ink); }
+.chart-current-dot { fill: var(--run-color); }
+.chart-pace-line { fill: none; stroke: var(--run-color); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.chart-ride-line { fill: none; stroke: var(--ride-color); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.chart-hr-line { fill: none; stroke: var(--heart-color); stroke-width: 1.5; stroke-dasharray: 4 4; stroke-linecap: round; stroke-linejoin: round; opacity: .85; }
+.chart-pace-dot { fill: var(--sport-card-raised); stroke: var(--run-color); stroke-width: 2.5; }
+.chart-hr-dot { fill: var(--heart-color); stroke: var(--sport-card-raised); stroke-width: 1.5; }
+.chart-empty { display: grid; min-height: 220px; place-items: center; color: var(--muted); font-size: 12px; }
+
+.load-explorer { --view-color: var(--run-color); }
+.load-explorer.is-ride { --view-color: var(--ride-color); }
+.load-explorer.is-strength { --view-color: var(--strength-color); }
+.load-tabs { display: inline-flex; gap: 4px; margin-bottom: 16px; border: 1px solid var(--line-soft); border-radius: 12px; background: color-mix(in srgb, var(--tint-ink) 2.5%, transparent); padding: 3px; }
+.load-tabs button { display: inline-flex; min-height: 36px; align-items: center; gap: 6px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); cursor: pointer; font-size: 12px; font-weight: 580; padding: 0 12px; transition: background 160ms var(--ease-apple), color 160ms var(--ease-apple), box-shadow 160ms var(--ease-apple); }
+.load-tabs button:hover { background: rgba(255,255,255,.04); color: var(--ink-soft); }
+.load-tabs button.is-active { background: color-mix(in srgb, var(--view-color) 11%, var(--sport-card-raised)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--view-color) 22%, transparent); color: var(--view-color); }
+.load-view-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin-bottom: 10px; }
+.load-view-metrics > div { min-width: 0; border: 1px solid var(--line-soft); border-radius: 11px; background: color-mix(in srgb, var(--tint-ink) 2.2%, transparent); padding: 9px 10px; }
+.load-view-metrics span { display: block; overflow: hidden; margin-bottom: 3px; color: var(--muted); font-size: 10px; font-weight: 620; letter-spacing: .05em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.load-view-metrics strong { display: block; overflow: hidden; font-size: 14px; letter-spacing: -.02em; text-overflow: ellipsis; white-space: nowrap; }
+/* Chart + docked detail panel side by side: the detail never floats over the
+   marks it describes, and wide screens get their unused width back. */
+.interactive-chart-wrap { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 16px; align-items: start; min-width: 0; }
+.interactive-chart-wrap svg { min-width: 0; }
+/* Measured box the responsive charts draw into (viewBox = its real width). */
+.chart-svg-box { width: 100%; min-width: 0; }
+
+/* --- Mobile volume explorer: selection card + finger-scrubbed band chart --- */
+.volume-select-card { display: grid; gap: 4px; margin-bottom: 12px; border: 1px solid var(--line-soft); border-radius: 14px; background: color-mix(in srgb, var(--tint-ink) 2.2%, transparent); padding: 14px; }
+.volume-select-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.volume-select-value { font-size: 32px; font-weight: 700; letter-spacing: -.02em; line-height: 1.05; color: var(--ink); font-variant-numeric: tabular-nums; }
+.volume-select-dates { flex: 0 0 auto; color: var(--muted); font-size: 11px; font-weight: 620; letter-spacing: .06em; text-transform: uppercase; }
+.volume-select-week { color: var(--muted); font-size: 12px; font-weight: 580; }
+.volume-select-goal { margin: 2px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 1.45; }
+.volume-select-goal strong { color: var(--view-color, var(--run-color)); font-weight: 660; }
+.volume-select-gate { margin: 2px 0 0; color: var(--recovery-color); font-size: 12px; line-height: 1.4; }
+.volume-scrub-svg { touch-action: pan-y; cursor: crosshair; }
+.volume-cursor { stroke: var(--ink-soft); stroke-width: 1.2; opacity: .6; pointer-events: none; }
+.volume-actual-line { fill: none; stroke: var(--view-color, var(--run-color)); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.volume-actual-dot { fill: var(--view-color, var(--run-color)); stroke: var(--sport-card-raised, #101012); stroke-width: 1.6; pointer-events: none; }
+.volume-base-dot { fill: transparent; stroke: var(--view-color, var(--run-color)); stroke-width: 1.8; pointer-events: none; }
+.volume-base-dot.is-selected { fill: var(--view-color, var(--run-color)); }
+.volume-base-dot.is-empty { fill: transparent; stroke: var(--muted-2); }
+.chart-week-label.is-selected { fill: var(--ink); }
+.volume-mobile-explainer { margin-top: 8px; }
+.volume-mobile-metrics { margin-top: 12px; margin-bottom: 0; }
+
+/* --- Training cycles: segmented arc gauge + per-week collapsible rows --- */
+.cycle-card-sub { margin: -6px 0 14px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.cycle-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.cycle-nav-title { font-size: 15px; font-weight: 660; color: var(--ink); }
+.cycle-nav-title small { color: var(--muted); font-weight: 540; font-size: 12px; }
+.cycle-nav button { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid var(--line-soft); border-radius: 999px; background: color-mix(in srgb, var(--tint-ink) 3%, transparent); color: var(--muted); cursor: pointer; transition: border-color 150ms var(--ease-apple), color 150ms var(--ease-apple); }
+.cycle-nav button:hover:not(:disabled) { border-color: var(--cycle-color); color: var(--ink); }
+.cycle-nav button:disabled { opacity: .35; cursor: default; }
+.cycle-hero { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 18px; align-items: center; }
+.cycle-arc { display: block; width: 100%; max-width: 320px; height: auto; margin: 0 auto; }
+.cycle-arc-seg { fill: transparent; stroke: var(--line-strong); stroke-width: 1.4; stroke-linejoin: round; transition: fill 220ms var(--ease-apple); }
+.cycle-arc-seg.is-done { stroke-width: 0; }
+.cycle-arc-seg.is-current { stroke-width: 1.8; }
+.cycle-intro { display: grid; gap: 7px; align-content: center; }
+.cycle-chip { justify-self: start; border: 1px solid color-mix(in srgb, var(--cycle-color) 35%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--cycle-color) 10%, transparent); color: var(--cycle-color); font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; padding: 4px 10px; }
+.cycle-name { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -.02em; }
+.cycle-desc { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.55; }
+.cycle-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 16px 0 14px; border: 1px solid var(--line-soft); border-radius: 13px; background: var(--line-soft); overflow: hidden; }
+.cycle-stats > div { display: grid; gap: 3px; background: color-mix(in srgb, var(--tint-ink) 2.2%, transparent); padding: 12px 14px; }
+.cycle-stats span { color: var(--muted); font-size: 10px; font-weight: 660; letter-spacing: .06em; text-transform: uppercase; }
+.cycle-stats strong { font-size: 22px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.cycle-stats small { color: var(--muted); font-size: 12px; font-weight: 540; letter-spacing: 0; }
+.cycle-weeks { display: grid; gap: 6px; }
+.cycle-week { border: 1px solid var(--line-soft); border-radius: 12px; background: color-mix(in srgb, var(--tint-ink) 1.8%, transparent); overflow: hidden; }
+.cycle-week.is-current { border-color: color-mix(in srgb, var(--cycle-color) 40%, transparent); }
+.cycle-week summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; cursor: pointer; list-style: none; padding: 0 12px; }
+.cycle-week summary::-webkit-details-marker { display: none; }
+.cycle-week-name { font-size: 13.5px; font-weight: 620; color: var(--ink-soft); }
+.cycle-week-name em { margin-left: 8px; color: var(--cycle-color); font-size: 11px; font-style: normal; font-weight: 660; text-transform: uppercase; letter-spacing: .05em; }
+.cycle-week-meta { display: inline-flex; align-items: center; gap: 8px; color: var(--muted-2); }
+.cycle-week-dates { font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.cycle-week-chevron { transition: transform 180ms var(--ease-apple); }
+.cycle-week[open] .cycle-week-chevron { transform: rotate(180deg); }
+.cycle-week-body { display: grid; gap: 8px; border-top: 1px solid var(--line-soft); padding: 12px; }
+.cycle-week-runs { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.cycle-week-runs li { display: flex; align-items: baseline; gap: 9px; color: var(--ink-soft); font-size: 13px; }
+.cycle-week-runs li span { flex: 0 0 auto; width: 22px; color: var(--cycle-color); font-size: 11px; font-weight: 700; }
+.cycle-week-target, .cycle-week-actual { margin: 0; color: var(--muted); font-size: 12.5px; }
+.cycle-week-target strong, .cycle-week-actual strong { color: var(--ink-soft); font-weight: 620; }
+.cycle-week-gate { margin: 0; color: var(--recovery-color); font-size: 12px; }
+
+@media (max-width: 700px) {
+  .cycle-hero { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .cycle-intro { justify-items: start; }
+  .cycle-name { font-size: 26px; }
+}
+
+/* Multisport, actionable details and data-driven fueling. */
+.training-metric { background: color-mix(in srgb, var(--sport-card) 94%, var(--metric-color) 6%); }
+.metric-ride { border-color: color-mix(in srgb, var(--ride-color) 24%, transparent); }
+.metric-strength { border-color: color-mix(in srgb, var(--strength-color) 24%, transparent); }
+
+.session-detail-toggle {
+  display: flex;
+  width: calc(100% - 46px);
+  min-height: 38px;
+  align-items: center;
+  justify-content: space-between;
+  margin: 5px 0 0 46px;
+  border: 1px solid var(--line-soft);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--tint-ink) 2.5%, transparent);
+  color: var(--ink-soft);
+  padding: 0 11px;
+  font-size: 10px;
+  font-weight: 620;
+}
+.session-detail-toggle svg { color: var(--muted); transition: transform 160ms var(--ease-apple); }
+.session-detail-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+.session-detail-toggle + .session-steps { margin-top: 11px; animation: custom-select-in 150ms var(--ease-apple) both; }
+
+.week-day { display: block; }
+.week-day > summary { display: grid; grid-template-columns: 48px minmax(0, 1fr) 18px; align-items: center; gap: 7px; cursor: pointer; list-style: none; }
+.week-day > summary::-webkit-details-marker { display: none; }
+.week-day[open]:not(.is-complete) .week-day-status svg { transform: rotate(90deg); }
+.week-day-details { display: grid; gap: 8px; margin: 9px 0 2px 55px; border-top: 1px solid var(--line-soft); padding-top: 9px; }
+.week-day-details article { display: grid; gap: 3px; }
+.week-day-details strong { color: var(--ink-soft); font-size: 10px; }
+.week-day-details span { color: var(--run-color); font-size: 9px; font-weight: 620; }
+.week-day-details ul { display: grid; gap: 3px; margin: 3px 0 0; color: var(--muted); font-size: 9px; line-height: 1.4; padding-left: 15px; }
+.week-day-details .session-downloads { margin: 4px 0 0 0; }
+.week-day-rest { margin: 8px 0 0 55px; color: var(--muted); font-size: 9px; }
+
+.cycle-session { display: block; border-bottom: 1px solid var(--line-soft); }
+.cycle-session > summary { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto 16px; align-items: center; gap: 8px; cursor: pointer; list-style: none; padding: 10px 0; }
+.cycle-session > summary::-webkit-details-marker { display: none; }
+.cycle-session-chevron { color: var(--muted); transition: transform 150ms var(--ease-apple); }
+.cycle-session[open] .cycle-session-chevron { transform: rotate(180deg); }
+.cycle-session-detail { display: grid; gap: 7px; margin: -2px 0 10px 30px; border-left: 2px solid var(--cycle-color); padding: 7px 0 5px 12px; }
+.cycle-session-detail > strong { color: var(--cycle-color); font-size: 10px; }
+.cycle-session-detail ol { display: grid; gap: 4px; margin: 0; color: var(--muted); font-size: 9px; line-height: 1.45; padding-left: 17px; }
+
+.fueling-card { background: color-mix(in srgb, var(--sport-card) 96%, var(--recovery-color) 4%); }
+.fueling-brief { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.fueling-brief > div { display: flex; min-width: 0; align-items: center; gap: 10px; border: 1px solid var(--line-soft); border-radius: 12px; background: var(--surface-sunken); padding: 11px 12px; }
+.fueling-brief svg { flex: 0 0 auto; color: var(--recovery-color); }
+.fueling-brief span { display: grid; min-width: 0; gap: 3px; color: var(--muted); font-size: 8px; font-weight: 660; letter-spacing: .06em; text-transform: uppercase; }
+.fueling-brief strong { overflow: hidden; color: var(--ink); font-size: 12px; letter-spacing: normal; text-overflow: ellipsis; text-transform: none; white-space: nowrap; }
+.fueling-instruction { display: grid; gap: 5px; margin-top: 10px; border-left: 2px solid var(--recovery-color); padding: 3px 0 3px 12px; }
+.fueling-instruction strong { font-size: 11px; }
+.fueling-instruction p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+.fueling-instruction span { display: flex; align-items: center; gap: 5px; color: var(--muted-2); font-size: 9px; }
+
+.activity-log-data { display: grid; min-width: 0; gap: 5px; }
+.activity-log-data p { overflow: hidden; margin: 0; color: var(--muted); font-size: 9px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+.performance-data-empty { display: grid; place-items: center; gap: 7px; min-height: 150px; border: 1px dashed var(--line-soft); border-radius: 13px; color: var(--muted); padding: 18px; text-align: center; }
+.performance-data-empty strong { color: var(--ink-soft); font-size: 11px; }
+.performance-data-empty p { max-width: 32ch; margin: 0; font-size: 9px; line-height: 1.5; }
+
+@media (max-width: 1180px) {
+  .training-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+  .training-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .session-detail-toggle { width: 100%; margin-left: 0; }
+  .session-detail-toggle + .session-steps { margin-left: 0; }
+  .cycle-session > summary { grid-template-columns: 22px minmax(0, 1fr) 16px; }
+  .cycle-session-facts { grid-column: 2; justify-content: flex-start; }
+  .cycle-session-chevron { grid-column: 3; grid-row: 1; }
+}
+
+/* --- Regularity heatmap: one column per week, one cell per session --- */
+.reg-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.reg-pct { font-size: 30px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.reg-chip { border: 1px solid var(--line-soft); border-radius: 999px; background: color-mix(in srgb, var(--tint-ink) 3%, transparent); color: var(--muted); font-size: 10.5px; font-weight: 660; letter-spacing: .05em; text-transform: uppercase; padding: 4px 10px; }
+.reg-grid { display: grid; gap: 3px; }
+.reg-col { display: flex; flex-direction: column-reverse; gap: 3px; min-width: 0; }
+.reg-cell { display: block; width: 100%; aspect-ratio: 1; border: 1px solid transparent; border-radius: 3.5px; }
+.reg-cell.is-done { background: var(--done-color); }
+.reg-cell.is-missed { background: rgba(255,255,255,.075); }
+.reg-cell.is-pending { border-color: color-mix(in srgb, var(--done-color) 45%, transparent); }
+.reg-cell.is-upcoming { border-color: var(--line-soft); }
+.reg-cell.is-empty { visibility: hidden; }
+.reg-labels { display: grid; gap: 3px; margin-top: 5px; }
+.reg-labels span { min-width: 0; overflow: visible; color: var(--muted-2); font-size: 9.5px; font-weight: 620; text-align: center; }
+.reg-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; }
+.reg-legend span { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; }
+.reg-legend .reg-cell { width: 9px; height: 9px; aspect-ratio: auto; }
+
+/* --- Return-to-today shortcut on the today board --- */
+.today-return { display: inline-flex; align-items: center; gap: 4px; margin-left: 10px; border: 1px solid var(--line-soft); border-radius: 999px; background: color-mix(in srgb, var(--tint-ink) 4%, transparent); color: var(--muted); cursor: pointer; font-size: 11px; font-weight: 620; padding: 3px 9px; transition: color 150ms var(--ease-apple), border-color 150ms var(--ease-apple); }
+.today-return:hover { border-color: var(--line-strong); color: var(--ink); }
+
+/* --- Difficulty bolts (1–5), filled up to the session's level --- */
+.difficulty-bolts { display: inline-flex; align-items: center; gap: 1.5px; color: var(--muted-2); }
+.difficulty-bolts svg { fill: transparent; opacity: .55; }
+.difficulty-bolts svg.is-on { fill: currentColor; color: var(--ink-soft); opacity: 1; }
+.session-difficulty { display: inline-flex; align-items: center; }
+
+/* Planned sessions inside the cycle week accordions */
+.cycle-sessions { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.cycle-session { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line-soft); padding: 8px 0; }
+.cycle-session:last-child { border-bottom: 0; }
+.cycle-session-state { display: grid; flex: 0 0 auto; place-items: center; width: 20px; height: 20px; border-radius: 999px; border: 1px solid var(--line-soft); color: var(--muted-2); }
+.cycle-session.is-done .cycle-session-state, .cycle-session.is-moved .cycle-session-state { border-color: color-mix(in srgb, var(--done-color) 38%, transparent); background: color-mix(in srgb, var(--done-color) 12%, transparent); color: var(--done-color); }
+.cycle-session.is-today .cycle-session-state { border-color: rgba(var(--run-rgb), .5); color: var(--run-color); }
+.cycle-session.is-missed .cycle-session-state { border-color: color-mix(in srgb, var(--recovery-color) 40%, transparent); background: color-mix(in srgb, var(--recovery-color) 10%, transparent); color: var(--recovery-color); }
+.cycle-session.is-cancelled { opacity: .65; }
+.cycle-session.is-cancelled .cycle-session-state { border-color: color-mix(in srgb, var(--recovery-color) 30%, transparent); color: var(--recovery-color); }
+.cycle-session.is-cancelled .cycle-session-main strong { color: var(--muted); text-decoration: line-through; }
+.cycle-session.is-missed .cycle-session-main strong { color: var(--muted); }
+.cycle-session-main { display: grid; flex: 1 1 auto; gap: 1px; min-width: 0; }
+.cycle-session-main strong { overflow: hidden; font-size: 12.5px; font-weight: 620; color: var(--ink-soft); text-overflow: ellipsis; white-space: nowrap; }
+.cycle-session-main span { overflow: hidden; color: var(--muted-2); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.cycle-session.is-moved .cycle-session-main span { color: var(--done-color); }
+.cycle-session-facts { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 10px; }
+.cycle-session-duration, .cycle-session-dplus { color: var(--ink-soft); font-size: 13px; font-weight: 660; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cycle-session-duration small, .cycle-session-dplus small { color: var(--muted); font-size: 10.5px; font-weight: 540; }
+/* Done/planned tally chip on the week summary row */
+.cycle-week-count { display: inline-grid; place-items: center; min-width: 34px; border: 1px solid var(--line-soft); border-radius: 999px; color: var(--muted); font-size: 10.5px; font-weight: 660; font-variant-numeric: tabular-nums; padding: 2px 7px; }
+.cycle-week-count.is-full { border-color: color-mix(in srgb, var(--done-color) 38%, transparent); background: color-mix(in srgb, var(--done-color) 12%, transparent); color: var(--done-color); }
+
+/* --- Weekly zone verdict on the mobile volume card --- */
+.volume-zone { font-size: 13px; font-weight: 660; }
+.volume-zone.is-in { color: var(--run-color); }
+.volume-zone.is-under, .volume-zone.is-over { color: var(--recovery-color); }
+.volume-zone-dot { display: inline-block; width: 9px; height: 9px; margin-right: 9px; border-radius: 999px; vertical-align: 3px; }
+.volume-zone-dot.is-in { background: var(--run-color); }
+.volume-zone-dot.is-under, .volume-zone-dot.is-over { background: var(--recovery-color); }
+.chart-hit-area { fill: transparent; stroke: none; pointer-events: all; cursor: crosshair; outline: 0; -webkit-tap-highlight-color: transparent; }
+/* Focus updates the selected point and its detail panel; outlining the whole
+   hit band looks like a giant blue rectangle on touch browsers. */
+.chart-hit-area:focus,
+.chart-hit-area:focus-visible { outline: 0; stroke: none; }
+.chart-hover-column { fill: color-mix(in srgb, var(--view-color) 7%, transparent); pointer-events: none; }
+.chart-focus-bar { fill: var(--view-color); transition: opacity 140ms var(--ease-apple); }
+.chart-secondary-line { fill: none; stroke: var(--view-color); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: .88; pointer-events: none; }
+.chart-secondary-dot { fill: var(--sport-card-raised); stroke: var(--view-color); stroke-width: 2; pointer-events: none; }
+.chart-crosshair { stroke: var(--line-strong); stroke-width: 1; stroke-dasharray: 3 3; pointer-events: none; }
+.is-chart-active .chart-focus-bar, .is-chart-active .chart-run, .is-chart-active .chart-ride, .is-chart-active .chart-strength { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--view-color) 45%, transparent)); }
+.chart-detail-panel { border: 1px solid var(--line-strong); border-radius: 13px; background: var(--menu-surface-strong); box-shadow: var(--shadow-menu); color: var(--ink); padding: 14px; }
+.chart-detail-hint { margin: 10px 0 0; border-top: 1px solid var(--line-soft); color: var(--muted-2); font-size: 11px; line-height: 1.45; padding-top: 9px; }
+.chart-tooltip-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 10px; border-bottom: 1px solid var(--line-soft); padding-bottom: 9px; }
+.chart-tooltip-head strong { overflow: hidden; font-size: 13px; font-weight: 660; text-overflow: ellipsis; white-space: nowrap; }
+.chart-tooltip-head span { flex: 0 0 auto; color: var(--muted); font-size: 11px; text-transform: capitalize; }
+.chart-tooltip-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px 12px; }
+.chart-tooltip-grid > div { min-width: 0; }
+.chart-tooltip-grid span { display: block; color: var(--muted); font-size: 10px; font-weight: 580; letter-spacing: .04em; text-transform: uppercase; }
+.chart-tooltip-grid strong { display: block; overflow: hidden; margin-top: 2px; font-size: 13px; font-weight: 580; text-overflow: ellipsis; white-space: nowrap; }
+.performance-tooltip { top: 4px; }
+.chart-explainer { display: flex; align-items: center; flex-wrap: wrap; gap: 11px; margin: -4px 5px 6px 42px; color: var(--muted); font-size: 11px; }
+.chart-explainer > span { display: inline-flex; align-items: center; gap: 5px; }
+.chart-explainer i { display: block; width: 7px; height: 7px; border-radius: 2px; background: var(--view-color); }
+.chart-explainer .target-marker { width: 11px; height: 1px; border-radius: 0; background: var(--muted-2); }
+.chart-explainer .band-marker { width: 11px; height: 7px; border-radius: 2.5px; background: color-mix(in srgb, var(--view-color, var(--run-color)) 28%, transparent); }
+.chart-explainer .line-marker { width: 11px; height: 2px; border-radius: 999px; }
+.chart-explainer .gate-marker { width: 6px; height: 6px; border-radius: 1.5px; background: var(--recovery-color); transform: rotate(45deg); }
+.chart-explainer small { margin-left: auto; color: var(--muted-2); font-size: 11px; }
+
+.running-analysis { display: grid; gap: 13px; }
+.run-zone-list { display: grid; gap: 8px; }
+.run-zone-row { display: grid; gap: 8px; border: 1px solid var(--line-soft); border-radius: 12px; background: color-mix(in srgb, var(--tint-ink) 1.8%, transparent); padding: 11px 12px; }
+.run-zone-title { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 9px; }
+.run-zone-title > span { color: var(--muted-2); font-size: 10px; font-weight: 660; font-variant-numeric: tabular-nums; }
+.run-zone-title strong { overflow: hidden; color: var(--ink-soft); font-size: 12px; font-weight: 620; text-overflow: ellipsis; white-space: nowrap; }
+.run-zone-title small { color: var(--muted); font-size: 10px; font-weight: 580; white-space: nowrap; }
+.run-zone-verdict { border: 1px solid var(--line-soft); border-radius: 999px; padding: 3px 8px; }
+.run-zone-verdict.is-good { border-color: color-mix(in srgb, var(--done-color) 34%, transparent); background: color-mix(in srgb, var(--done-color) 10%, transparent); color: var(--done-color); }
+.run-zone-verdict.is-warn { border-color: color-mix(in srgb, var(--recovery-color) 32%, transparent); background: color-mix(in srgb, var(--recovery-color) 8%, transparent); color: var(--recovery-color); }
+.run-zone-stack { display: flex; height: 12px; overflow: hidden; border-radius: 999px; background: color-mix(in srgb, var(--tint-ink) 6%, transparent); }
+.run-zone-stack i { display: block; min-width: 2px; height: 100%; }
+.run-zone-stack .is-z1, .run-zone-legend .is-z1 { background: var(--zone1-color); }
+.run-zone-stack .is-z2, .run-zone-legend .is-z2 { background: var(--ride-color); }
+.run-zone-stack .is-z3, .run-zone-legend .is-z3 { background: var(--zone3-color); }
+.run-zone-stack .is-z4, .run-zone-legend .is-z4 { background: var(--zone4-color); }
+.run-zone-stack .is-z5, .run-zone-legend .is-z5 { background: var(--zone5-color); }
+.run-zone-meta { display: flex; flex-wrap: wrap; gap: 8px 12px; color: var(--muted); font-size: 10.5px; }
+.run-zone-legend { margin: 0; }
+.run-zone-legend i { background: currentColor; }
+
+.feedback-count { border: 1px solid rgba(var(--run-rgb), .2); border-radius: 999px; background: rgba(var(--run-rgb), .07); color: var(--run-color); font-size: 9px; font-weight: 660; padding: 4px 8px; white-space: nowrap; }
+.feedback-count.is-pending { border-color: color-mix(in srgb, var(--recovery-color) 25%, transparent); background: color-mix(in srgb, var(--recovery-color) 8%, transparent); color: var(--recovery-color); }
+.feedback-intro { margin: -6px 0 15px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.feedback-activity-list { display: grid; max-height: 300px; overflow-y: auto; margin: 0 -4px; padding: 0 4px; overscroll-behavior: contain; }
+.feedback-activity { display: flex; width: 100%; align-items: center; gap: 10px; border: 0; border-top: 1px solid var(--line-soft); border-radius: 0; background: transparent; color: var(--ink); cursor: pointer; font: inherit; padding: 10px 0; text-align: left; transition: padding 160ms var(--ease-apple), background 160ms var(--ease-apple); }
+.feedback-activity:first-child { border-top: 0; }
+.feedback-activity:hover { padding-right: 5px; padding-left: 5px; background: color-mix(in srgb, var(--tint-ink) 2.5%, transparent); }
+.feedback-activity .sport-icon { width: 30px; height: 30px; border-radius: 9px; }
+.feedback-activity-copy { display: flex; min-width: 0; flex: 1; flex-direction: column; }
+.feedback-activity-copy strong { overflow: hidden; font-size: 11px; font-weight: 580; text-overflow: ellipsis; white-space: nowrap; }
+.feedback-activity-copy small { color: var(--muted); font-size: 9px; text-transform: capitalize; }
+.feedback-saved, .feedback-add { display: flex; align-items: center; gap: 3px; font-size: 9px; font-weight: 620; white-space: nowrap; }
+.feedback-saved { color: var(--done-color); }
+.feedback-add { color: var(--recovery-color); }
+
+/* iOS Safari resolves vh against the viewport with the toolbar hidden, so a
+   90vh sheet ran its submit button under the floating address bar and it could
+   not be tapped. dvh follows the visible viewport; the vh line stays as the
+   fallback for browsers without dvh, and the inset keeps clear of the home bar. */
+.feedback-overlay { position: fixed; inset: 0; z-index: 100; height: 100vh; height: 100dvh; display: grid; place-items: center; background: rgba(0,0,0,.7); backdrop-filter: blur(12px); padding: 18px 18px calc(18px + env(safe-area-inset-bottom, 0px)); }
+/* Header and save button are fixed bands; only .feedback-sheet-body scrolls.
+   A sticky submit inside the scroller was ignored by WebKit and ended up ~280px
+   below the viewport, which is why saving a rating was impossible on iOS. */
+.feedback-sheet { display: flex; width: min(540px, 100%); max-height: 90vh; max-height: 85dvh; flex-direction: column; overflow: hidden; border: 1px solid var(--line-strong); border-radius: 22px; background: var(--sport-card-raised); box-shadow: inset 0 1px rgba(255,255,255,.1), 0 40px 120px rgba(0,0,0,.7); padding: 24px; }
+/* overflow-x must be stated: a lone overflow-y turns the other axis into `auto`,
+   which let the whole form be dragged sideways on a phone. */
+.feedback-sheet-body { flex: 1 1 auto; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.feedback-sheet .trail-primary-action { flex: 0 0 auto; margin-top: 14px; }
+.feedback-sheet-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+.feedback-sheet-head h2 { margin: 3px 0 0; font-size: 20px; }
+.feedback-close { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; background: color-mix(in srgb, var(--tint-ink) 4%, transparent); color: var(--muted); cursor: pointer; }
+.feedback-fieldset { margin: 0 0 20px; border: 0; padding: 0; }
+.feedback-fieldset legend, .feedback-note > span { margin-bottom: 8px; color: var(--ink-soft); font-size: 11px; font-weight: 620; }
+.feeling-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+.feeling-options button { min-height: 37px; border: 1px solid var(--line-strong); border-radius: 10px; background: color-mix(in srgb, var(--tint-ink) 3.5%, transparent); color: var(--muted); cursor: pointer; font-size: 10px; font-weight: 580; }
+.feeling-options button.is-selected { border-color: rgba(var(--run-rgb), .45); background: rgba(var(--run-rgb), .1); color: var(--run-color); box-shadow: inset 0 0 0 1px rgba(var(--run-rgb), .08); }
+.feedback-scales { display: grid; gap: 18px; margin-bottom: 18px; }
+.feedback-scales label > span { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 11px; }
+.feedback-scales label > span b { font-weight: 620; }
+.feedback-scales label > span strong { color: var(--run-color); font-size: 16px; }
+.feedback-scales label > span strong.is-alert { color: var(--heart-color); }
+/* The control was 4px tall, so a finger missed it, and without touch-action the
+   drag was claimed by page scrolling: the slider looked broken on a phone. The
+   box is now thumb-sized while the painted track keeps its thin look. */
+.feedback-scales input { width: 100%; height: 44px; accent-color: var(--run-color); cursor: pointer; touch-action: none; background: transparent; }
+.feedback-scales input.pain-range { accent-color: var(--heart-color); }
+.feedback-scales label > small { display: flex; justify-content: space-between; margin-top: 5px; color: var(--muted-2); font-size: 8px; }
+.feedback-warning { border: 1px solid color-mix(in srgb, var(--heart-color) 25%, transparent); border-radius: 9px; background: color-mix(in srgb, var(--heart-color) 8%, transparent); color: var(--heart-color); font-size: 10px; padding: 9px 11px; }
+.feedback-note { display: grid; margin-bottom: 16px; }
+.feedback-note > span { display: flex; align-items: center; gap: 5px; }
+.feedback-note > span small { color: var(--muted); font-weight: 450; }
+.feedback-note textarea { min-height: 90px; resize: vertical; }
+.feedback-error { color: var(--red); font-size: 10px; }
+.trail-primary-action { display: inline-flex; min-height: 39px; align-items: center; justify-content: center; gap: 7px; border: 1px solid transparent; border-radius: 11px; cursor: pointer; font-size: 11px; font-weight: 620; text-decoration: none; }
+.trail-primary-action { width: 100%; background: var(--run-color); color: #10150a; }
+[data-theme="light"] .trail-primary-action { color: #fff; }
+.trail-primary-action:disabled { cursor: wait; opacity: .65; }
+.is-spinning { animation: trail-spin 800ms linear infinite; }
+@keyframes trail-spin { to { transform: rotate(360deg); } }
+
+.health-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+.health-chip { border: 1px solid var(--line-soft); border-radius: 13px; background: color-mix(in srgb, var(--tint-ink) 2.2%, transparent); color: inherit; padding: 10px 12px; text-align: left; cursor: pointer; }
+[data-theme="light"] .health-chip { background: rgba(0,0,0,.02); }
+.health-chip[aria-pressed="true"] { border-color: color-mix(in srgb, var(--metric-color) 55%, var(--line)); background: color-mix(in srgb, var(--metric-color) 10%, transparent); }
+.health-chip:focus-visible { outline: 2px solid var(--metric-color); outline-offset: 2px; }
+.health-chip > small { display: block; color: var(--muted); font-size: 9px; font-weight: 660; letter-spacing: .07em; text-transform: uppercase; }
+.health-chip > strong { display: block; margin-top: 5px; color: var(--metric-color); font-size: 17px; font-weight: 620; }
+.health-chip > strong span { color: var(--muted); font-size: 10px; font-weight: 580; }
+.health-chip > em { display: block; margin-top: 3px; color: var(--muted-2); font-size: 9px; font-style: normal; }
+
+.health-trend-plot { height: 190px; }
+.health-trend-reading { margin: 12px 0 0; border-top: 1px solid var(--line-soft); color: var(--muted); font-size: 10px; line-height: 1.5; padding-top: 11px; }
+
+.performance-status-card { overflow: hidden; background: radial-gradient(90% 80% at 100% 0%, rgba(var(--run-rgb), .1), transparent 65%), var(--sport-card); }
+.performance-summary-strip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; margin-bottom: 12px; border: 1px solid var(--line-soft); border-radius: 12px; background: color-mix(in srgb, var(--tint-ink) 2.5%, transparent); padding: 4px; }
+.performance-summary-strip span { display: inline-flex; min-width: 0; min-height: 32px; align-items: center; justify-content: center; gap: 6px; border-radius: 9px; color: var(--muted); font-size: 9px; font-weight: 660; text-align: center; }
+.performance-summary-strip span:first-child { background: rgba(var(--run-rgb), .09); color: var(--run-color); box-shadow: inset 0 0 0 1px rgba(var(--run-rgb), .16); }
+.performance-panel-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.performance-data-empty { grid-column: 1 / -1; }
+.performance-panel { display: grid; gap: 10px; border: 1px solid var(--line-soft); border-radius: 13px; background: color-mix(in srgb, var(--tint-ink) 2.4%, transparent); padding: 12px; }
+.performance-panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.performance-panel-head span { color: var(--muted); font-size: 9px; font-weight: 660; letter-spacing: .06em; text-transform: uppercase; }
+.performance-panel-head strong { overflow: hidden; color: var(--ink); font-size: 22px; font-weight: 700; letter-spacing: -.02em; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+.performance-sparkline { display: block; width: 100%; height: 58px; overflow: visible; }
+.performance-sparkline path { fill: none; stroke: var(--run-color); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.performance-sparkline circle { fill: var(--run-color); stroke: var(--sport-card-raised); stroke-width: 2; }
+.performance-empty { display: grid; min-height: 58px; place-items: center; color: var(--muted-2); font-size: 10px; text-align: center; }
+.performance-status-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+.performance-status-list div { min-width: 0; border: 1px solid var(--line-soft); border-radius: 10px; background: rgba(0,0,0,.12); padding: 8px; }
+[data-theme="light"] .performance-status-list div { background: rgba(255,255,255,.38); }
+.performance-status-list span { display: block; overflow: hidden; color: var(--muted); font-size: 8px; font-weight: 660; letter-spacing: .05em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.performance-status-list strong { display: block; overflow: hidden; margin-top: 2px; color: var(--ink-soft); font-size: 12px; font-weight: 660; text-overflow: ellipsis; white-space: nowrap; }
+.performance-panel p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
+.performance-footnote { display: block; margin-top: 10px; color: var(--muted-2); font-size: 8px; line-height: 1.4; text-align: center; }
+
+.week-phase { max-width: 120px; color: var(--muted); font-size: 9px; text-align: right; }
+.week-schedule { display: grid; }
+.week-day { display: grid; grid-template-columns: 48px minmax(0, 1fr) 18px; align-items: center; gap: 7px; border-top: 1px solid var(--line-soft); padding: 9px 0; }
+.week-day:first-child { border-top: 0; }
+.week-day.is-today { margin: 0 -8px; border: 1px solid rgba(var(--run-rgb), .18); border-radius: 10px; background: rgba(var(--run-rgb), .055); padding: 9px 8px; }
+.week-day-name { display: flex; flex-direction: column; font-size: 10px; font-weight: 660; }
+.week-day-name small { min-height: 10px; color: var(--run-color); font-size: 7px; font-weight: 540; }
+.week-day-sessions { display: flex; min-width: 0; flex-wrap: wrap; gap: 4px; }
+.week-session { display: inline-flex; max-width: 100%; align-items: center; gap: 4px; border: 1px solid var(--line-soft); border-radius: 999px; color: var(--muted); font-size: 8px; overflow: hidden; padding: 3px 6px; text-overflow: ellipsis; white-space: nowrap; }
+.week-session.sport-run { color: var(--run-color); }
+.week-session.sport-ride { color: var(--ride-color); }
+.week-session.sport-strength { color: var(--strength-color); }
+.week-session.sport-recovery { color: var(--recovery-color); }
+.week-session.is-cancelled { color: var(--muted); text-decoration: line-through; opacity: .7; }
+.week-day-status { display: grid; place-items: center; color: var(--muted-2); font-size: 10px; }
+.week-day.is-complete .week-day-status { color: var(--done-color); }
+
+.coach-summary { margin: 0 0 14px; color: var(--ink-soft); font-size: 13px; line-height: 1.55; }
+.coaching-card ul { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.coaching-card li { display: grid; grid-template-columns: 6px minmax(0, 1fr); gap: 9px; align-items: start; }
+.coaching-card li > span { width: 5px; height: 5px; margin-top: 6px; border-radius: 50%; background: var(--run-color); box-shadow: 0 0 8px rgba(var(--run-rgb), .5); }
+.coaching-card li p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+.coach-evidence { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
+.coach-evidence summary { cursor: pointer; color: var(--muted); font-size: 11px; font-weight: 580; }
+.coach-evidence ul { margin-top: 10px; gap: 8px; }
+.coach-evidence li { display: list-item; margin-left: 16px; color: var(--muted); font-size: 11px; line-height: 1.45; list-style: disc; }
+.coach-next { display: grid; gap: 4px; margin-top: 14px; border-radius: 12px; background: rgba(var(--accent-rgb), .08); padding: 12px; }
+.coach-next span { color: var(--muted); font-size: 9px; font-weight: 660; letter-spacing: .09em; text-transform: uppercase; }
+.coach-next strong { color: var(--ink-soft); font-size: 12px; line-height: 1.45; }
+.coach-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
+.coach-actions .button { min-height: 34px; padding: 7px 11px; font-size: 11px; }
+.coach-actions small { color: var(--muted); font-size: 9px; text-align: right; }
+.coach-error { margin: 8px 0 0; color: var(--danger, var(--tone-negative)); font-size: 11px; line-height: 1.4; }
+.coaching-rule { display: flex; align-items: flex-start; gap: 9px; margin-top: 16px; border: 1px solid color-mix(in srgb, var(--recovery-color) 18%, transparent); border-radius: 11px; background: color-mix(in srgb, var(--recovery-color) 6%, transparent); color: var(--recovery-color); padding: 10px; }
+.coaching-rule p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
+.coaching-rule strong { display: block; color: var(--ink-soft); font-size: 11px; }
+
+.coach-lastrun { display: grid; gap: 8px; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--line-soft); }
+.coach-lastrun-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 7px; }
+.coach-lastrun-head > span { color: var(--muted); font-size: 9px; font-weight: 660; letter-spacing: .07em; text-transform: uppercase; }
+.coach-lastrun-head > strong { overflow: hidden; color: var(--ink-soft); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.coach-lastrun-head > small { margin-left: auto; color: var(--muted); font-size: 10px; }
+.coach-lastrun-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.coach-lastrun-metrics > div { min-width: 0; border: 1px solid var(--line-soft); border-radius: 10px; background: rgba(0,0,0,.12); padding: 7px 8px; }
+[data-theme="light"] .coach-lastrun-metrics > div { background: rgba(255,255,255,.38); }
+.coach-lastrun-metrics span { display: block; overflow: hidden; color: var(--muted); font-size: 8px; font-weight: 660; letter-spacing: .05em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.coach-lastrun-metrics strong { display: block; overflow: hidden; margin-top: 2px; color: var(--ink-soft); font-size: 12px; font-weight: 660; text-overflow: ellipsis; white-space: nowrap; }
+.coach-stale-badge { display: inline-flex; align-items: center; margin-left: 8px; border: 1px solid color-mix(in srgb, var(--recovery-color) 30%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--recovery-color) 8%, transparent); color: var(--recovery-color); font-size: 9px; font-weight: 620; padding: 2px 8px; vertical-align: middle; animation: coach-stale-pulse 1.4s ease-in-out infinite; }
+@keyframes coach-stale-pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+
+.activity-log-card { overflow: hidden; }
+.activity-log { display: grid; }
+.activity-log-row { display: grid; grid-template-columns: 34px minmax(130px, 1.1fr) minmax(250px, 1.6fr) auto; align-items: center; gap: 11px; border-top: 1px solid var(--line-soft); padding: 11px 0; }
+.activity-log-row:first-child { border-top: 0; }
+.activity-log-row .sport-icon { width: 30px; height: 30px; border-radius: 9px; }
+.activity-log-name { display: flex; min-width: 0; flex-direction: column; }
+.activity-log-name strong { overflow: hidden; font-size: 10px; font-weight: 580; text-overflow: ellipsis; white-space: nowrap; }
+.activity-log-name small { color: var(--muted); font-size: 8px; text-transform: capitalize; }
+.activity-log-metrics { display: flex; flex-wrap: wrap; gap: 5px; }
+.activity-log-metrics span { border: 1px solid var(--line-soft); border-radius: 999px; color: var(--muted); font-size: 8px; padding: 3px 6px; }
+.activity-feedback-status { border: 1px solid color-mix(in srgb, var(--recovery-color) 20%, transparent); border-radius: 999px; color: var(--recovery-color); font-size: 8px; font-weight: 620; padding: 4px 7px; white-space: nowrap; }
+.activity-feedback-status.is-done { border-color: color-mix(in srgb, var(--done-color) 26%, transparent); color: var(--done-color); }
+.activity-log-row.is-clickable { width: 100%; border-left: 0; border-right: 0; border-bottom: 0; border-radius: 0; background: transparent; color: var(--ink); cursor: pointer; font: inherit; text-align: left; transition: background 160ms var(--ease-apple); }
+.activity-log-row.is-clickable:hover { background: rgba(255,255,255,.025); }
+.journal-head-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.garmin-resync { display: grid; width: 30px; height: 30px; flex: 0 0 auto; place-items: center; border: 1px solid var(--line-soft); border-radius: 999px; background: color-mix(in srgb, var(--tint-ink) 3%, transparent); color: currentColor; cursor: pointer; padding: 0; transition: background 160ms var(--ease-apple), border-color 160ms var(--ease-apple); }
+.garmin-resync:hover:not(:disabled) { border-color: var(--line-strong); background: color-mix(in srgb, var(--tint-ink) 8%, transparent); }
+.garmin-resync:disabled { cursor: progress; opacity: .6; }
+.garmin-resync.is-error { color: var(--heart-color); }
+.journal-sync-error { margin-top: 8px; }
+
+.objective-setup-form {
+  display: grid;
+  width: min(900px, 100%);
+  gap: 14px;
+  margin: 4px auto 40px;
+}
+.objective-setup-intro,
+.objective-setup-step {
+  border: 1px solid var(--glass-border);
+  background: var(--sport-card);
+  box-shadow: inset 0 1px rgba(255,255,255,.07), var(--shadow-panel);
+}
+.objective-setup-intro {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-radius: 20px;
+  padding: 18px 20px;
+}
+.objective-setup-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(var(--run-rgb), .22);
+  border-radius: 13px;
+  background: rgba(var(--run-rgb), .09);
+  color: var(--run-color);
+}
+.objective-setup-intro h2,
+.objective-setup-step h3 { margin: 0; color: var(--ink); letter-spacing: -.02em; }
+.objective-setup-intro h2 { font-size: 18px; }
+.objective-setup-intro p,
+.objective-setup-step-heading p { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.objective-setup-step {
+  display: grid;
+  gap: 18px;
+  border-radius: 22px;
+  padding: clamp(18px, 3vw, 26px);
+}
+.objective-setup-step-heading { display: flex; align-items: flex-start; gap: 12px; }
+.objective-setup-step-heading > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(var(--run-rgb), .23);
+  border-radius: 9px;
+  background: rgba(var(--run-rgb), .08);
+  color: var(--run-color);
+  font-size: 11px;
+  font-weight: 700;
+}
+.objective-setup-step h3 { font-size: 15px; }
+.objective-sport-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.objective-sport-card {
+  display: grid;
+  min-height: 112px;
+  justify-items: start;
+  align-content: start;
+  gap: 7px;
+  border: 1px solid var(--line-soft);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--tint-ink) 2.5%, transparent);
+  color: var(--muted);
+  cursor: pointer;
+  padding: 15px;
+  text-align: left;
+  transition: border-color 150ms var(--ease-apple), background 150ms var(--ease-apple), transform 150ms var(--ease-apple);
+}
+[data-theme="light"] .objective-sport-card { background: rgba(0,0,0,.018); }
+/* Consolidated: the later rule below owns :hover for this card. */
+.objective-sport-card.is-selected { border-color: rgba(var(--run-rgb), .38); background: rgba(var(--run-rgb), .08); color: var(--run-color); box-shadow: inset 0 0 0 1px rgba(var(--run-rgb), .07); }
+.objective-sport-card > span { display: grid; place-items: center; }
+.objective-sport-card strong { color: var(--ink); font-size: 13px; }
+.objective-sport-card small { color: var(--muted); font-size: 10px; font-weight: 500; line-height: 1.4; }
+.objective-sport-card:focus-visible,
+.objective-setup-submit:focus-visible { outline: 2px solid var(--run-color); outline-offset: 3px; }
+.objective-setup-field { display: grid; gap: 7px; color: var(--muted); font-size: 11px; font-weight: 580; }
+.objective-setup-field > span { color: var(--ink-soft); }
+.objective-setup-field > small { color: var(--muted-2); font-size: 9px; font-weight: 500; }
+.objective-setup-field :is(input, textarea) { min-height: 46px; }
+.objective-setup-field textarea { min-height: 88px; resize: vertical; }
+.objective-event-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  align-items: center;
+  gap: 10px 18px;
+  border: 1px solid rgba(var(--run-rgb), .18);
+  border-radius: 15px;
+  background: rgba(var(--run-rgb), .055);
+  padding: 14px 16px;
+}
+.objective-event-summary div { display: flex; min-width: 0; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; }
+.objective-event-summary svg { flex: 0 0 auto; color: var(--run-color); }
+.objective-event-summary strong { color: var(--ink); font-size: 12px; white-space: nowrap; }
+.objective-event-summary a { grid-column: 1 / -1; width: fit-content; color: var(--run-color); font-size: 10px; font-weight: 580; text-decoration: none; }
+.objective-event-summary a:hover { text-decoration: underline; }
+.objective-custom-event,
+.objective-metric-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.objective-setup-field-wide { grid-column: 1 / -1; }
+.objective-plan-row { display: grid; grid-template-columns: minmax(170px, .45fr) minmax(0, 1fr); gap: 12px; }
+.objective-start-date {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  gap: 11px;
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--tint-ink) 2.5%, transparent);
+  color: var(--run-color);
+  padding: 12px 14px;
+}
+.objective-start-date > div { display: grid; gap: 2px; }
+.objective-start-date small { color: var(--muted); font-size: 9px; font-weight: 660; letter-spacing: .06em; text-transform: uppercase; }
+.objective-start-date strong { color: var(--ink); font-size: 13px; }
+.objective-start-date span { color: var(--muted-2); font-size: 9px; }
+.objective-setup-error { border: 1px solid color-mix(in srgb, var(--red) 30%, transparent); border-radius: 12px; background: color-mix(in srgb, var(--red) 8%, transparent); color: var(--red); padding: 11px 13px; }
+.objective-setup-submit { min-height: 48px; justify-self: end; gap: 8px; padding: 0 20px; }
+
+@media (max-width: 1180px) {
+  .training-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* The row is a <button>, and WebKit does not honour explicit grid placement
+     for a button's children: the status badge landed on top of the activity
+     name. Flex survives the button box in every engine, so the row wraps the
+     coach comment onto its own full-width line instead. */
+  .activity-log-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 11px; }
+  .activity-log-metrics { display: none; }
+  .activity-log-row .sport-icon { flex: 0 0 auto; }
+  .activity-log-name { flex: 1 1 0; min-width: 0; }
+  .activity-feedback-status { flex: 0 0 auto; }
+  .activity-log-data { flex: 1 0 100%; }
+  .activity-log-data p { overflow: visible; white-space: normal; }
+}
+
+@media (max-width: 980px) {
+  /* Detail panel flows under the chart when there is no side room. */
+  .interactive-chart-wrap { grid-template-columns: minmax(0, 1fr); }
+  .trail-page-header { align-items: flex-start; flex-direction: column; }
+  .trail-race-summary { width: 100%; }
+  .race-details { flex: 1; }
+  .analysis-layout { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 700px) {
+  .performance-panel-grid { grid-template-columns: minmax(0, 1fr); }
+  .health-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .trail-page-header { gap: 20px; }
+  .trail-title-block h1 { font-size: 35px; }
+  .trail-race-summary { display: grid; grid-template-columns: 100px minmax(0, 1fr); }
+  .sync-indicator { grid-column: 1 / -1; min-height: 35px; border-top: 1px solid var(--line-soft); border-left: 0; }
+  .today-board { padding: 19px; }
+  .today-board-head { align-items: flex-start; flex-direction: column; }
+  .today-board-head h2 { font-size: 26px; }
+  .today-nav { width: 100%; justify-items: stretch; }
+  .today-week-nav { justify-content: space-between; }
+  .today-title-row { width: 100%; flex-wrap: wrap; }
+  .today-week-badge span { display: none; }
+  .today-session-grid { grid-template-columns: minmax(0, 1fr); }
+  .session-status { font-size: 0; padding: 6px; }
+  .session-fit-download { min-height: 44px; padding-inline: 11px; }
+  .session-prescription, .session-steps, .session-adjustment, .session-result { margin-left: 0; }
+  .training-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .coach-lastrun-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Fit the chart inside the card instead of forcing a 590px min-width with a
+     horizontal swipe: the swipe pattern read as a broken, giant chart on
+     phones. The chart itself redraws at the card width (TrainingCharts.tsx). */
+  .chart-card { overflow-x: hidden; }
+  .chart-card svg { min-width: 0; }
+  .trail-card { border-radius: 16px; padding: 15px; }
+  .chart-legend { justify-content: flex-start; }
+  .load-tabs { display: flex; width: 100%; flex-wrap: wrap; margin-bottom: 12px; }
+  .load-tabs button { flex: 1 1 auto; justify-content: center; min-height: 44px; padding: 0 9px; }
+  .load-view-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .load-view-metrics strong { font-size: 15px; }
+  .interactive-chart-wrap { gap: 10px; }
+  .chart-detail-panel { border-radius: 11px; padding: 12px; }
+  .chart-detail-hint { display: none; }
+  .chart-explainer { margin-left: 0; row-gap: 6px; }
+  .chart-explainer small { width: 100%; margin-left: 0; }
+  .run-zone-title { grid-template-columns: 42px minmax(0, 1fr); }
+  .run-zone-title small { grid-column: 2; justify-self: start; }
+  .activity-log-row { grid-template-columns: 34px minmax(0, 1fr); }
+  .activity-feedback-status { grid-column: 2; justify-self: start; }
+  .feeling-options { grid-template-columns: repeat(2, 1fr); }
+  .objective-setup-intro { align-items: flex-start; border-radius: 16px; padding: 16px; }
+  .objective-setup-step { gap: 16px; border-radius: 17px; padding: 17px; }
+  .objective-sport-grid { grid-template-columns: minmax(0, 1fr); }
+  .objective-sport-card { min-height: 88px; grid-template-columns: 28px minmax(0, 1fr); align-items: center; align-content: center; }
+  .objective-sport-card > span { grid-row: 1 / 3; }
+  .objective-sport-card small { grid-column: 2; }
+  .objective-custom-event,
+  .objective-metric-grid,
+  .objective-plan-row,
+  .objective-event-summary { grid-template-columns: minmax(0, 1fr); }
+  .objective-setup-field-wide { grid-column: auto; }
+  .objective-event-summary strong,
+  .objective-event-summary a { grid-column: auto; white-space: normal; }
+  .objective-setup-submit { width: 100%; justify-self: stretch; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-spinning, .coach-stale-badge { animation: none; }
+}
+
+
+.objective-sport-card:nth-child(1) { --choice-rgb: var(--run-rgb); --choice-color: var(--run-color); }
+.objective-sport-card:nth-child(2) { --choice-rgb: var(--recovery-rgb); --choice-color: var(--recovery-color); }
+.objective-sport-card > span {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: rgba(var(--choice-rgb), .13);
+  color: var(--choice-color);
+}
+.objective-sport-card:hover { border-color: rgba(var(--choice-rgb), .42); background: rgba(var(--choice-rgb), .07); transform: translateY(-2px); }
+.objective-sport-card.is-selected {
+  border-color: rgba(var(--choice-rgb), .68);
+  border-radius: 15px;
+  background: linear-gradient(145deg, rgba(var(--choice-rgb), .22), rgba(var(--choice-rgb), .065));
+  color: var(--choice-color);
+  box-shadow: inset 0 0 0 1px rgba(var(--choice-rgb), .13), 0 18px 36px -28px rgba(var(--choice-rgb), .95);
+}
+.objective-generation-progress {
+  display: grid;
+  gap: 13px;
+  overflow: hidden;
+  padding: 17px;
+  border: 1px solid rgba(var(--run-rgb), .34);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 6% 0%, rgba(var(--run-rgb), .22), transparent 45%),
+    radial-gradient(circle at 95% 10%, color-mix(in srgb, var(--recovery-color) 14%, transparent), transparent 42%),
+    var(--sport-card);
+  box-shadow: inset 0 1px rgba(255,255,255,.08), var(--shadow-panel);
+  animation: objective-progress-in 240ms var(--ease-apple) both;
+}
+.objective-generation-head { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 11px; }
+.objective-generation-head > div { display: grid; gap: 3px; }
+.objective-generation-head strong { color: var(--ink); font-size: 13px; }
+.objective-generation-head small { color: var(--muted); font-size: 10px; line-height: 1.4; }
+.objective-generation-head > span:last-child { color: var(--run-color); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.objective-generation-orbit {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 13px;
+  background: linear-gradient(145deg, rgba(var(--run-rgb), .34), color-mix(in srgb, var(--recovery-color) 18%, transparent));
+  color: white;
+  animation: objective-orbit 1.8s ease-in-out infinite;
+}
+.objective-generation-track { height: 7px; overflow: hidden; border-radius: 999px; background: rgba(var(--run-rgb), .1); }
+.objective-generation-track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--run-color), var(--recovery-color)); transition: width 700ms var(--ease-apple); }
+.objective-generation-progress ol { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.objective-generation-progress li { display: grid; grid-template-columns: 24px minmax(0, 1fr); align-items: center; gap: 8px; color: var(--muted-2); font-size: 10px; }
+.objective-generation-progress li::first-line { font-weight: 700; }
+.objective-generation-progress li > span { line-height: 1.35; }
+.objective-generation-progress li.is-active { color: var(--ink); }
+.objective-generation-progress li.is-done { color: var(--done-color); }
+@keyframes objective-progress-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes objective-orbit { 0%, 100% { transform: scale(.96) rotate(-4deg); } 50% { transform: scale(1.06) rotate(4deg); } }
+
+@media (max-width: 700px) {
+  .objective-generation-head { grid-template-columns: 40px minmax(0, 1fr); }
+  .objective-generation-head > span:last-child { grid-column: 2; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .objective-generation-progress,
+  .objective-generation-orbit { animation: none; }
+}
+
+/* These detail rows must win over the legacy compact cycle layout below. */
+.cycle-session { display: block; padding: 0; }
+.cycle-session > summary {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto 16px;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+  padding: 10px 0;
+}
+.cycle-session > summary::-webkit-details-marker { display: none; }
+.cycle-session-detail { display: grid; gap: 7px; margin: -2px 0 10px 30px; border-left: 2px solid var(--cycle-color); padding: 7px 0 5px 12px; }
+@media (max-width: 700px) {
+  .cycle-session > summary { grid-template-columns: 22px minmax(0, 1fr) 16px; }
+  .cycle-session-facts { grid-column: 2; justify-content: flex-start; }
+  .cycle-session-chevron { grid-column: 3; grid-row: 1; }
+}
+
+/* The "Opaque" surface setting has to reach the sport palette as well. Its own
+   theme blocks above are attribute+class, so they outrank the shared tokens and
+   kept the training cards and the rating sheet translucent while every other
+   surface turned solid. Must stay after those blocks to win on order. */
+[data-surfaces="opaque"] .training-dashboard,
+[data-surfaces="opaque"] .trail-page-header,
+[data-surfaces="opaque"] .objective-setup-form,
+[data-surfaces="opaque"] .feedback-overlay {
+  --sport-card: var(--card-surface);
+  --sport-card-raised: var(--menu-surface-strong);
+}
+.training-metrics-modern { --metric-columns: 3 !important; }
+.training-dashboard .ui-progress-ring::before { background: var(--sport-card); }
+.today-board,
+.trail-card,
+.trail-race-summary { border-color: var(--card-border); background: var(--card-surface); box-shadow: var(--card-inner), var(--card-elev); backdrop-filter: var(--card-blur); -webkit-backdrop-filter: var(--card-blur); }
+.today-day-nav { background: var(--surface-sunken); }
+.training-metric { background: var(--sport-card); }
+.metric-cyan { --metric-color: var(--ink); }
+.metric-consistency { --metric-color: var(--run-color); }
+.cycle-chip,
+.week-phase { color: var(--ink-soft); }
+.objective-generation-progress { border-color: var(--line); background: var(--sport-card); }
+.objective-generation-orbit { background: #17181b; }
+.objective-generation-track span { background: var(--run-color); }
+@media (max-width: 900px) {
+  .training-metrics-modern { --metric-columns: 2 !important; }
+}
+@media (max-width: 640px) {
+  .training-metrics-modern { --metric-columns: 1 !important; }
+}
+
+/* A later legacy rule set details to grid and collapsed its summary into the
+   first 48 px column. Details must remain a normal block; its summary owns the
+   internal grid. */
+.training-dashboard .week-day { display: block; }
+.training-dashboard .week-day > summary { width: 100%; }
+
+.performance-status-card { background: var(--sport-card); }
+.performance-panel,
+.load-view-metrics > div,
+.volume-select-card,
+.cycle-stats > div,
+.cycle-week { background: var(--surface-sunken); }
+
+.chart-detail-panel { background: var(--menu-surface-strong); box-shadow: 0 16px 42px -34px rgba(0,0,0,.5); animation: trail-detail-in 160ms var(--ease-apple) both; }
+.chart-focus-bar,
+.chart-run,
+.chart-ride,
+.chart-strength,
+.chart-pace-dot,
+.chart-hr-dot,
+.cycle-arc-seg { transition: opacity 180ms var(--ease-apple), filter 180ms var(--ease-apple), stroke-width 180ms var(--ease-apple); }
+.chart-card :is(.chart-focus-bar, .chart-run, .chart-ride, .chart-strength, .chart-pace-line, .chart-ride-line, .chart-hr-line) { animation: trail-chart-reveal 420ms var(--ease-apple) both; }
+.is-chart-active .chart-focus-bar,
+.is-chart-active .chart-run,
+.is-chart-active .chart-ride,
+.is-chart-active .chart-strength { filter: saturate(1.08) brightness(1.03); }
+.cycle-arc-seg:hover { filter: brightness(1.08); stroke-width: 2.2; }
+.performance-sparkline circle { opacity: .35; cursor: crosshair; transition: r 150ms var(--ease-apple), opacity 150ms var(--ease-apple); }
+.performance-sparkline circle.is-last { opacity: 1; }
+.performance-sparkline circle:hover { r: 4px; opacity: 1; }
+@keyframes trail-detail-in { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes trail-chart-reveal { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .chart-detail-panel,
+  .chart-card :is(.chart-focus-bar, .chart-run, .chart-ride, .chart-strength, .chart-pace-line, .chart-ride-line, .chart-hr-line) { animation: none; }
+}
+
+/* Weekly reading hierarchy: a chapter separator below the tab bar replaces
+   the previous wall of equally prominent cards. */
+.trail-chapter { display: grid; gap: 18px; }
+
+/* Tab bar switching between the three trail page views (week / analysis /
+   plan). overflow-x is a safety net: at 390px the three short labels fit on
+   one row without triggering page-level horizontal scroll. */
+.trail-tabs { display: flex; max-width: 100%; overflow-x: auto; border-bottom: 1px solid var(--line-soft); scrollbar-width: none; }
+.trail-tabs::-webkit-scrollbar { display: none; }
+.trail-tab { position: relative; display: inline-flex; min-height: 48px; flex: 0 0 auto; align-items: center; gap: 8px; border: 0; background: transparent; color: var(--muted); font-size: 12px; font-weight: 580; padding: 0 17px; text-decoration: none; white-space: nowrap; transition: color 180ms var(--ease-apple), background 180ms var(--ease-apple); }
+.trail-tab::after { position: absolute; right: 16px; bottom: -1px; left: 16px; height: 2px; border-radius: 2px; background: var(--dash-accent); content: ""; opacity: 0; transform: scaleX(.4); transition: opacity 180ms var(--ease-apple), transform 180ms var(--ease-apple); }
+.trail-tab:hover { background: var(--nav-hover-bg); color: var(--ink-soft); }
+.trail-tab.is-active { color: var(--ink); }
+.trail-tab.is-active::after { opacity: 1; transform: scaleX(1); }
+.trail-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.training-week-only-nav { display: flex; min-height: 48px; align-items: center; justify-content: flex-end; gap: 14px; border-bottom: 1px solid var(--line-soft); padding-bottom: 12px; }
+.training-week-only-nav > span { color: var(--muted); font-size: 9px; font-weight: 660; letter-spacing: .08em; text-transform: uppercase; }
+
+.training-metrics-modern.ui-metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.training-dashboard .training-metrics-modern .ui-metric-card { min-height: 308px; overflow: visible; border: 1px solid var(--card-border); border-radius: var(--radius); background: var(--card-surface); box-shadow: var(--card-inner), var(--card-elev); padding: 18px; }
+.training-dashboard .training-metrics-modern .ui-metric-value { margin-top: 10px; font-size: clamp(22px, 2.3vw, 30px); }
+.training-dashboard .training-metrics-modern .ui-metric-footer { margin-top: 10px; padding-top: 8px; }
+.weekly-activity-chart { min-width: 0; margin-top: 10px; color: var(--ui-tone); }
+.weekly-activity-plot { width: 100%; height: 112px; -webkit-tap-highlight-color: transparent; }
+.weekly-activity-plot .recharts-wrapper { cursor: crosshair; outline: none; }
+/* Recharts focuses an internal SVG group on tap. WebKit paints a 5px blue
+   outline around that group; the tooltip and detail row already show selection. */
+.weekly-activity-plot :focus { outline: none; }
+.weekly-activity-tooltip { display: grid; min-width: 125px; gap: 2px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--menu-surface-strong); box-shadow: var(--shadow-menu); color: var(--ink); padding: 8px 10px; }
+.weekly-activity-tooltip span { color: var(--muted); font-size: 8px; text-transform: capitalize; }
+.weekly-activity-tooltip strong { font-size: 13px; }
+.weekly-activity-tooltip small { overflow: hidden; max-width: 180px; color: var(--muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.weekly-activity-detail { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: baseline; gap: 3px 8px; margin-top: 6px; border-top: 1px solid var(--line-soft); padding-top: 8px; color: var(--ink); }
+.weekly-activity-detail > span { color: var(--muted); font-size: 8px; text-transform: capitalize; }
+.weekly-activity-detail > strong { overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.weekly-activity-detail > b { font-size: 11px; }
+.weekly-activity-detail > small { grid-column: 1 / -1; overflow: hidden; color: var(--muted); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.weekly-activity-empty { display: grid; height: 174px; place-items: center; margin-top: 10px; border: 1px dashed var(--line-soft); border-radius: 10px; color: var(--muted); font-size: 9px; }
+.training-completion-rings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); flex: 1; align-items: center; gap: 8px; margin: 13px 0 2px; }
+.training-completion-rings > div { display: grid; min-width: 0; justify-items: center; gap: 4px; text-align: center; }
+.training-completion-rings .ui-progress-ring { width: 58px; height: 58px; }
+.training-completion-rings .ui-progress-ring::before { width: 46px; height: 46px; }
+.training-completion-rings .ui-progress-ring strong { font-size: 11px !important; }
+.training-completion-rings span { overflow: hidden; max-width: 100%; color: var(--ink-soft); font-size: 9px; font-weight: 660; text-overflow: ellipsis; white-space: nowrap; }
+.training-completion-rings small { overflow: hidden; max-width: 100%; color: var(--muted); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.reg-col.is-selected { border-radius: 6px; outline: 1px solid color-mix(in srgb, var(--run-color) 45%, transparent); outline-offset: 2px; }
+
+.today-session,
+.training-dashboard .training-metrics-modern .ui-metric-card,
+.week-day > summary,
+.cycle-week,
+.performance-panel { transition: transform 160ms var(--ease-apple), border-color 160ms var(--ease-apple), background 160ms var(--ease-apple), box-shadow 160ms var(--ease-apple); }
+
+@media (hover: hover) and (pointer: fine) {
+  .today-session:hover { transform: translateY(-1px); border-color: var(--line-strong); box-shadow: 0 14px 30px -28px rgba(0,0,0,.75); }
+  .training-dashboard .training-metrics-modern .ui-metric-card:hover { transform: none; background: var(--surface-sunken); }
+  .performance-panel:hover { transform: translateY(-1px); border-color: var(--line-strong); }
+  .week-day > summary:hover { background: color-mix(in srgb, var(--panel-2) 62%, transparent); }
+  .cycle-week:hover { border-color: var(--line-strong); }
+}
+
+@media (max-width: 1180px) {
+  .training-metrics-modern.ui-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .trail-tabs { margin-inline: -14px; overflow: hidden; padding-inline: 7px; }
+  .trail-tab { min-width: 0; flex: 1 1 0; justify-content: center; padding-inline: 8px; }
+  .training-week-only-nav { justify-content: space-between; }
+  .training-metrics-modern.ui-metric-grid { grid-template-columns: minmax(0, 1fr); }
+  .fueling-brief { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .today-session,
+  .training-dashboard .training-metrics-modern .ui-metric-card,
+  .week-day > summary,
+  .cycle-week,
+  .performance-panel { transition: none; }
+}

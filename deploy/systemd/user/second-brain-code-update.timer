@@ -1,0 +1,12 @@
+[Unit]
+Description=Check for a pushed Second Brain main revision
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=2min
+Persistent=yes
+AccuracySec=30s
+Unit=second-brain-code-update.service
+
+[Install]
+WantedBy=timers.target

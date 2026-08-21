@@ -1,0 +1,165 @@
+services:
+  second-brain:
+    image: second-brain-shared:latest
+    build: .
+    restart: unless-stopped
+    init: true
+    user: "${SECOND_BRAIN_UID:-1000}:${SECOND_BRAIN_GID:-1000}"
+    ports:
+      - "${SECOND_BRAIN_BIND:-127.0.0.1}:${SECOND_BRAIN_PORT:-3000}:3000"
+    env_file:
+      - ${SECOND_BRAIN_PROFILE_ROOT:-.}/.env
+    environment:
+      TZ: "${TIMEZONE:-UTC}"
+      # Docker otherwise replaces HOSTNAME with the container id. Next's
+      # standalone server would then bind only to that address and make the
+      # localhost health check fail even though the process is running.
+      HOSTNAME: "0.0.0.0"
+      PORT: "3000"
+      MEMO_BRIDGE_URL: "http://ai-bridge:8089"
+      REVISION_PROJECT_DIR: "${REVISION_PROJECT_DIR:-08-Projects/Revisions}"
+      REVISION_PROGRAM_FILE: "${REVISION_PROGRAM_FILE:-Programme-Revisions.md}"
+    volumes:
+      - ${SECOND_BRAIN_PROFILE_ROOT:-.}/vault:/app/vault
+      # OAuth clients/tokens survive restarts and redeploys (see
+      # src/lib/oauth-codes.ts); without this, MCP connectors must
+      # re-register after every deploy.
+      - ${SECOND_BRAIN_PROFILE_ROOT:-.}/data:/app/data
+    depends_on:
+      ai-bridge:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:3000/api/health | grep -Eq '\"ok\"[[:space:]]*:[[:space:]]*true'"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
+
+  ai-bridge:
+    image: second-brain-ai-shared:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.ai
+    restart: unless-stopped
+    init: true
+    user: "${SECOND_BRAIN_UID:-1000}:${SECOND_BRAIN_GID:-1000}"
+    env_file:
+      - ${SECOND_BRAIN_PROFILE_ROOT:-.}/.env
+    environment:
+      HOME: /home/assistant
+      MEMO_BIND: 0.0.0.0
+      MEMO_PORT: "8089"
+    volumes:
+      - ${SECOND_BRAIN_PROFILE_ROOT:-.}/data:/data:ro
+      # Read-only so the engines can look past the curated bundle the app sends
+      # without ever writing a note: they propose, the app applies. Application
+      # source stays unmounted, and each tenant mounts only its own vault.
+      - ${SECOND_BRAIN_PROFILE_ROOT:-.}/vault:/vault:ro
+      - ${SECOND_BRAIN_PROFILE_ROOT:-.}/data/ai-home:/home/assistant
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8089/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
+
+  garmin-sync:
+    image: second-brain-garmin-shared:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.garmin
+    restart: unless-stopped
+    init: true
+    user: "${SECOND_BRAIN_UID:-1000}:${SECOND_BRAIN_GID:-1000}"
+    env_file:
+      - ${SECOND_BRAIN_PROFILE_ROOT:-.}/.env
+    environment:
+      TZ: "${TIMEZONE:-UTC}"
+      VAULT_PATH: /vault
+      GARMINTOKENS: /tokens
+      GARMIN_SYNC_SCRIPT: "${GARMIN_SYNC_SCRIPT:-/sync/garmin-sync-profile.py}"
+      GARMIN_SYNC_TIMES: "${GARMIN_SYNC_TIMES:-06:40,21:40}"
+    volumes:
+      - ${SECOND_BRAIN_PROFILE_ROOT:-.}/vault:/vault
+      - ${SECOND_BRAIN_PROFILE_ROOT:-.}/data/garmin:/tokens
+    pids_limit: 128
+    security_opt:
+      - no-new-privileges:true
+
+  # Optional public exposure via this project's OWN Cloudflare tunnel.
+  # Start with: docker compose --profile tunnel up -d
+  # Set CLOUDFLARED_TOKEN in .env and route the tunnel hostname to
+  # http://second-brain:3000 in the Cloudflare Zero Trust dashboard.
+  cloudflared:
+    image: cloudflare/cloudflared:2026.6.1
+    profiles: ["tunnel"]
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARED_TOKEN}
+    depends_on:
+      second-brain:
+        condition: service_healthy
+    pids_limit: 128
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: "3"
+
+  syncthing:
+    image: syncthing/syncthing:latest
+    profiles: ["sync"]
+    restart: unless-stopped
+    ports:
+      - "${SYNCTHING_BIND:-127.0.0.1}:8384:8384"
+      - "22000:22000/tcp"
+      - "22000:22000/udp"
+      - "21027:21027/udp"
+    environment:
+      # Profiles share the vault through the secondbrain group (gid 1002).
+      # Without PGID, Syncthing runs as gid 1000 and cannot read the files
+      # another profile wrote.
+      PUID: 1000
+      PGID: 1002
+    volumes:
+      - ${SECOND_BRAIN_PROFILE_ROOT:-.}/vault:/var/syncthing/SecondBrain
+      - syncthing_config:/var/syncthing/config
+
+  backup:
+    image: restic/restic:0.19.1
+    profiles: ["backup"]
+    restart: unless-stopped
+    env_file:
+      - ${SECOND_BRAIN_PROFILE_ROOT:-.}/.env
+    environment:
+      RESTIC_REPOSITORY: "${RESTIC_REPOSITORY:-/backup}"
+      RESTIC_PASSWORD: "${RESTIC_PASSWORD:-}"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        test -n "$$RESTIC_PASSWORD"
+        restic snapshots >/dev/null 2>&1 || restic init
+        while :; do
+          restic backup /source/vault /source/data --exclude /source/data/runtime
+          restic forget --keep-daily 7 --keep-weekly 5 --keep-monthly 12 --prune
+          sleep "$${BACKUP_INTERVAL_SECONDS:-86400}"
+        done
+    volumes:
+      - ${SECOND_BRAIN_PROFILE_ROOT:-.}/vault:/source/vault:ro
+      - ${SECOND_BRAIN_PROFILE_ROOT:-.}/data:/source/data:ro
+      - ${SECOND_BRAIN_PROFILE_ROOT:-.}/backups:/backup
+    pids_limit: 128
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  syncthing_config:

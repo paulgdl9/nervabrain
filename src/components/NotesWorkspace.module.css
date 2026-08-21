@@ -1,0 +1,451 @@
+.notionWorkspace {
+  --notion-hover: color-mix(in srgb, var(--ink) 5%, transparent);
+  --notion-menu: var(--menu-surface-strong);
+  border-color: var(--line-soft);
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: none;
+}
+
+.notionWorkspace:global(.is-single) {
+  min-height: calc(100vh - 32px);
+  border: 0;
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.notionWorkspace :global(.direct-note-editor) {
+  background: transparent;
+}
+
+.notionWorkspace:global(.is-single) :global(.direct-note-editor) {
+  padding: 36px clamp(40px, 9vw, 132px) 72px;
+}
+
+.notionWorkspace :global(.direct-note-status),
+.notionWorkspace :global(.page-title-row),
+.notionWorkspace :global(.note-editor-meta),
+.notionWorkspace :global(.note-block-list),
+.notionWorkspace :global(.note-bottom-add) {
+  width: min(100%, 760px);
+  max-width: 760px;
+  min-width: 0;
+}
+
+.notionWorkspace :global(.direct-note-status) {
+  min-height: 30px;
+  margin-bottom: 34px;
+  font-size: 12px;
+}
+
+.notionWorkspace :global(.save-state) {
+  min-height: 22px;
+  border: 0;
+  padding: 0 4px;
+  font-weight: 500;
+  opacity: .72;
+}
+
+.notionWorkspace :global(.page-title-row) {
+  margin-bottom: 26px;
+}
+
+.notionWorkspace :global(.direct-note-title) {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(34px, 5vw, 48px);
+  font-weight: 620;
+  letter-spacing: -.04em;
+  line-height: 1.12;
+}
+
+.notionWorkspace :global(.note-editor-meta) {
+  margin: -14px 0 22px;
+}
+
+.notionWorkspace :global(.note-editor-meta span) {
+  min-height: 20px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--notion-hover);
+  padding: 0 6px;
+}
+
+.notionWorkspace :global(.note-block-list) {
+  gap: 1px;
+}
+
+.notionWorkspace :global(.note-block) {
+  grid-template-columns: 36px minmax(0, 1fr);
+  min-height: 30px;
+  margin-left: -42px;
+  border: 0;
+  border-radius: 3px;
+  padding: 1px 3px 1px calc(3px + (var(--block-indent, 0) * 24px));
+}
+
+.notionWorkspace :global(.note-block:hover),
+.notionWorkspace :global(.note-block:focus-within) {
+  background: transparent;
+}
+
+.notionWorkspace :global(.note-block.is-editing) {
+  background: var(--notion-hover);
+  box-shadow: inset 2px 0 0 var(--line-strong);
+}
+
+.notionWorkspace :global(.note-block[data-background-color]) {
+  border-radius: 3px;
+}
+
+.notionWorkspace :global(.note-block[data-background-color] > :last-child) {
+  border-radius: 3px;
+  background: var(--block-background) !important;
+  box-shadow: 0 0 0 3px var(--block-background);
+}
+
+.notionWorkspace :global(.note-block[data-text-color]) :is(input, textarea),
+.notionWorkspace :global(.note-block[data-text-color] .cm-content),
+.notionWorkspace :global(.note-block[data-text-color] .structured-block-input) {
+  color: var(--block-text-color) !important;
+}
+
+.notionWorkspace :global(.block-side-controls) {
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  padding-top: 3px;
+}
+
+.notionWorkspace :global(.block-side-controls button) {
+  width: 18px;
+  height: 24px;
+  border-radius: 4px;
+  color: var(--muted-2);
+}
+
+.notionWorkspace :global(.block-side-controls button:hover) {
+  background: var(--notion-hover);
+  color: var(--ink-soft);
+}
+
+.notionWorkspace :global(.heading-level-pills) {
+  display: none !important;
+}
+
+.notionWorkspace :global(.text-block-input),
+.notionWorkspace :global(.todo-block-row input[type="text"]),
+.notionWorkspace :global(.structured-block-input),
+.notionWorkspace :global(.toggle-block-copy input),
+.notionWorkspace :global(.toggle-block-copy textarea) {
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.notionWorkspace :global(.text-block-input) {
+  min-height: 28px;
+  padding: 1px 0;
+}
+
+.notionWorkspace :global(.block-heading-input) {
+  padding: 2px 0;
+  color: var(--ink);
+  font-weight: 580;
+  letter-spacing: -.025em;
+}
+
+.notionWorkspace :global(.block-heading-1) { font-size: 30px; }
+.notionWorkspace :global(.block-heading-2) { font-size: 24px; }
+.notionWorkspace :global(.block-heading-3) { font-size: 19px; }
+
+.notionWorkspace :global(.todo-block-row) {
+  gap: 7px;
+  min-height: 28px;
+}
+
+.notionWorkspace :global(.todo-block-row input[type="checkbox"]) {
+  width: 16px;
+  height: 16px;
+  margin-top: 5px;
+  border-radius: 3px;
+  accent-color: rgb(var(--accent-rgb));
+}
+
+.notionWorkspace :global(.structured-block-row) {
+  border-radius: 3px;
+  padding: 3px 7px;
+}
+
+.notionWorkspace :global(.quote-block-row) {
+  border-left: 3px solid var(--ink);
+  border-radius: 0;
+  padding-left: 13px;
+}
+
+.notionWorkspace :global(.callout-block-row) {
+  border: 0;
+  border-radius: 4px;
+  background: var(--notion-hover);
+  padding: 12px 14px;
+}
+
+.notionWorkspace :global(.code-block-row),
+.notionWorkspace :global(.chart-block-row) {
+  border-color: var(--line-soft);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--panel) 94%, var(--ink) 6%);
+  box-shadow: none;
+}
+
+.notionWorkspace :global(.editable-table td) {
+  border-color: var(--line-soft);
+}
+
+.notionWorkspace :global(.editable-table td.is-header-cell) {
+  background: var(--notion-hover);
+}
+
+.notionWorkspace :global(.note-bottom-add) {
+  min-height: 180px;
+  padding: 9px 0;
+  color: var(--muted-2);
+  opacity: .28;
+}
+
+.notionWorkspace :global(.note-bottom-add:hover),
+.notionWorkspace :global(.note-bottom-add:focus-visible) {
+  opacity: .62;
+}
+
+.notionWorkspace :global(.notes-browser) {
+  background: color-mix(in srgb, var(--panel) 96%, var(--ink) 4%);
+}
+
+.notionWorkspace :global(.notes-browser-item) {
+  border: 0;
+  border-radius: 5px;
+}
+
+.notionWorkspace :global(.notes-browser-item:hover),
+.notionWorkspace :global(.notes-browser-item.is-active) {
+  border: 0;
+  background: var(--notion-hover);
+}
+
+.dividerBlock {
+  display: flex;
+  width: 100%;
+  min-height: 28px;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 7px 0;
+}
+
+.dividerBlock span {
+  width: 100%;
+  height: 1px;
+  background: var(--line-strong);
+}
+
+.insertMenu,
+.actionsMenu,
+.slashMenu {
+  border: 1px solid var(--line-soft) !important;
+  border-radius: 7px !important;
+  /* Menus are portalled outside .notionWorkspace, so only root theme tokens
+     are inherited here. Referencing --notion-menu made the declaration
+     invalid and left the whole popover transparent. */
+  background: var(--menu-surface-strong, var(--panel)) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .2) !important;
+  backdrop-filter: none !important;
+}
+
+.insertMenu {
+  width: 280px !important;
+  padding: 6px !important;
+}
+
+.insertMenu :global(.block-insert-search) {
+  position: sticky;
+  top: 0;
+  min-height: 34px;
+  margin-bottom: 6px;
+  border-color: var(--line-soft);
+  border-radius: 5px;
+  background: var(--menu-surface-strong);
+  font-size: 13px;
+}
+
+.insertGroup + .insertGroup {
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.insertGroupLabel {
+  display: block;
+  padding: 5px 8px 3px;
+  color: var(--muted-2);
+  font-size: 11px;
+  font-weight: 550;
+}
+
+.insertMenu .activeMenuItem,
+.slashMenu .activeMenuItem,
+.actionsMenu :global(button:hover) {
+  background: var(--notion-hover) !important;
+}
+
+.insertMenu :global(.block-insert-ico) {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line-soft);
+  border-radius: 4px;
+  background: var(--menu-surface-strong);
+  font-size: 13px;
+}
+
+.slashMenu {
+  width: min(300px, calc(100vw - 32px)) !important;
+  max-height: min(390px, 60vh);
+  overflow-y: auto;
+  gap: 1px !important;
+  padding: 5px !important;
+}
+
+.slashMenu :global(button) {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 5px 7px;
+}
+
+.slashMenu :global(button > span:last-child) {
+  display: grid;
+  gap: 1px;
+  font-size: 13px;
+  font-weight: 520;
+}
+
+.slashMenu :global(button small) {
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.slashIcon,
+.transformIcon {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-soft);
+  border-radius: 4px;
+  background: var(--menu-surface-strong);
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 540;
+}
+
+.actionsMenu {
+  width: 238px !important;
+  max-height: min(430px, 70vh);
+  overflow-y: auto;
+}
+
+.colorSectionLabel {
+  display: block;
+  padding: 7px 9px 3px;
+  color: var(--muted-2);
+  font-size: 11px;
+  font-weight: 550;
+}
+
+.colorList {
+  display: grid;
+  gap: 1px;
+}
+
+.colorList :global(button) {
+  min-height: 34px;
+}
+
+.textColorSwatch,
+.backgroundColorSwatch {
+  display: inline-flex;
+  width: 24px !important;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-soft);
+  border-radius: 4px;
+  background: var(--menu-surface-strong);
+  font-size: 14px;
+  font-weight: 540;
+}
+
+.backgroundColorSwatch {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent);
+}
+
+.colorSectionLabel + .colorList + .colorSectionLabel {
+  margin-top: 5px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.actionsMenuBack {
+  font-weight: 540;
+}
+
+.menuChevron,
+.menuCheck {
+  margin-left: auto;
+}
+
+.menuRule {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--line-soft);
+}
+
+.transformList {
+  display: grid;
+  gap: 1px;
+}
+
+.transformList :global(button) {
+  min-height: 38px;
+}
+
+.transformList .transformIcon {
+  width: 25px;
+  height: 25px;
+}
+
+.currentType {
+  background: var(--notion-hover) !important;
+}
+
+.menuBackdrop {
+  background: transparent !important;
+}
+
+@media (max-width: 920px) {
+  .notionWorkspace:global(.is-single) :global(.direct-note-editor) {
+    padding: 24px 18px 56px;
+  }
+
+  .notionWorkspace :global(.note-block) {
+    grid-template-columns: minmax(0, 1fr);
+    margin-left: 0;
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Synthesize Daily"
+  short_description: "Produire une synthese quotidienne sourcee"
+  default_prompt: "Use $synthesize-daily to create or update today's sourced daily synthesis."
