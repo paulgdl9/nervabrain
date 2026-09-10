@@ -19,13 +19,17 @@ import {
   Footprints,
   Gauge,
   MoreHorizontal,
+  Plus,
   RefreshCw,
   Sparkles,
   Undo2,
+  Trash2,
   X,
 } from "lucide-react";
 import {
   cancelTrainingSessionAction,
+  deleteTrainingSessionAction,
+  editTrainingSessionAction,
   moveTrainingSessionAction,
   undoTrainingOverrideAction,
   validateTrainingSessionAction,
@@ -50,6 +54,8 @@ async function moveAction(formData: FormData) { await moveTrainingSessionAction(
 async function cancelAction(formData: FormData) { await cancelTrainingSessionAction(formData); }
 async function validateAction(formData: FormData) { await validateTrainingSessionAction(formData); }
 async function undoAction(formData: FormData) { await undoTrainingOverrideAction(formData); }
+async function editAction(formData: FormData) { await editTrainingSessionAction(formData); }
+async function deleteAction(formData: FormData) { await deleteTrainingSessionAction(formData); }
 
 export type PlanDisplaySession = PlannedSession & {
   rescheduledFromIso?: string;
@@ -100,7 +106,7 @@ function relativeDayLabel(index: number, todayIndex: number, t: ReturnType<typeo
   return delta > 0 ? `J+${delta}` : `J${delta}`;
 }
 
-type SessionModal = "validate" | "move" | "cancel" | null;
+type SessionModal = "validate" | "move" | "cancel" | "replace" | "delete" | null;
 
 function ModalPortal({ children }: { children: ReactNode }) {
   if (typeof document === "undefined") return null;
@@ -143,6 +149,8 @@ function SessionMenu({ session, week, dayIso, activities, claimedActivityIds, ha
           <button type="button" role="menuitem" onClick={() => { setModal("validate"); setOpen(false); }}>{t("training.session.validate")}…</button>
           <button type="button" role="menuitem" onClick={() => { setModal("move"); setOpen(false); }}>{t("training.session.move")}…</button>
           <button type="button" role="menuitem" onClick={() => { setModal("cancel"); setOpen(false); }}>{t("training.session.cancel")}…</button>
+          <button type="button" role="menuitem" onClick={() => { setModal("replace"); setOpen(false); }}>{t("training.session.replace")}…</button>
+          <button type="button" role="menuitem" className="is-danger" onClick={() => { setModal("delete"); setOpen(false); }}>{t("training.session.delete")}</button>
           {hasOverride && (
             <form action={undoAction}>
               <input type="hidden" name="session_id" value={session.id} />
@@ -156,8 +164,47 @@ function SessionMenu({ session, week, dayIso, activities, claimedActivityIds, ha
           {modal === "validate" && <ValidateModal session={session} week={week} activities={activities} claimedActivityIds={claimedActivityIds} onClose={() => setModal(null)} />}
           {modal === "move" && <MoveModal session={session} week={week} dayIso={dayIso} onClose={() => setModal(null)} />}
           {modal === "cancel" && <CancelModal session={session} week={week} onClose={() => setModal(null)} />}
+          {modal === "replace" && <SessionEditorModal session={session} week={week} weekday={weekdayOfIso(dayIso)} onClose={() => setModal(null)} />}
+          {modal === "delete" && <DeleteModal session={session} week={week} onClose={() => setModal(null)} />}
         </ModalPortal>
       )}
+    </div>
+  );
+}
+
+function SessionEditorModal({ session, week, weekday, onClose }: { session?: PlanDisplaySession; week: number; weekday: number; onClose: () => void }) {
+  const { t } = useLanguage();
+  return (
+    <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
+      <form className="modal-dialog session-editor" action={editAction} role="dialog" aria-modal="true" onMouseDown={(event) => event.stopPropagation()} onSubmit={onClose}>
+        {session && <input type="hidden" name="session_id" value={session.id} />}
+        <input type="hidden" name="week" value={week} />
+        <h3>{t(session ? "training.session.replaceTitle" : "training.session.addTitle")}</h3>
+        <div className="session-editor-grid">
+          <label>{t("training.session.sport")}<select name="sport" defaultValue={session?.sport || "run"} required><option value="run">{t("training.sport.run")}</option><option value="ride">{t("training.sport.ride")}</option><option value="strength">{t("training.sport.strength")}</option><option value="recovery">{t("training.sport.recovery")}</option></select></label>
+          <label>{t("training.session.day")}<select name="weekday" defaultValue={weekday}>{["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map((day, index) => <option value={index} key={day}>{t(`training.weekday.${day}` as Parameters<typeof t>[0])}</option>)}</select></label>
+          <label>{t("training.session.title")}<input name="title" defaultValue={session?.title} required /></label>
+          <label>{t("training.session.duration")}<input name="duration_min" type="number" min="1" defaultValue={session?.durationMin || 30} required /></label>
+          <label className="is-wide">{t("training.session.subtitle")}<input name="subtitle" defaultValue={session?.subtitle} required /></label>
+          <label className="is-wide">{t("training.session.intensityLabel")}<input name="intensity" defaultValue={session?.intensity} required /></label>
+          <label className="is-wide">{t("training.session.details")}<textarea name="details" defaultValue={session?.details.join("\n")} placeholder={t("training.session.detailsHint")} required /></label>
+          <label className="session-editor-optional"><input type="checkbox" name="optional" defaultChecked={session?.optional} /> {t("training.session.optional")}</label>
+        </div>
+        <div className="modal-actions"><button type="button" className="button" onClick={onClose}>{t("common.close")}</button><button type="submit" className="button">{t("training.session.save")}</button></div>
+      </form>
+    </div>
+  );
+}
+
+function DeleteModal({ session, week, onClose }: { session: PlanDisplaySession; week: number; onClose: () => void }) {
+  const { t } = useLanguage();
+  return (
+    <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
+      <form className="modal-dialog" action={deleteAction} role="dialog" aria-modal="true" onMouseDown={(event) => event.stopPropagation()} onSubmit={onClose}>
+        <input type="hidden" name="session_id" value={session.id} /><input type="hidden" name="week" value={week} />
+        <h3>{t("training.session.deleteTitle")}</h3><p>{t("training.session.deleteHint").replace("{title}", session.title)}</p>
+        <div className="modal-actions"><button type="button" className="button" onClick={onClose}>{t("common.close")}</button><button type="submit" className="button danger"><Trash2 size={14} /> {t("training.session.delete")}</button></div>
+      </form>
     </div>
   );
 }
@@ -358,6 +405,7 @@ export function TodayBoard({ days, todayIso, activities, weeksTotal, nextSession
   const selectedWeekStart = days.findIndex((day) => day.week === selectedWeek);
   const initialIndex = selectedWeek === currentWeek || selectedWeekStart < 0 ? todayIndex : selectedWeekStart + todayWeekday;
   const [index, setIndex] = useState(initialIndex);
+  const [adding, setAdding] = useState(false);
   const day = days[Math.min(index, days.length - 1)];
   if (!day) return null;
   const isToday = day.iso === todayIso;
@@ -476,6 +524,8 @@ export function TodayBoard({ days, todayIso, activities, weeksTotal, nextSession
           </article>
         )}
       </div>
+      <button type="button" className="add-training-session" onClick={() => setAdding(true)}><Plus size={15} /> {t("training.session.add")}</button>
+      {adding && <ModalPortal><SessionEditorModal week={day.week} weekday={weekdayOfIso(day.iso)} onClose={() => setAdding(false)} /></ModalPortal>}
       {isToday && (
         <div className="next-session-line"><Sparkles size={15} /><span>{t("training.day.tomorrow")}</span><strong>{nextSession.replace(/^.*? · /, "")}</strong></div>
       )}

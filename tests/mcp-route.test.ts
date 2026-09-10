@@ -16,7 +16,7 @@ process.env.NEXT_PUBLIC_MCP_BASE_URL = "https://brain.example";
 
 import { GET, OPTIONS, POST } from "../src/app/api/mcp/route";
 import { issueAccessToken, resetOAuthStateForTests } from "../src/lib/oauth-codes";
-import { fallbackTrainingPlan, saveTrainingPlan } from "../src/lib/trail";
+import { fallbackTrainingPlan, loadTrainingPlan, saveTrainingPlan } from "../src/lib/trail";
 
 const ENDPOINT = "https://brain.example/api/mcp";
 
@@ -191,6 +191,8 @@ test("MCP module tools keep tasks, objectives, and training data in sync", async
   const training = JSON.parse((await call("get_training_status")).content[0].text);
   assert.equal(training.objective.title, "Trail MCP");
   assert.equal(training.recent_activities.at(-1).id, "garmin-test-1");
+  assert.equal(training.plan_week.number, training.current_week.number);
+  assert.ok(training.plan_week.sessions.every((item: { id?: string; details?: string[] }) => item.id && item.details?.length));
   const session = training.current_week.sessions[0];
   assert.ok(session?.id);
 
@@ -210,9 +212,33 @@ test("MCP module tools keep tasks, objectives, and training data in sync", async
     action: "cancel",
     reason: "Test MCP",
   });
-  const overrides = JSON.parse(fs.readFileSync(path.join(scratchVault, "08-Projects/Training/plan-overrides.json"), "utf8"));
+  let overrides = JSON.parse(fs.readFileSync(path.join(scratchVault, "08-Projects/Training/plan-overrides.json"), "utf8"));
   assert.equal(overrides.overrides[0].session_id, session.id);
   assert.equal(overrides.overrides[0].action, "cancel");
+
+  await call("adjust_training_session", { session_id: session.id, week: training.current_week.number, action: "restore" });
+  overrides = JSON.parse(fs.readFileSync(path.join(scratchVault, "08-Projects/Training/plan-overrides.json"), "utf8"));
+  assert.deepEqual(overrides.overrides, []);
+
+  const weekday = (new Date(`${session.planned_date}T12:00:00Z`).getUTCDay() + 6) % 7;
+  const custom = {
+    week: training.current_week.number,
+    sport: session.sport,
+    weekday,
+    title: "Séance MCP personnalisée",
+    subtitle: "Remplacement structuré",
+    duration_min: session.duration_min || 30,
+    intensity: "Facile",
+    details: ["Échauffement", "Bloc principal", "Retour au calme"],
+  };
+  await call("adjust_training_session", { ...custom, session_id: session.id, action: "replace" });
+  assert.equal((await loadTrainingPlan()).weeks[training.current_week.number - 1].sessions.find((item) => item.id === session.id)?.title, custom.title);
+
+  await call("adjust_training_session", { session_id: session.id, week: training.current_week.number, action: "delete" });
+  assert.equal((await loadTrainingPlan()).weeks[training.current_week.number - 1].sessions.some((item) => item.id === session.id), false);
+
+  await call("adjust_training_session", { ...custom, action: "add" });
+  assert.ok((await loadTrainingPlan()).weeks[training.current_week.number - 1].sessions.some((item) => item.title === custom.title));
 });
 
 test("fetch and read_note refuse non-Markdown vault files", async () => {

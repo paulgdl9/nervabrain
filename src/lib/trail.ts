@@ -1456,6 +1456,46 @@ export async function saveTrainingPlan(plan: PlanData): Promise<void> {
   await atomicWriteFile(filePath, `${JSON.stringify(planToJson(plan), null, 2)}\n`);
 }
 
+export async function editTrainingSession(
+  weekNumber: number,
+  session: Omit<PlanSessionData, "id">,
+  sessionId?: string,
+): Promise<PlanSessionData> {
+  const plan = await loadTrainingPlan();
+  const week = plan.weeks.find((item) => item.week === weekNumber);
+  if (!week) throw new Error("Semaine introuvable dans le plan");
+  const index = sessionId ? week.sessions.findIndex((item) => item.id === sessionId) : -1;
+  if (sessionId && index < 0) throw new Error("Séance introuvable dans le plan");
+
+  const edited = { ...session, id: sessionId || randomUUID() };
+  if (index < 0) week.sessions.push(edited);
+  else week.sessions[index] = edited;
+  week.sessions.sort((left, right) => left.weekday - right.weekday);
+  week.runMinTarget = week.sessions
+    .filter((item) => item.sport === "run")
+    .reduce((sum, item) => sum + (item.durationMin || 0), 0);
+
+  if (!validatePlanData(plan)) throw new Error("Cette séance rendrait le plan incohérent");
+  await saveTrainingPlan(plan);
+  if (sessionId) await removePlanOverride(sessionId);
+  return edited;
+}
+
+export async function deleteTrainingSession(weekNumber: number, sessionId: string): Promise<void> {
+  const plan = await loadTrainingPlan();
+  const week = plan.weeks.find((item) => item.week === weekNumber);
+  if (!week) throw new Error("Semaine introuvable dans le plan");
+  const next = week.sessions.filter((item) => item.id !== sessionId);
+  if (next.length === week.sessions.length) throw new Error("Séance introuvable dans le plan");
+  week.sessions = next;
+  week.runMinTarget = next
+    .filter((item) => item.sport === "run")
+    .reduce((sum, item) => sum + (item.durationMin || 0), 0);
+  if (!validatePlanData(plan)) throw new Error("Cette séance est requise pour conserver un plan cohérent");
+  await saveTrainingPlan(plan);
+  await removePlanOverride(sessionId);
+}
+
 export async function saveTrainingPlanJson(value: unknown): Promise<void> {
   const candidate = planFromJson(value);
   const valid = candidate ? validatePlanData(candidate) : null;

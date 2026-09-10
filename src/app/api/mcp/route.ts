@@ -20,9 +20,14 @@ import {
 } from "@/lib/vault";
 import {
   computeTrailStats,
+  deleteTrainingSession,
+  editTrainingSession,
+  planDateIso,
+  removePlanOverride,
   savePlanOverride,
   saveTrailFeedback,
   type PlanOverride,
+  type SportKind,
   type TrailFeedback,
 } from "@/lib/trail";
 import { preflight, withCors } from "@/lib/cors";
@@ -126,8 +131,11 @@ const TOOLS = [
   },
   {
     name: "get_training_status",
-    description: "Read the live training plan, current-week sessions, recent Garmin activities, health signals, feedback still needed, and latest coach decision.",
-    inputSchema: { type: "object", properties: {} },
+    description: "Read the live training plan, every planned session for a requested week, current-week Garmin matches, health signals, feedback still needed, and latest coach decision.",
+    inputSchema: {
+      type: "object",
+      properties: { week: { type: "integer", minimum: 1, description: "Plan week to inspect; defaults to the current week" } },
+    },
   },
   {
     name: "capture_insight",
@@ -246,18 +254,26 @@ const TOOLS = [
   },
   {
     name: "adjust_training_session",
-    description: "Move, cancel, or validate one planned session after an explicit user request. Use get_training_status first for the session id and week.",
+    description: "Add, replace, delete, restore, move, cancel, or validate a planned training session after an explicit user request. Use get_training_status first.",
     inputSchema: {
       type: "object",
       properties: {
-        session_id: { type: "string" },
+        session_id: { type: "string", description: "Required except when adding a session" },
         week: { type: "integer", minimum: 1 },
-        action: { type: "string", enum: ["move", "cancel", "validate"] },
+        action: { type: "string", enum: ["move", "cancel", "validate", "restore", "replace", "delete", "add"] },
         to_weekday: { type: "integer", minimum: 0, maximum: 6, description: "Required for move; Monday is 0 and Sunday is 6" },
         reason: { type: "string", description: "Required for cancel" },
         activity_id: { type: "string", description: "Optional Garmin activity id for validate" },
+        sport: { type: "string", enum: ["run", "ride", "strength", "recovery"], description: "Required for add and replace" },
+        weekday: { type: "integer", minimum: 0, maximum: 6, description: "Required for add and replace; Monday is 0 and Sunday is 6" },
+        title: { type: "string", description: "Required for add and replace" },
+        subtitle: { type: "string", description: "Required for add and replace" },
+        duration_min: { type: "integer", minimum: 1, description: "Required for add and replace" },
+        intensity: { type: "string", description: "Required for add and replace" },
+        details: { type: "array", items: { type: "string" }, minItems: 1, description: "Ordered workout steps; required for add and replace" },
+        optional: { type: "boolean" },
       },
-      required: ["session_id", "week", "action"],
+      required: ["week", "action"],
     },
   },
   {
@@ -459,6 +475,11 @@ async function callTool(name: string, args: Record<string, unknown>) {
     case "get_training_status": {
       const stats = await computeTrailStats();
       const current = stats.weeks[stats.currentWeek - 1];
+      const requestedWeek = args.week === undefined ? stats.currentWeek : Number(args.week);
+      const planWeek = Number.isInteger(requestedWeek) ? stats.plan.weeks.find((item) => item.week === requestedWeek) : undefined;
+      if (!planWeek) throw new Error("Training week not found");
+      const start = new Date(`${stats.plan.objective.startDate}T00:00:00`);
+      const overrideBySession = new Map(stats.planOverrides.map((item) => [item.sessionId, item]));
       const feedbackByActivity = new Map(stats.feedback.map((item) => [item.activityId, item]));
       const activity = (item: (typeof stats.allActivities)[number]) => ({
         id: item.id,
@@ -476,6 +497,27 @@ async function callTool(name: string, args: Record<string, unknown>) {
         today: stats.today.toISOString().slice(0, 10),
         objective: stats.plan.objective,
         days_to_event: stats.daysToRace,
+        plan_week: {
+          number: planWeek.week,
+          dates: planWeek.dates,
+          sessions: planWeek.sessions.map((session) => {
+            const override = overrideBySession.get(session.id);
+            const weekday = override?.toWeekday ?? session.weekday;
+            return {
+              id: session.id,
+              planned_date: planDateIso(planWeek.week, weekday, start),
+              weekday,
+              sport: session.sport,
+              title: session.title,
+              subtitle: session.subtitle,
+              duration_min: session.durationMin,
+              intensity: session.intensity,
+              details: session.details,
+              optional: Boolean(session.optional),
+              override: override ? { action: override.action, reason: override.reason, activity_id: override.activityId } : null,
+            };
+          }),
+        },
         current_week: current ? {
           number: current.plan.week,
           dates: current.plan.dates,
@@ -616,10 +658,42 @@ async function callTool(name: string, args: Record<string, unknown>) {
 
     case "adjust_training_session": {
       const action = String(args.action || "");
-      if (!["move", "cancel", "validate"].includes(action)) throw new Error("Invalid training action");
+      const sessionId = String(args.session_id || "");
+      const week = Number(args.week);
+      if (!Number.isInteger(week) || week < 1) throw new Error("Invalid training week");
+      if (action === "restore") {
+        if (!sessionId) throw new Error("Missing session id");
+        await removePlanOverride(sessionId);
+        return { content: [{ type: "text", text: `Training session restored: ${sessionId}` }] };
+      }
+      if (action === "delete") {
+        if (!sessionId) throw new Error("Missing session id");
+        await deleteTrainingSession(week, sessionId);
+        return { content: [{ type: "text", text: `Training session deleted: ${sessionId}` }] };
+      }
+      if (action === "add" || action === "replace") {
+        if (action === "replace" && !sessionId) throw new Error("Missing session id");
+        const sport = String(args.sport || "") as SportKind;
+        const weekday = Number(args.weekday);
+        const durationMin = Number(args.duration_min);
+        const title = String(args.title || "").trim();
+        const subtitle = String(args.subtitle || "").trim();
+        const intensity = String(args.intensity || "").trim();
+        const details = Array.isArray(args.details) ? args.details.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean) : [];
+        if (!["run", "ride", "strength", "recovery"].includes(sport)
+          || !Number.isInteger(weekday) || weekday < 0 || weekday > 6
+          || !Number.isInteger(durationMin) || durationMin < 1
+          || !title || !subtitle || !intensity || !details.length) throw new Error("Invalid training session");
+        const session = await editTrainingSession(week, {
+          sport, weekday, title, subtitle, durationMin, intensity, details,
+          ...(args.optional === true ? { optional: true } : {}),
+        }, action === "replace" ? sessionId : undefined);
+        return { content: [{ type: "text", text: `Training session ${action === "add" ? "added" : "replaced"}: ${session.id}` }] };
+      }
+      if (!["move", "cancel", "validate"].includes(action) || !sessionId) throw new Error("Invalid training action");
       const override = await savePlanOverride({
-        sessionId: String(args.session_id || ""),
-        week: Number(args.week),
+        sessionId,
+        week,
         action: action as PlanOverride["action"],
         toWeekday: args.to_weekday === undefined ? null : Number(args.to_weekday),
         reason: String(args.reason || ""),

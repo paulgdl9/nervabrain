@@ -75,6 +75,8 @@ import {
 } from "@/lib/assistant-chats";
 import {
   AiEngineError,
+  deleteTrainingSession,
+  editTrainingSession,
   savePlanOverride,
   removePlanOverride,
   archiveTrainingPlan,
@@ -84,6 +86,7 @@ import {
   generateTrailCoachDecision,
   saveTrainingPlan,
   type PlanObjective,
+  type SportKind,
 } from "@/lib/trail";
 import { todayISO } from "@/lib/dates";
 import { trainingLevelSummary, trainingPlanStartISO, type TrainingExperience } from "@/lib/endurance-events";
@@ -878,6 +881,48 @@ export async function undoTrainingOverrideAction(formData: FormData) {
     return { ok: true };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Impossible d’annuler la modification" };
+  }
+}
+
+const SESSION_SPORTS = new Set<SportKind>(["run", "ride", "strength", "recovery"]);
+
+export async function editTrainingSessionAction(formData: FormData) {
+  const sessionId = text(formData, "session_id") || undefined;
+  const week = Number(text(formData, "week"));
+  const weekday = Number(text(formData, "weekday"));
+  const durationMin = Number(text(formData, "duration_min"));
+  const sport = text(formData, "sport") as SportKind;
+  const title = text(formData, "title");
+  const subtitle = text(formData, "subtitle");
+  const intensity = text(formData, "intensity");
+  const details = text(formData, "details").split(/\n+/).map((item) => item.trim()).filter(Boolean);
+  if (!Number.isInteger(week) || !Number.isInteger(weekday) || weekday < 0 || weekday > 6
+    || !Number.isInteger(durationMin) || durationMin <= 0 || !SESSION_SPORTS.has(sport)
+    || !title || !subtitle || !intensity || !details.length) {
+    return { ok: false, error: "Données de séance invalides" };
+  }
+  try {
+    await editTrainingSession(week, {
+      weekday, sport, title, subtitle, durationMin, intensity, details,
+      ...(formData.get("optional") === "on" ? { optional: true } : {}),
+    }, sessionId);
+    revalidatePath("/training");
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Impossible d’enregistrer la séance" };
+  }
+}
+
+export async function deleteTrainingSessionAction(formData: FormData) {
+  const sessionId = text(formData, "session_id");
+  const week = Number(text(formData, "week"));
+  if (!sessionId || !Number.isInteger(week)) return { ok: false, error: "Données de suppression invalides" };
+  try {
+    await deleteTrainingSession(week, sessionId);
+    revalidatePath("/training");
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Impossible de supprimer la séance" };
   }
 }
 

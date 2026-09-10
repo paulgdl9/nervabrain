@@ -7,6 +7,8 @@ import {
   PLAN,
   archiveTrainingPlan,
   clearPlanOverrides,
+  deleteTrainingSession,
+  editTrainingSession,
   fallbackTrainingPlan,
   generateAiTrainingPlan,
   loadPlanOverrides,
@@ -184,6 +186,45 @@ function objective(overrides: Partial<PlanObjective> = {}): PlanObjective {
     ...overrides,
   };
 }
+
+test("custom sessions replace and delete plan slots structurally", async () => {
+  await withTempVault(async () => {
+    const plan = fallbackTrainingPlan(objective({ sport: "ride", weeksTotal: 6 }));
+    await saveTrainingPlan(plan);
+    const original = plan.weeks[0].sessions[0];
+    await savePlanOverride({ sessionId: original.id, week: 1, action: "cancel", toWeekday: null, reason: "Ancienne séance", activityId: null });
+
+    await editTrainingSession(1, {
+      weekday: original.weekday,
+      sport: "ride",
+      title: "Vélo extérieur",
+      subtitle: "Remplacement Garmin",
+      durationMin: original.durationMin || 45,
+      intensity: "Z2",
+      details: ["Rouler souple", "Retour au calme"],
+    }, original.id);
+
+    let reloaded = await loadTrainingPlan();
+    assert.equal(reloaded.weeks[0].sessions.find((session) => session.id === original.id)?.title, "Vélo extérieur");
+    assert.deepEqual(await loadPlanOverrides(), [], "replacing a cancelled session must remove its stale cancellation");
+
+    await deleteTrainingSession(1, original.id);
+    reloaded = await loadTrainingPlan();
+    assert.equal(reloaded.weeks[0].sessions.some((session) => session.id === original.id), false);
+
+    const added = await editTrainingSession(1, {
+      weekday: original.weekday,
+      sport: "strength",
+      title: "Stabilité",
+      subtitle: "Séance personnalisée",
+      durationMin: 25,
+      intensity: "Facile",
+      details: ["Gainage", "Équilibre unipodal"],
+    });
+    reloaded = await loadTrainingPlan();
+    assert.equal(reloaded.weeks[0].sessions.find((session) => session.id === added.id)?.title, "Stabilité");
+  });
+});
 
 for (const sport of ["trail", "run", "ride", "hybrid"] as const) {
   test(`fallbackTrainingPlan(${sport}) produces a structurally valid, weeksTotal-week plan`, () => {
