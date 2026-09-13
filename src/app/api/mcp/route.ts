@@ -46,6 +46,11 @@ function err(id: unknown, code: number, message: string) {
   return { jsonrpc: "2.0", id, error: { code, message } };
 }
 
+function toolFailureMessage(error: unknown) {
+  if (error instanceof Error && /^[\p{L}\d][\p{L}\d .,:;()'’_-]{0,200}$/u.test(error.message)) return error.message;
+  return "Tool execution failed.";
+}
+
 const TOOLS = [
   // "search" and "fetch" are the exact tool names ChatGPT connectors require
   // (OpenAI rejects MCP servers without them outside developer mode). They
@@ -772,9 +777,9 @@ async function handle(id: unknown, method: string, params: Record<string, unknow
     try {
       const result = await callTool(toolName, toolArgs);
       return ok(id, result);
-    } catch {
+    } catch (error) {
       return ok(id, {
-        content: [{ type: "text", text: "Tool execution failed." }],
+        content: [{ type: "text", text: toolFailureMessage(error) }],
         isError: true,
       });
     }

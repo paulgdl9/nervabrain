@@ -1462,7 +1462,26 @@ export async function editTrainingSession(
   sessionId?: string,
 ): Promise<PlanSessionData> {
   const plan = await loadTrainingPlan();
-  const week = plan.weeks.find((item) => item.week === weekNumber);
+  let week = plan.weeks.find((item) => item.week === weekNumber);
+  if (!week && !sessionId && plan.generatedBy === "migration" && weekNumber === plan.weeks.length + 1) {
+    const start = parseIsoDate(plan.objective.startDate);
+    if (!start) throw new Error("Date de début du plan invalide");
+    const weekStart = addDays(start, (weekNumber - 1) * 7);
+    const weekEnd = addDays(weekStart, 6);
+    week = {
+      week: weekNumber,
+      dates: `${String(weekStart.getDate()).padStart(2, "0")}/${String(weekStart.getMonth() + 1).padStart(2, "0")} - ${String(weekEnd.getDate()).padStart(2, "0")}/${String(weekEnd.getMonth() + 1).padStart(2, "0")}`,
+      phase: plan.weeks.at(-1)?.phase || 1,
+      c1: "",
+      c2: "",
+      c3: "",
+      dplus: 0,
+      runMinTarget: 0,
+      sessions: [],
+    };
+    plan.weeks.push(week);
+    plan.objective.weeksTotal = weekNumber;
+  }
   if (!week) throw new Error("Semaine introuvable dans le plan");
   const index = sessionId ? week.sessions.findIndex((item) => item.id === sessionId) : -1;
   if (sessionId && index < 0) throw new Error("Séance introuvable dans le plan");

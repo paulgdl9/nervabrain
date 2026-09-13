@@ -241,6 +241,39 @@ test("MCP module tools keep tasks, objectives, and training data in sync", async
   assert.ok((await loadTrainingPlan()).weeks[training.current_week.number - 1].sessions.some((item) => item.title === custom.title));
 });
 
+test("training MCP appends the next week for a rolling migrated plan", async () => {
+  resetOAuthStateForTests();
+  const writeToken = bearerToken(["read", "write"]);
+  const plan = fallbackTrainingPlan({
+    sport: "trail", title: "Rolling plan", eventDate: "2026-12-15", startDate: "2026-09-07",
+    weeksTotal: 1, level: "intermediaire", daysPerWeek: 3, constraints: "",
+  });
+  plan.generatedBy = "migration";
+  await saveTrainingPlan(plan);
+  const response = await POST(rpc({
+    jsonrpc: "2.0", id: "add-week-two", method: "tools/call", params: { name: "adjust_training_session", arguments: {
+      week: 2, action: "add", sport: "strength", weekday: 0, title: "Push", subtitle: "Séance validée",
+      duration_min: 60, intensity: "Modérée", details: ["Échauffement", "Bloc principal"],
+    } },
+  }, writeToken));
+  const result = await response.json();
+  assert.equal(result.result.isError, undefined);
+  const saved = await loadTrainingPlan();
+  assert.equal(saved.objective.weeksTotal, 2);
+  assert.equal(saved.weeks[1].dates, "14/09 - 20/09");
+  assert.equal(saved.weeks[1].sessions[0].title, "Push");
+
+  const missingWeek = await POST(rpc({
+    jsonrpc: "2.0", id: "missing-week", method: "tools/call", params: { name: "adjust_training_session", arguments: {
+      week: 4, action: "add", sport: "strength", weekday: 0, title: "Push", subtitle: "Séance validée",
+      duration_min: 60, intensity: "Modérée", details: ["Échauffement", "Bloc principal"],
+    } },
+  }, writeToken));
+  const failed = await missingWeek.json();
+  assert.equal(failed.result.isError, true);
+  assert.equal(failed.result.content[0].text, "Semaine introuvable dans le plan");
+});
+
 test("fetch and read_note refuse non-Markdown vault files", async () => {
   resetOAuthStateForTests();
   fs.writeFileSync(path.join(scratchVault, "secret.json"), '{"secret":"must stay private"}\n');
