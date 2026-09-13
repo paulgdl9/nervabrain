@@ -1456,6 +1456,55 @@ export async function saveTrainingPlan(plan: PlanData): Promise<void> {
   await atomicWriteFile(filePath, `${JSON.stringify(planToJson(plan), null, 2)}\n`);
 }
 
+function planWeekDates(weekNumber: number, startDate: string): string {
+  const start = parseIsoDate(startDate);
+  if (!start) throw new Error("Date de début du plan invalide");
+  const weekStart = addDays(start, (weekNumber - 1) * 7);
+  const weekEnd = addDays(weekStart, 6);
+  const short = (date: Date) => `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}`;
+  return `${short(weekStart)} - ${short(weekEnd)}`;
+}
+
+export async function setTrainingWeek(
+  weekNumber: number,
+  input: {
+    phase?: 1 | 2 | 3;
+    dplus?: number;
+    sessions: Array<Omit<PlanSessionData, "id"> & { id?: string }>;
+  },
+): Promise<PlanWeekData> {
+  const plan = await loadTrainingPlan();
+  const index = plan.weeks.findIndex((item) => item.week === weekNumber);
+  if (index < 0 && weekNumber !== plan.weeks.length + 1) throw new Error("Les semaines doivent être créées dans l’ordre");
+  const previous = index < 0 ? undefined : plan.weeks[index];
+  const reused = new Set<string>();
+  const sessions = input.sessions.map((session) => {
+    const existing = previous?.sessions.find((item) => !reused.has(item.id)
+      && item.weekday === session.weekday && item.sport === session.sport);
+    const id = session.id || existing?.id || randomUUID();
+    reused.add(id);
+    return { ...session, id };
+  }).sort((left, right) => left.weekday - right.weekday);
+  const week: PlanWeekData = {
+    week: weekNumber,
+    dates: planWeekDates(weekNumber, plan.objective.startDate),
+    phase: input.phase ?? previous?.phase ?? plan.weeks.at(-1)?.phase ?? 1,
+    c1: "",
+    c2: "",
+    c3: "",
+    dplus: input.dplus ?? previous?.dplus ?? 0,
+    runMinTarget: sessions.filter((item) => item.sport === "run")
+      .reduce((sum, item) => sum + (item.durationMin || 0), 0),
+    sessions,
+  };
+  if (index < 0) plan.weeks.push(week);
+  else plan.weeks[index] = week;
+  plan.objective.weeksTotal = plan.weeks.length;
+  if (!validatePlanData(plan)) throw new Error("Cette semaine rendrait le plan incohérent");
+  await saveTrainingPlan(plan);
+  return week;
+}
+
 export async function editTrainingSession(
   weekNumber: number,
   session: Omit<PlanSessionData, "id">,
@@ -1464,13 +1513,9 @@ export async function editTrainingSession(
   const plan = await loadTrainingPlan();
   let week = plan.weeks.find((item) => item.week === weekNumber);
   if (!week && !sessionId && plan.generatedBy === "migration" && weekNumber === plan.weeks.length + 1) {
-    const start = parseIsoDate(plan.objective.startDate);
-    if (!start) throw new Error("Date de début du plan invalide");
-    const weekStart = addDays(start, (weekNumber - 1) * 7);
-    const weekEnd = addDays(weekStart, 6);
     week = {
       week: weekNumber,
-      dates: `${String(weekStart.getDate()).padStart(2, "0")}/${String(weekStart.getMonth() + 1).padStart(2, "0")} - ${String(weekEnd.getDate()).padStart(2, "0")}/${String(weekEnd.getMonth() + 1).padStart(2, "0")}`,
+      dates: planWeekDates(weekNumber, plan.objective.startDate),
       phase: plan.weeks.at(-1)?.phase || 1,
       c1: "",
       c2: "",

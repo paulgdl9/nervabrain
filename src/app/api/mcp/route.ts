@@ -25,7 +25,9 @@ import {
   planDateIso,
   removePlanOverride,
   savePlanOverride,
+  setTrainingWeek,
   saveTrailFeedback,
+  type PlanSessionData,
   type PlanOverride,
   type SportKind,
   type TrailFeedback,
@@ -38,6 +40,26 @@ import type { OAuthScope } from "@/lib/oauth-codes";
 export const runtime = "nodejs";
 
 const PROTOCOL_VERSION = "2024-11-05";
+
+function trainingSessionInput(args: Record<string, unknown>): Omit<PlanSessionData, "id"> & { id?: string } {
+  const sport = String(args.sport || "") as SportKind;
+  const weekday = Number(args.weekday);
+  const durationMin = Number(args.duration_min);
+  const title = String(args.title || "").trim();
+  const subtitle = String(args.subtitle || "").trim();
+  const intensity = String(args.intensity || "").trim();
+  const details = Array.isArray(args.details) ? args.details.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean) : [];
+  if (!["run", "ride", "strength", "recovery"].includes(sport)
+    || !Number.isInteger(weekday) || weekday < 0 || weekday > 6
+    || !Number.isInteger(durationMin) || durationMin < 1
+    || !title || !subtitle || !intensity || !details.length) throw new Error("Invalid training session");
+  const id = String(args.session_id || "").trim();
+  return {
+    sport, weekday, title, subtitle, durationMin, intensity, details,
+    ...(args.optional === true ? { optional: true } : {}),
+    ...(id ? { id } : {}),
+  };
+}
 
 function ok(id: unknown, result: unknown) {
   return { jsonrpc: "2.0", id, result };
@@ -282,6 +304,38 @@ const TOOLS = [
     },
   },
   {
+    name: "set_training_week",
+    description: "Create the next training week or replace any existing week with a complete session plan in one call. This only updates NervaBrain; it does not publish workouts to Garmin.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        week: { type: "integer", minimum: 1 },
+        phase: { type: "integer", enum: [1, 2, 3], description: "Defaults to the existing or previous week phase" },
+        dplus: { type: "integer", minimum: 0, description: "Weekly elevation target in metres" },
+        sessions: {
+          type: "array",
+          minItems: 1,
+          items: {
+            type: "object",
+            properties: {
+              session_id: { type: "string", description: "Optional stable id; matching weekday and sport ids are otherwise preserved when replacing" },
+              sport: { type: "string", enum: ["run", "ride", "strength", "recovery"] },
+              weekday: { type: "integer", minimum: 0, maximum: 6, description: "Monday is 0 and Sunday is 6" },
+              title: { type: "string" },
+              subtitle: { type: "string" },
+              duration_min: { type: "integer", minimum: 1 },
+              intensity: { type: "string" },
+              details: { type: "array", items: { type: "string" }, minItems: 1 },
+              optional: { type: "boolean" },
+            },
+            required: ["sport", "weekday", "title", "subtitle", "duration_min", "intensity", "details"],
+          },
+        },
+      },
+      required: ["week", "sessions"],
+    },
+  },
+  {
     name: "create_application",
     description: "Create a tracked job application without submitting it.",
     inputSchema: {
@@ -352,6 +406,7 @@ const WRITE_TOOLS = new Set([
   "update_objective_status",
   "record_training_feedback",
   "adjust_training_session",
+  "set_training_week",
   "create_application",
   "update_application_stage",
   "create_application_document",
@@ -678,21 +733,7 @@ async function callTool(name: string, args: Record<string, unknown>) {
       }
       if (action === "add" || action === "replace") {
         if (action === "replace" && !sessionId) throw new Error("Missing session id");
-        const sport = String(args.sport || "") as SportKind;
-        const weekday = Number(args.weekday);
-        const durationMin = Number(args.duration_min);
-        const title = String(args.title || "").trim();
-        const subtitle = String(args.subtitle || "").trim();
-        const intensity = String(args.intensity || "").trim();
-        const details = Array.isArray(args.details) ? args.details.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean) : [];
-        if (!["run", "ride", "strength", "recovery"].includes(sport)
-          || !Number.isInteger(weekday) || weekday < 0 || weekday > 6
-          || !Number.isInteger(durationMin) || durationMin < 1
-          || !title || !subtitle || !intensity || !details.length) throw new Error("Invalid training session");
-        const session = await editTrainingSession(week, {
-          sport, weekday, title, subtitle, durationMin, intensity, details,
-          ...(args.optional === true ? { optional: true } : {}),
-        }, action === "replace" ? sessionId : undefined);
+        const session = await editTrainingSession(week, trainingSessionInput(args), action === "replace" ? sessionId : undefined);
         return { content: [{ type: "text", text: `Training session ${action === "add" ? "added" : "replaced"}: ${session.id}` }] };
       }
       if (!["move", "cancel", "validate"].includes(action) || !sessionId) throw new Error("Invalid training action");
@@ -705,6 +746,23 @@ async function callTool(name: string, args: Record<string, unknown>) {
         activityId: args.activity_id ? String(args.activity_id) : null,
       });
       return { content: [{ type: "text", text: `Training session adjusted: ${override.sessionId} (${override.action})` }] };
+    }
+
+    case "set_training_week": {
+      const weekNumber = Number(args.week);
+      const phase = args.phase === undefined ? undefined : Number(args.phase);
+      const dplus = args.dplus === undefined ? undefined : Number(args.dplus);
+      if (!Number.isInteger(weekNumber) || weekNumber < 1) throw new Error("Invalid training week");
+      if (phase !== undefined && ![1, 2, 3].includes(phase)) throw new Error("Invalid training phase");
+      if (dplus !== undefined && (!Number.isInteger(dplus) || dplus < 0)) throw new Error("Invalid elevation target");
+      if (!Array.isArray(args.sessions) || !args.sessions.length) throw new Error("Missing training sessions");
+      const sessions = args.sessions.map((item) => trainingSessionInput(item as Record<string, unknown>));
+      const saved = await setTrainingWeek(weekNumber, {
+        ...(phase === undefined ? {} : { phase: phase as 1 | 2 | 3 }),
+        ...(dplus === undefined ? {} : { dplus }),
+        sessions,
+      });
+      return { content: [{ type: "text", text: `Training week set: ${saved.week} (${saved.sessions.length} sessions)` }] };
     }
 
     case "create_application": {

@@ -274,6 +274,41 @@ test("training MCP appends the next week for a rolling migrated plan", async () 
   assert.equal(failed.result.content[0].text, "Semaine introuvable dans le plan");
 });
 
+test("training MCP creates and replaces a complete week", async () => {
+  resetOAuthStateForTests();
+  const writeToken = bearerToken(["read", "write"]);
+  const plan = fallbackTrainingPlan({
+    sport: "trail", title: "Rolling plan", eventDate: "2026-12-15", startDate: "2026-09-07",
+    weeksTotal: 1, level: "intermediaire", daysPerWeek: 3, constraints: "",
+  });
+  plan.generatedBy = "migration";
+  await saveTrainingPlan(plan);
+  const call = async (args: Record<string, unknown>) => {
+    const response = await POST(rpc({ jsonrpc: "2.0", id: "set-week", method: "tools/call", params: { name: "set_training_week", arguments: args } }, writeToken));
+    return response.json();
+  };
+  const push = {
+    sport: "strength", weekday: 0, title: "Push", subtitle: "Séance validée",
+    duration_min: 60, intensity: "Modérée", details: ["Échauffement", "Bloc principal"],
+  };
+  const created = await call({ week: 2, phase: 1, sessions: [push, { ...push, weekday: 2, title: "Pull" }] });
+  assert.equal(created.result.content[0].text, "Training week set: 2 (2 sessions)");
+  let saved = await loadTrainingPlan();
+  assert.equal(saved.objective.weeksTotal, 2);
+  assert.equal(saved.weeks[1].dates, "14/09 - 20/09");
+  assert.deepEqual(saved.weeks[1].sessions.map((item) => item.title), ["Push", "Pull"]);
+  const pushId = saved.weeks[1].sessions[0].id;
+
+  await call({ week: 2, sessions: [push] });
+  saved = await loadTrainingPlan();
+  assert.equal(saved.weeks[1].sessions.length, 1);
+  assert.equal(saved.weeks[1].sessions[0].id, pushId);
+
+  const skipped = await call({ week: 4, sessions: [push] });
+  assert.equal(skipped.result.isError, true);
+  assert.equal(skipped.result.content[0].text, "Les semaines doivent être créées dans l’ordre");
+});
+
 test("fetch and read_note refuse non-Markdown vault files", async () => {
   resetOAuthStateForTests();
   fs.writeFileSync(path.join(scratchVault, "secret.json"), '{"secret":"must stay private"}\n');
