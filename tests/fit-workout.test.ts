@@ -71,9 +71,9 @@ test("Garmin Connect JSON exports are structurally valid for strength import", a
   assert.equal(steps[0].type, "ExecutableStepDTO");
   assert.equal(steps[0].type === "ExecutableStepDTO" && steps[0].endCondition.conditionTypeKey, "time");
   assert.equal(steps[1].type, "RepeatGroupDTO");
-  assert.ok(exerciseNames.includes("BODY_WEIGHT_WALL_SQUAT"));
-  assert.ok(exerciseNames.includes("ANKLE_DORSIFLEXION_WITH_BAND"));
-  assert.ok(exerciseNames.includes("GLUTE_BRIDGE"));
+  assert.ok(exerciseNames.includes("DUMBBELL_BULGARIAN_SPLIT_SQUAT"));
+  assert.ok(exerciseNames.includes("WEIGHTED_HIP_RAISE"));
+  assert.ok(exerciseNames.includes("SEATED_DUMBBELL_TOE_RAISE"));
   assert.doesNotThrow(() => JSON.parse(JSON.stringify(workout.data)));
 });
 
@@ -85,10 +85,11 @@ test("Push Garmin Connect JSON uses exercise repeat groups from Garmin catalog",
   const groups = steps.filter((step) => step.type === "RepeatGroupDTO");
   const exerciseNames = groups.flatMap((group) => group.type === "RepeatGroupDTO" ? group.workoutSteps.map((step) => step.exerciseName) : []);
 
-  assert.equal(workout.data.workoutName, "Push");
-  assert.equal(steps[0].type === "ExecutableStepDTO" && steps[0].exerciseName, "STANDING_T_ROTATION_BALANCE");
-  assert.equal(groups.length, 10);
-  assert.deepEqual(exerciseNames.filter(Boolean).slice(0, 4), ["PUSH_UPS", "INCLINE_PUSH_UP", "CHEST_PRESS_WITH_BAND", "FLY"]);
+  assert.equal(workout.data.workoutName, "PUSH masse");
+  assert.equal(steps[0].type === "ExecutableStepDTO" && steps[0].category, "CARDIO");
+  assert.equal(groups.length, 6);
+  assert.deepEqual(exerciseNames.filter(Boolean).slice(0, 4), ["DUMBBELL_BENCH_PRESS", "DUMBBELL_LATERAL_RAISE", "INCLINE_DUMBBELL_BENCH_PRESS", "SEATED_DUMBBELL_SHOULDER_PRESS"]);
+  assert.deepEqual(groups.slice(0, 3).map((group) => group.type === "RepeatGroupDTO" ? group.workoutSteps[0].weightValue : null), [8, 4.5, 8.5]);
   assert.equal(groups.at(-1)?.type === "RepeatGroupDTO" && groups.at(-1)?.skipLastRestStep, true);
 });
 

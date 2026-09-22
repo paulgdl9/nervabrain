@@ -33,6 +33,15 @@ MARK_START = "<!-- GARMIN-SYNC:START -->"
 MARK_END = "<!-- GARMIN-SYNC:END -->"
 DAY_NAMES = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
 
+# Stable step indexes from the three structured workouts currently sent to the
+# watch. Garmin's detected exercise name is ambiguous for some movements
+# (both curls are DUMBBELL_BICEPS_CURL), while wktStepIndex is deterministic.
+STRENGTH_STEPS = {
+    "PUSH": {1: "Développé couché haltères", 4: "Élévations latérales", 7: "Développé incliné haltères", 10: "Extension triceps au-dessus de la tête", 13: "Développé épaules assis", 16: "Pompes"},
+    "PULL": {1: "Tractions", 4: "Oiseau assis, buste penché", 7: "Rowing unilatéral haltère", 10: "Curl incliné haltères", 13: "Rowing buste penché", 16: "Curl marteau", 19: "Hanging knee raises", 22: "Side plank"},
+    "JAMBES": {1: "Bulgarian split squat", 4: "Soulevé de terre roumain (RDL)", 7: "Step-up", 10: "Hip thrust", 13: "Mollets debout unilatéraux", 16: "Mollets assis", 19: "Tibialis raise", 22: "Éversion du pied à l’élastique"},
+}
+
 
 def parse_iso(value: str | None) -> date | None:
     if not value:
@@ -317,7 +326,51 @@ def build_sync_md(today: date, acts: list[dict], goal: dict) -> str:
     return "\n".join(parts) + "\n"
 
 
-def build_json(acts: list[dict], goal: dict) -> str:
+def workout_kind(activity: dict) -> str | None:
+    name = str(activity.get("activityName") or "").upper()
+    return next((kind for kind in STRENGTH_STEPS if kind in name), None)
+
+
+def normalize_strength_sets(activity: dict, payload: object) -> list[dict]:
+    kind = workout_kind(activity)
+    if not kind or not isinstance(payload, dict):
+        return []
+    result: list[dict] = []
+    for item in payload.get("exerciseSets") or []:
+        if not isinstance(item, dict) or item.get("setType") != "ACTIVE":
+            continue
+        step_index = item.get("wktStepIndex")
+        exercise = STRENGTH_STEPS[kind].get(step_index)
+        if not exercise:
+            continue
+        weight = item.get("weight")
+        reps = item.get("repetitionCount")
+        duration = item.get("duration")
+        result.append({
+            "exercise": exercise,
+            "step_index": step_index,
+            "reps": int(reps) if isinstance(reps, (int, float)) else None,
+            "weight_kg": round(float(weight) / 1000, 3) if isinstance(weight, (int, float)) else None,
+            "seconds": round(float(duration), 1) if reps is None and isinstance(duration, (int, float)) else None,
+        })
+    return result
+
+
+def fetch_strength_sets(api, acts: list[dict]) -> dict[str, list[dict]]:
+    result: dict[str, list[dict]] = {}
+    for activity in acts:
+        activity_id = activity.get("activityId")
+        if not activity_id or kind_of(activity) != "strength":
+            continue
+        try:
+            result[str(activity_id)] = normalize_strength_sets(activity, api.get_activity_exercise_sets(activity_id))
+        except Exception as exc:  # noqa: BLE001
+            print(f"[sync] strength details skipped {activity_id}: {type(exc).__name__}", file=sys.stderr)
+    return result
+
+
+def build_json(acts: list[dict], goal: dict, strength_sets: dict[str, list[dict]] | None = None) -> str:
+    strength_sets = strength_sets or {}
     items = []
     for activity in sorted(acts, key=lambda item: item.get("startTimeLocal") or ""):
         day = act_date(activity)
@@ -357,6 +410,7 @@ def build_json(acts: list[dict], goal: dict) -> str:
             "hr_zones": zone_items(activity, "hrZones", "heartRateZones", "heart_rate_zones"),
             "power_zones": zone_items(activity, "powerZones", "power_zones"),
             "time_in_zone2_s": first_value(activity, "timeInZone2", "timeInZone2Seconds", "time_in_zone2_s"),
+            "strength_sets": strength_sets.get(str(activity.get("activityId")), []),
         })
     payload = {
         "generated_at": datetime.now().isoformat(timespec="seconds"),
@@ -587,11 +641,13 @@ def main() -> int:
     api.login(TOKENSTORE)
     acts = api.get_activities_by_date(start.isoformat(), today.isoformat())
     print(f"[sync] {len(acts)} activities since {start}")
+    strength_sets = fetch_strength_sets(api, acts)
+    print(f"[sync] {sum(bool(sets) for sets in strength_sets.values())} detailed strength activities")
 
     atomic_write(SYNC_MD, check_no_dashes(build_sync_md(today, acts, goal)))
     print(f"[sync] wrote {SYNC_MD}")
 
-    atomic_write(SYNC_JSON, build_json(acts, goal))
+    atomic_write(SYNC_JSON, build_json(acts, goal, strength_sets))
     print(f"[sync] wrote {SYNC_JSON}")
 
     try:

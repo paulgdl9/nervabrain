@@ -38,9 +38,10 @@ import { DifficultyBolts } from "@/components/DifficultyBolts";
 import { useLanguage } from "@/components/LanguageProvider";
 import { sessionDifficulty } from "@/lib/trail-difficulty";
 import { activitySummary, fmtMinutes, sportLabel } from "@/lib/trail-format";
+import { strengthProgramFor, strengthTarget, type StrengthProgram } from "@/lib/strength-program";
 // Type-only: @/lib/trail reads the vault via node:fs. The per-day session
 // plan arrives serialized from the server-side TrailWorkspace.
-import type { PlannedSession, SportKind, TrailActivity, TrailPlanAdjustment } from "@/lib/trail";
+import type { PlannedSession, SportKind, StrengthSet, TrailActivity, TrailPlanAdjustment } from "@/lib/trail";
 
 function translatedToday(value: string, values: Record<string, string | number>) {
   return Object.entries(values).reduce((result, [name, replacement]) => result.replaceAll(`{${name}}`, String(replacement)), value);
@@ -292,6 +293,33 @@ function CancelModal({ session, week, onClose }: { session: PlanDisplaySession; 
   );
 }
 
+function actualSet(set: StrengthSet, locale: "fr" | "en") {
+  const weight = set.weightKg === null || set.weightKg === 0 ? "" : `${set.weightKg.toLocaleString(locale === "fr" ? "fr-FR" : "en-US")} kg × `;
+  if (set.reps !== null) return `${weight}${set.reps}`;
+  if (set.seconds !== null) return `${Math.round(set.seconds)} s`;
+  return "–";
+}
+
+function StrengthWorkout({ program, sets }: { program: StrengthProgram; sets: StrengthSet[] }) {
+  const { locale, t } = useLanguage();
+  const byExercise = new Map<string, StrengthSet[]>();
+  for (const set of sets) byExercise.set(set.exercise, [...(byExercise.get(set.exercise) || []), set]);
+  return (
+    <div className="strength-workout">
+      <div className="strength-workout-head"><span>{t("training.strength.exercise")}</span><span>{t("training.strength.result")}</span></div>
+      {program.exercises.map((exercise) => {
+        const actual = byExercise.get(exercise.label) || [];
+        return (
+          <div className="strength-exercise" key={exercise.label}>
+            <div><strong>{exercise.label}</strong><small>{strengthTarget(exercise)}</small></div>
+            <div className="strength-sets">{actual.length ? actual.map((set, index) => <span key={`${exercise.label}-${index}`}>{actualSet(set, locale)}</span>) : <span className="is-empty">{t("training.strength.pending")}</span>}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function DaySession({ session, activities, claimedActivityIds, dayIso, week }: { session: PlanDisplaySession; activities: TrailActivity[]; claimedActivityIds: Set<string>; dayIso: string; week: number }) {
   const { locale, t } = useLanguage();
   const [detailsOpen, setDetailsOpen] = useState(true);
@@ -301,6 +329,8 @@ function DaySession({ session, activities, claimedActivityIds, dayIso, week }: {
   const complete = matches.length > 0 || session.manualValidated;
   const cancelled = Boolean(session.cancelledReason);
   const hasOverride = Boolean(session.userMovedFromIso || session.cancelledReason || session.manualValidated);
+  const strengthProgram = session.sport === "strength" ? strengthProgramFor(session) : null;
+  const strengthSets = matches.flatMap((activity) => activity.strengthSets || []);
   return (
     <article className={`today-session sport-border-${session.sport}${complete ? " is-complete" : ""}${cancelled ? " is-cancelled" : ""}`}>
       <div className="today-session-top">
@@ -340,9 +370,9 @@ function DaySession({ session, activities, claimedActivityIds, dayIso, week }: {
         )}
       </div>
       <button className="session-detail-toggle" type="button" aria-expanded={detailsOpen} onClick={() => setDetailsOpen((value) => !value)}><span>{detailsOpen ? t("training.session.hideDetails") : t("training.session.showDetails")}</span><ChevronDown size={15} /></button>
-      {detailsOpen && <ol className="session-steps">
-        {session.details.map((detail, index) => <li key={detail}><span>{index + 1}</span>{detail}</li>)}
-      </ol>}
+      {detailsOpen && (strengthProgram
+        ? <StrengthWorkout program={strengthProgram} sets={strengthSets} />
+        : <ol className="session-steps">{session.details.map((detail, index) => <li key={detail}><span>{index + 1}</span>{detail}</li>)}</ol>)}
       {session.rescheduledFromIso && (
         <div className="session-adjustment">
           <CornerDownRight size={14} />

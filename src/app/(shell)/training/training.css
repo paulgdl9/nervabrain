@@ -294,6 +294,17 @@
 .session-steps { display: grid; gap: 7px; margin: 0 0 0 46px; padding: 0; list-style: none; }
 .session-steps li { display: flex; align-items: flex-start; gap: 8px; color: var(--muted); font-size: 11px; line-height: 1.4; }
 .session-steps li > span { display: grid; width: 17px; height: 17px; flex: 0 0 auto; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; color: var(--ink-soft); font-size: 8px; font-weight: 660; }
+.strength-workout { display: grid; gap: 0; margin: 11px 0 0 46px; overflow: hidden; border: 1px solid var(--line-soft); border-radius: 12px; }
+.strength-workout-head, .strength-exercise { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(140px, .85fr); align-items: center; gap: 16px; }
+.strength-workout-head { background: color-mix(in srgb, var(--strength-color) 8%, transparent); color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .08em; padding: 8px 12px; text-transform: uppercase; }
+.strength-workout-head span:last-child { text-align: right; }
+.strength-exercise { border-top: 1px solid var(--line-soft); padding: 10px 12px; }
+.strength-exercise > div:first-child { display: grid; min-width: 0; gap: 2px; }
+.strength-exercise strong { color: var(--ink-soft); font-size: 11px; font-weight: 640; }
+.strength-exercise small { color: var(--muted); font-size: 9.5px; line-height: 1.35; }
+.strength-sets { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
+.strength-sets span { border: 1px solid color-mix(in srgb, var(--strength-color) 22%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--strength-color) 8%, transparent); color: var(--ink-soft); font-size: 9.5px; font-weight: 620; padding: 3px 7px; }
+.strength-sets span.is-empty { border-color: var(--line-soft); background: transparent; color: var(--muted-2); }
 .session-adjustment { display: flex; align-items: flex-start; gap: 7px; margin: 12px 0 0 46px; border-top: 1px solid var(--line-soft); color: var(--recovery-color); font-size: 11px; font-weight: 580; line-height: 1.4; padding-top: 10px; }
 .session-adjustment svg { flex: 0 0 auto; margin-top: 1px; }
 .session-result { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 14px 0 0 46px; border-top: 1px solid var(--line-soft); padding-top: 11px; font-size: 10px; }
@@ -980,7 +991,10 @@
   .today-session-grid { grid-template-columns: minmax(0, 1fr); }
   .session-status { font-size: 0; padding: 6px; }
   .session-fit-download { min-height: 44px; padding-inline: 11px; }
-  .session-prescription, .session-steps, .session-adjustment, .session-result { margin-left: 0; }
+  .session-prescription, .session-steps, .strength-workout, .session-adjustment, .session-result { margin-left: 0; }
+  .strength-workout-head, .strength-exercise { grid-template-columns: 1fr; gap: 7px; }
+  .strength-workout-head span:last-child { display: none; }
+  .strength-sets { justify-content: flex-start; }
   .training-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .coach-lastrun-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   /* Fit the chart inside the card instead of forcing a 590px min-width with a

@@ -7,6 +7,7 @@ import { aiSetupPreferences, listNotes, VAULT_FOLDERS, vaultRoot, type VaultNote
 // built-ins). Imported for internal use here and re-exported so existing
 // server-side importers of @/lib/trail keep working unchanged.
 import { activityDiscipline, fmtPace, fmtDur, fmtKm, fmtMinutes, sportLabel, activitySummary } from "@/lib/trail-format";
+import type { StrengthExercisePlan } from "@/lib/strength-program";
 
 export { fmtPace, fmtDur, fmtKm, fmtMinutes, sportLabel, activitySummary };
 
@@ -82,6 +83,15 @@ export type TrailActivity = {
   hrZones: TrailActivityZone[];
   powerZones: TrailActivityZone[];
   timeInZone2S: number | null;
+  strengthSets?: StrengthSet[];
+};
+
+export type StrengthSet = {
+  exercise: string;
+  stepIndex: number | null;
+  reps: number | null;
+  weightKg: number | null;
+  seconds: number | null;
 };
 
 export type TrailFeedback = {
@@ -129,6 +139,7 @@ export type PlannedSession = {
   durationMin: number | null;
   intensity: string;
   details: string[];
+  strengthExercises?: StrengthExercisePlan[];
   optional?: boolean;
 };
 
@@ -463,6 +474,7 @@ type PlanSessionJson = {
   duration_min: number | null;
   intensity: string;
   details: string[];
+  strength_exercises?: StrengthExercisePlan[];
   optional?: boolean;
   weekday: number;
 };
@@ -527,6 +539,7 @@ function planToJson(plan: PlanData): PlanDataJson {
         duration_min: session.durationMin,
         intensity: session.intensity,
         details: session.details,
+        ...(session.strengthExercises?.length ? { strength_exercises: session.strengthExercises } : {}),
         ...(session.optional ? { optional: true } : {}),
         weekday: session.weekday,
       })),
@@ -581,6 +594,7 @@ function planFromJson(value: unknown): PlanData | null {
           durationMin: session.duration_min === null || session.duration_min === undefined ? null : Number(session.duration_min),
           intensity: String(session.intensity ?? ""),
           details: Array.isArray(session.details) ? session.details.map(String) : [],
+          ...(Array.isArray(session.strength_exercises) ? { strengthExercises: session.strength_exercises as StrengthExercisePlan[] } : {}),
           ...(session.optional ? { optional: true } : {}),
           weekday: Number(session.weekday),
         };
@@ -692,6 +706,15 @@ export function validatePlanData(value: unknown): PlanData | null {
       } else if (!Number.isInteger(session.durationMin) || session.durationMin <= 0) return null;
       if (!Array.isArray(session.details) || !session.details.length
         || session.details.some((detail) => typeof detail !== "string" || !detail.trim())) return null;
+      if (session.strengthExercises !== undefined && (!Array.isArray(session.strengthExercises)
+        || session.sport !== "strength"
+        || session.strengthExercises.some((exercise) => !exercise || typeof exercise.label !== "string" || !exercise.label.trim()
+          || typeof exercise.category !== "string" || typeof exercise.exerciseName !== "string"
+          || !Number.isInteger(exercise.sets) || exercise.sets < 1
+          || !Number.isInteger(exercise.restSeconds) || exercise.restSeconds < 0
+          || (exercise.repsMin === undefined && exercise.repsMax === undefined && exercise.seconds === undefined)
+          || [exercise.repsMin, exercise.repsMax, exercise.seconds].some((value) => value !== undefined && (!Number.isFinite(value) || value <= 0))
+          || (exercise.weightKg !== undefined && (!Number.isFinite(exercise.weightKg) || exercise.weightKg < 0))))) return null;
       if (seenIds.has(session.id)) return null;
       seenIds.add(session.id);
       const absoluteDay = index * 7 + session.weekday;
@@ -1483,7 +1506,7 @@ export async function setTrainingWeek(
       && item.weekday === session.weekday && item.sport === session.sport);
     const id = session.id || existing?.id || randomUUID();
     reused.add(id);
-    return { ...session, id };
+    return { ...session, ...(!session.strengthExercises?.length && existing?.strengthExercises?.length ? { strengthExercises: existing.strengthExercises } : {}), id };
   }).sort((left, right) => left.weekday - right.weekday);
   const week: PlanWeekData = {
     week: weekNumber,
@@ -1531,7 +1554,8 @@ export async function editTrainingSession(
   const index = sessionId ? week.sessions.findIndex((item) => item.id === sessionId) : -1;
   if (sessionId && index < 0) throw new Error("Séance introuvable dans le plan");
 
-  const edited = { ...session, id: sessionId || randomUUID() };
+  const existing = index >= 0 ? week.sessions[index] : undefined;
+  const edited = { ...session, ...(!session.strengthExercises?.length && existing?.strengthExercises?.length ? { strengthExercises: existing.strengthExercises } : {}), id: sessionId || randomUUID() };
   if (index < 0) week.sessions.push(edited);
   else week.sessions[index] = edited;
   week.sessions.sort((left, right) => left.weekday - right.weekday);
@@ -2273,6 +2297,19 @@ export async function loadTrailData(): Promise<TrailSyncData> {
         hrZones,
         powerZones,
         timeInZone2S: numberOrNull(act.time_in_zone2_s) ?? hrZones.find((zone) => zone.zone === 2)?.seconds ?? null,
+        strengthSets: Array.isArray(act.strength_sets) ? act.strength_sets.flatMap((rawSet) => {
+          if (!rawSet || typeof rawSet !== "object") return [];
+          const set = rawSet as Record<string, unknown>;
+          const exercise = String(set.exercise || "").trim();
+          if (!exercise) return [];
+          return [{
+            exercise,
+            stepIndex: numberOrNull(set.step_index),
+            reps: numberOrNull(set.reps),
+            weightKg: numberOrNull(set.weight_kg),
+            seconds: numberOrNull(set.seconds),
+          }];
+        }) : [],
       };
     });
     return { generatedAt: parsed.generated_at || null, activities };

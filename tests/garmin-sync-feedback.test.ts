@@ -79,3 +79,26 @@ print(module.build_json(acts, goal))
 
   assert.deepEqual(JSON.parse(output).activities.map((activity: { id: string | null }) => activity.id), ["999", null, "111"]);
 });
+
+test("generic profile sync stores detailed Garmin strength sets", async () => {
+  const vault = await scratchVault();
+  const output = runPython(vault, String.raw`
+import importlib.util
+spec = importlib.util.spec_from_file_location("sync", "scripts/garmin-sync-profile.py")
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+activity = {"activityId": 24459229502, "activityName": "PULL masse", "activityType": {"typeKey": "strength_training"}}
+payload = {"exerciseSets": [
+  {"setType": "ACTIVE", "wktStepIndex": 1, "repetitionCount": 5, "weight": 0.0, "duration": 28.9},
+  {"setType": "REST", "wktStepIndex": 2, "duration": 120.0},
+  {"setType": "ACTIVE", "wktStepIndex": 4, "repetitionCount": 11, "weight": 4500.0, "duration": 43.3},
+]}
+import json
+print(json.dumps(module.normalize_strength_sets(activity, payload), ensure_ascii=False))
+`);
+  const sets = JSON.parse(output);
+  assert.deepEqual(sets, [
+    { exercise: "Tractions", step_index: 1, reps: 5, weight_kg: 0, seconds: null },
+    { exercise: "Oiseau assis, buste penché", step_index: 4, reps: 11, weight_kg: 4.5, seconds: null },
+  ]);
+});

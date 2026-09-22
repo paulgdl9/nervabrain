@@ -36,6 +36,7 @@ import { preflight, withCors } from "@/lib/cors";
 import { authenticateRequest, type AuthContext } from "@/lib/auth";
 import { readRequestText, RequestBodyError } from "@/lib/http-security";
 import type { OAuthScope } from "@/lib/oauth-codes";
+import { strengthProgramFor, type StrengthExercisePlan } from "@/lib/strength-program";
 
 export const runtime = "nodejs";
 
@@ -49,6 +50,21 @@ function trainingSessionInput(args: Record<string, unknown>): Omit<PlanSessionDa
   const subtitle = String(args.subtitle || "").trim();
   const intensity = String(args.intensity || "").trim();
   const details = Array.isArray(args.details) ? args.details.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean) : [];
+  const strengthExercises = Array.isArray(args.strength_exercises) ? args.strength_exercises.map((raw) => {
+    const item = raw as Record<string, unknown>;
+    return {
+      label: String(item.label || "").trim(),
+      category: String(item.category || "").trim(),
+      exerciseName: String(item.exercise_name || "").trim(),
+      sets: Number(item.sets),
+      ...(item.reps_min !== undefined ? { repsMin: Number(item.reps_min) } : {}),
+      ...(item.reps_max !== undefined ? { repsMax: Number(item.reps_max) } : {}),
+      ...(item.seconds !== undefined ? { seconds: Number(item.seconds) } : {}),
+      ...(item.weight_kg !== undefined ? { weightKg: Number(item.weight_kg) } : {}),
+      restSeconds: Number(item.rest_seconds),
+      ...(item.rir ? { rir: String(item.rir).trim() } : {}),
+    } satisfies StrengthExercisePlan;
+  }) : undefined;
   if (!["run", "ride", "strength", "recovery"].includes(sport)
     || !Number.isInteger(weekday) || weekday < 0 || weekday > 6
     || !Number.isInteger(durationMin) || durationMin < 1
@@ -56,6 +72,7 @@ function trainingSessionInput(args: Record<string, unknown>): Omit<PlanSessionDa
   const id = String(args.session_id || "").trim();
   return {
     sport, weekday, title, subtitle, durationMin, intensity, details,
+    ...(strengthExercises?.length ? { strengthExercises } : {}),
     ...(args.optional === true ? { optional: true } : {}),
     ...(id ? { id } : {}),
   };
@@ -298,6 +315,7 @@ const TOOLS = [
         duration_min: { type: "integer", minimum: 1, description: "Required for add and replace" },
         intensity: { type: "string", description: "Required for add and replace" },
         details: { type: "array", items: { type: "string" }, minItems: 1, description: "Ordered workout steps; required for add and replace" },
+        strength_exercises: { type: "array", items: { type: "object" }, description: "Structured strength targets: label, category, exercise_name, sets, reps_min/reps_max or seconds, weight_kg, rest_seconds and optional rir" },
         optional: { type: "boolean" },
       },
       required: ["week", "action"],
@@ -326,6 +344,7 @@ const TOOLS = [
               duration_min: { type: "integer", minimum: 1 },
               intensity: { type: "string" },
               details: { type: "array", items: { type: "string" }, minItems: 1 },
+              strength_exercises: { type: "array", items: { type: "object" }, description: "Structured strength targets" },
               optional: { type: "boolean" },
             },
             required: ["sport", "weekday", "title", "subtitle", "duration_min", "intensity", "details"],
@@ -550,6 +569,7 @@ async function callTool(name: string, args: Record<string, unknown>) {
         duration_min: Math.round(item.durS / 60),
         heart_rate: item.hr,
         elevation_m: item.dplus,
+        strength_sets: item.strengthSets || [],
         feedback: feedbackByActivity.get(item.id) || null,
       });
       const payload = {
@@ -573,6 +593,7 @@ async function callTool(name: string, args: Record<string, unknown>) {
               duration_min: session.durationMin,
               intensity: session.intensity,
               details: session.details,
+              strength_exercises: session.sport === "strength" ? strengthProgramFor(session)?.exercises || [] : [],
               optional: Boolean(session.optional),
               override: override ? { action: override.action, reason: override.reason, activity_id: override.activityId } : null,
             };

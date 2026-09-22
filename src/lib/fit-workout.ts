@@ -1,6 +1,7 @@
 import { Decoder, Encoder, Profile, Stream } from "@garmin/fitsdk";
 import type { FileIdMesg, WorkoutMesg, WorkoutStepMesg } from "@garmin/fitsdk";
 import { loadTrainingPlan, type PlannedSession, type SportKind } from "@/lib/trail";
+import { strengthProgramFor, strengthTarget, type StrengthExercisePlan } from "@/lib/strength-program";
 
 // Garmin FIT Profile 21.208 enum values. The official Encoder validates fields,
 // writes definitions/header/CRCs, and the official Decoder validates every file.
@@ -111,78 +112,7 @@ export type GarminConnectWorkout = {
   steps: Step[];
 };
 
-type StrengthExercise = {
-  category: string;
-  exerciseName: string;
-  sets: number;
-  reps?: number;
-  seconds?: number;
-  max?: boolean;
-  restSeconds?: number;
-  description?: string;
-  weightValue?: number;
-};
-
-type StrengthWorkoutPreset = {
-  name: string;
-  description: string;
-  warmup: { category: string; exerciseName: string; seconds: number };
-  exercises: StrengthExercise[];
-};
-
 const KG_UNIT = { unitId: 8, unitKey: "kilogram", factor: 1000 } as const;
-
-const STRENGTH_PRESETS = {
-  push: {
-    name: "Push",
-    description: "Pecs / epaules / triceps",
-    warmup: { category: "TOTAL_BODY", exerciseName: "STANDING_T_ROTATION_BALANCE", seconds: 300 },
-    exercises: [
-      { category: "BANDED_EXERCISES", exerciseName: "PUSH_UPS", sets: 4, max: true, description: "Max", restSeconds: 90, weightValue: 0 },
-      { category: "PUSH_UP", exerciseName: "INCLINE_PUSH_UP", sets: 3, reps: 12, restSeconds: 90, weightValue: -1 },
-      { category: "PUSH_UP", exerciseName: "CHEST_PRESS_WITH_BAND", sets: 4, reps: 12, restSeconds: 90, weightValue: 0 },
-      { category: "BANDED_EXERCISES", exerciseName: "FLY", sets: 3, reps: 15, restSeconds: 90, weightValue: 0 },
-      { category: "BANDED_EXERCISES", exerciseName: "SHOULDER_EXTENSION", sets: 4, reps: 12, restSeconds: 90, weightValue: 0 },
-      { category: "BANDED_EXERCISES", exerciseName: "LATERAL_RAISE", sets: 3, reps: 15, restSeconds: 90, weightValue: 0 },
-      { category: "BANDED_EXERCISES", exerciseName: "EXTERNAL_ROTATION_AT_90_DEGREE_ABDUCTION", sets: 3, reps: 15, restSeconds: 90, weightValue: 0 },
-      { category: "SUSPENSION", exerciseName: "DIP", sets: 4, max: true, description: "Max", restSeconds: 90, weightValue: 0 },
-      { category: "BANDED_EXERCISES", exerciseName: "TRICEP_EXTENSION", sets: 3, reps: 12, restSeconds: 90, weightValue: 0 },
-      { category: "BANDED_EXERCISES", exerciseName: "TRICEP_KICKBACK", sets: 3, reps: 15, restSeconds: 90, weightValue: 0 },
-    ],
-  },
-  pull: {
-    name: "Pull",
-    description: "Dos / biceps / abdos",
-    warmup: { category: "WARM_UP", exerciseName: "THORACIC_ROTATION", seconds: 300 },
-    exercises: [
-      { category: "PULL_UP", exerciseName: "BAND_ASSISTED_PULL_UP", sets: 3, max: true, description: "Max", restSeconds: 90, weightValue: -1 },
-      { category: "BANDED_EXERCISES", exerciseName: "ROW", sets: 4, reps: 12, restSeconds: 90, weightValue: 0 },
-      { category: "BANDED_EXERCISES", exerciseName: "LATPULL", sets: 4, reps: 12, restSeconds: 90, weightValue: 0 },
-      { category: "ROW", exerciseName: "BANDED_FACE_PULLS", sets: 3, reps: 15, restSeconds: 75, weightValue: 0 },
-      { category: "BANDED_EXERCISES", exerciseName: "CURL", sets: 4, reps: 12, restSeconds: 75, weightValue: 0 },
-      { category: "CURL", exerciseName: "CABLE_HAMMER_CURL", sets: 3, reps: 12, restSeconds: 75, weightValue: 0 },
-      { category: "CURL", exerciseName: "REVERSE_EZ_BAR_CURL", sets: 3, reps: 10, restSeconds: 75, weightValue: 0 },
-      { category: "PLANK", exerciseName: "PLANK", sets: 3, seconds: 60, restSeconds: 45, weightValue: -1 },
-      { category: "LEG_RAISE", exerciseName: "LEG_RAISE", sets: 3, seconds: 45, restSeconds: 45, weightValue: -1 },
-      { category: "CRUNCH", exerciseName: "CRUNCH", sets: 3, reps: 15, restSeconds: 45, weightValue: -1 },
-    ],
-  },
-  legsPrevention: {
-    name: "Jambes + prevention",
-    description: "Force jambes / tendons / cheville",
-    warmup: { category: "WARM_UP", exerciseName: "ANKLE_CIRCLES", seconds: 300 },
-    exercises: [
-      { category: "SQUAT", exerciseName: "BODY_WEIGHT_WALL_SQUAT", sets: 3, reps: 12, restSeconds: 75, weightValue: -1 },
-      { category: "CALF_RAISE", exerciseName: "SINGLE_LEG_STANDING_CALF_RAISE", sets: 3, reps: 12, restSeconds: 60, weightValue: -1 },
-      { category: "WARM_UP", exerciseName: "ANKLE_INTERNAL_ROTATION", sets: 3, reps: 15, restSeconds: 45, weightValue: 0 },
-      { category: "WARM_UP", exerciseName: "ANKLE_DORSIFLEXION_WITH_BAND", sets: 3, reps: 15, restSeconds: 45, weightValue: 0 },
-      { category: "BANDED_EXERCISES", exerciseName: "LATERAL_BAND_WALKS", sets: 3, seconds: 45, restSeconds: 45, weightValue: 0 },
-      { category: "BANDED_EXERCISES", exerciseName: "GLUTE_BRIDGE", sets: 3, reps: 15, restSeconds: 45, weightValue: 0 },
-      { category: "WARM_UP", exerciseName: "OPPOSITE_ARM_AND_LEG_BALANCE", sets: 3, seconds: 30, restSeconds: 30, weightValue: -1 },
-      { category: "SQUAT", exerciseName: "STEP_UP", sets: 3, reps: 8, restSeconds: 60, weightValue: -1 },
-    ],
-  },
-} satisfies Record<string, StrengthWorkoutPreset>;
 
 function parseDistanceKm(label: string): number | null {
   const range = label.match(/(\d+(?:[.,]\d+)?)\s*[-–]\s*(\d+(?:[.,]\d+)?)\s*km/i);
@@ -433,30 +363,26 @@ function repsCondition(): GarminConnectWorkoutStep["endCondition"] {
   return { conditionTypeId: 10, conditionTypeKey: "reps", displayOrder: 10, displayable: true };
 }
 
-function lapButtonCondition(): GarminConnectWorkoutStep["endCondition"] {
-  return { conditionTypeId: 1, conditionTypeKey: "lap.button", displayOrder: 1, displayable: true };
-}
-
-function strengthWarmupStep(preset: StrengthWorkoutPreset): GarminConnectWorkoutStep {
+function strengthWarmupStep(): GarminConnectWorkoutStep {
   return {
-    ...garminStrengthStepBase(1, null, { stepTypeId: 1, stepTypeKey: "warmup", displayOrder: 1 }, timeCondition(), preset.warmup.seconds),
-    description: null,
-    category: preset.warmup.category,
-    exerciseName: preset.warmup.exerciseName,
+    ...garminStrengthStepBase(1, null, { stepTypeId: 1, stepTypeKey: "warmup", displayOrder: 1 }, timeCondition(), 300),
+    description: "Échauffement général · 5 min",
+    category: "CARDIO",
+    exerciseName: "",
     weightValue: null,
     weightUnit: null,
   };
 }
 
-function strengthExerciseStep(exercise: StrengthExercise, stepOrder: number, childStepId: number): GarminConnectWorkoutStep {
-  const condition = exercise.max ? lapButtonCondition() : exercise.seconds ? timeCondition() : repsCondition();
-  const value = exercise.max ? 0 : exercise.seconds || exercise.reps || 1;
+function strengthExerciseStep(exercise: StrengthExercisePlan, stepOrder: number, childStepId: number): GarminConnectWorkoutStep {
+  const condition = exercise.seconds ? timeCondition() : repsCondition();
+  const value = exercise.seconds || exercise.repsMax || exercise.repsMin || 1;
   return {
     ...garminStrengthStepBase(stepOrder, childStepId, { stepTypeId: 3, stepTypeKey: "interval", displayOrder: 3 }, condition, value),
-    description: exercise.description || null,
+    description: `${exercise.label} · ${strengthTarget(exercise)}`,
     category: exercise.category,
     exerciseName: exercise.exerciseName,
-    weightValue: exercise.weightValue ?? 0,
+    weightValue: exercise.weightKg ?? null,
     weightUnit: KG_UNIT,
   };
 }
@@ -472,21 +398,15 @@ function strengthRestStep(stepOrder: number, childStepId: number, seconds: numbe
   };
 }
 
-function strengthPresetFor(session: PlannedSession): StrengthWorkoutPreset {
-  const label = `${session.title} ${session.subtitle}`;
-  if (/push/i.test(label)) return STRENGTH_PRESETS.push;
-  if (/pull/i.test(label)) return STRENGTH_PRESETS.pull;
-  return STRENGTH_PRESETS.legsPrevention;
-}
-
 function createStrengthGarminJson(session: PlannedSession, sportType: GarminConnectSport): GarminConnectWorkoutJson {
-  const preset = strengthPresetFor(session);
+  const preset = strengthProgramFor(session);
+  if (!preset) throw new Error("Programme de musculation structuré introuvable");
   let stepOrder = 1;
-  const workoutSteps: GarminConnectWorkoutNode[] = [strengthWarmupStep(preset)];
+  const workoutSteps: GarminConnectWorkoutNode[] = [strengthWarmupStep()];
 
   preset.exercises.forEach((exercise, index) => {
     const childStepId = index + 1;
-    const restSeconds = exercise.restSeconds ?? 90;
+    const restSeconds = exercise.restSeconds;
     const groupStepOrder = ++stepOrder;
     workoutSteps.push({
       type: "RepeatGroupDTO",
@@ -508,9 +428,9 @@ function createStrengthGarminJson(session: PlannedSession, sportType: GarminConn
     });
   });
 
-  const estimatedDurationInSecs = preset.warmup.seconds + preset.exercises.reduce((sum, exercise, index) => {
+  const estimatedDurationInSecs = 300 + preset.exercises.reduce((sum, exercise, index) => {
     const workSeconds = exercise.seconds ?? 30;
-    const restSeconds = index === preset.exercises.length - 1 ? 0 : exercise.restSeconds ?? 90;
+    const restSeconds = index === preset.exercises.length - 1 ? 0 : exercise.restSeconds;
     return sum + exercise.sets * workSeconds + Math.max(0, exercise.sets - 1) * restSeconds;
   }, 0);
 
@@ -535,7 +455,7 @@ export function createWorkoutGarminJson(session: PlannedSession): GarminConnectW
   if (!canExportFit(session.sport)) throw new Error("Sport Garmin Connect non pris en charge");
   const steps = sessionSteps(session);
   const sportType = garminConnectSport(session);
-  const data: GarminConnectWorkoutJson = session.sport === "strength"
+  const data: GarminConnectWorkoutJson = session.sport === "strength" && strengthProgramFor(session)
     ? createStrengthGarminJson(session, sportType)
     : {
         workoutId: null,
