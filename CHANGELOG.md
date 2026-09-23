@@ -2,6 +2,13 @@
 
 Toutes les versions notables de NervaBrain sont consignées ici.
 
+## v0.2.1 — 23 septembre 2026
+
+### Corrigé
+
+- Les réglages de l’assistant IA s’enregistrent à nouveau : un prompt quotidien multiligne au format par défaut ne bloque plus silencieusement le formulaire.
+- Le mode « Manuel uniquement » pour les briefs est correctement persisté et le formulaire revient sur l’écran Assistant après la sauvegarde.
+
 ## v0.2.0 — 23 septembre 2026
 
 ### Ajouté
