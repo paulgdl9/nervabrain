@@ -19,6 +19,8 @@ from pathlib import Path
 
 VAULT = Path(os.environ.get("VAULT_PATH", "/vault"))
 TOKENSTORE = os.environ.get("GARMINTOKENS", str(Path.home() / ".garminconnect"))
+PUBLISH_REQUESTS = Path(TOKENSTORE) / "publish-requests"
+PUBLISH_RESULTS = Path(TOKENSTORE) / "publish-results"
 
 PROJECT_DIR = VAULT / "08-Projects/Trail-26K"
 SYNC_MD = PROJECT_DIR / "Sync.md"
@@ -369,6 +371,30 @@ def fetch_strength_sets(api, acts: list[dict]) -> dict[str, list[dict]]:
     return result
 
 
+def process_publish_requests(api) -> None:
+    """Upload and schedule dashboard workouts without exposing Garmin tokens to Next.js."""
+    for request_path in PUBLISH_REQUESTS.glob("*.json"):
+        result_path = PUBLISH_RESULTS / request_path.name
+        try:
+            request = json.loads(request_path.read_text(encoding="utf-8"))
+            scheduled_date = request.get("scheduled_date")
+            workout = request.get("workout")
+            if not isinstance(scheduled_date, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", scheduled_date):
+                raise ValueError("invalid scheduled date")
+            if not isinstance(workout, dict) or not isinstance(workout.get("workoutName"), str):
+                raise ValueError("invalid workout")
+            created = api.upload_workout(workout)
+            workout_id = created.get("workoutId") or created.get("workout_id") or created.get("id")
+            if not isinstance(workout_id, (int, str)):
+                raise ValueError("Garmin did not return a workout id")
+            api.schedule_workout(workout_id, scheduled_date)
+            outcome = {"ok": True, "workout_id": int(workout_id), "scheduled_date": scheduled_date}
+        except Exception as exc:  # noqa: BLE001
+            outcome = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+        atomic_write(result_path, json.dumps(outcome))
+        request_path.unlink(missing_ok=True)
+
+
 def build_json(acts: list[dict], goal: dict, strength_sets: dict[str, list[dict]] | None = None) -> str:
     strength_sets = strength_sets or {}
     items = []
@@ -639,6 +665,7 @@ def main() -> int:
     start = goal["history_start"] or goal["plan_start"] or (today - timedelta(days=90))
     api = Garmin()
     api.login(TOKENSTORE)
+    process_publish_requests(api)
     acts = api.get_activities_by_date(start.isoformat(), today.isoformat())
     print(f"[sync] {len(acts)} activities since {start}")
     strength_sets = fetch_strength_sets(api, acts)

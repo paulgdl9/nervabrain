@@ -34,6 +34,7 @@ import {
   validateTrainingSessionAction,
 } from "@/app/actions";
 import { DifficultyBolts } from "@/components/DifficultyBolts";
+import { GarminPublishButton } from "@/components/GarminPublishButton";
 import { useLanguage } from "@/components/LanguageProvider";
 import { sessionDifficulty } from "@/lib/trail-difficulty";
 import { activitySummary, fmtMinutes, sportLabel } from "@/lib/trail-format";
@@ -367,6 +368,7 @@ function DaySession({ session, activities, claimedActivityIds, dayIso, week }: {
           : session.sport === "recovery" ? t("training.session.rest") : t("training.session.freeDuration")}</span></div>
         <div><Gauge size={15} /><span>{session.intensity}</span></div>
         <div className="session-difficulty" title={t("training.session.difficulty")}><DifficultyBolts level={sessionDifficulty(session)} label={t("training.session.difficultyLevel").replace("{level}", String(sessionDifficulty(session)))} /></div>
+        {!cancelled && !complete && ["run", "ride", "strength"].includes(session.sport) && <GarminPublishButton sessionId={session.id} scheduledDate={dayIso} />}
       </div>
       <button className="session-detail-toggle" type="button" aria-expanded={detailsOpen} onClick={() => setDetailsOpen((value) => !value)}><span>{detailsOpen ? t("training.session.hideDetails") : t("training.session.showDetails")}</span><ChevronDown size={15} /></button>
       {detailsOpen && (strengthProgram

@@ -283,6 +283,10 @@
 .session-prescription { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 15px 0 13px 46px; }
 .session-prescription div { display: flex; align-items: center; gap: 6px; color: var(--ink-soft); font-size: 11px; font-weight: 580; }
 .session-prescription svg { color: var(--muted); }
+.garmin-publish { display: inline-flex; min-height: 34px; align-items: center; gap: 6px; margin-left: auto; border: 1px solid color-mix(in srgb, var(--strength-color) 30%, transparent); border-radius: 8px; background: color-mix(in srgb, var(--strength-color) 9%, transparent); color: var(--strength-color); cursor: pointer; font-size: 10px; font-weight: 680; padding: 0 10px; }
+.garmin-publish:hover:not(:disabled) { border-color: color-mix(in srgb, var(--strength-color) 55%, transparent); background: color-mix(in srgb, var(--strength-color) 16%, transparent); }
+.garmin-publish:disabled { cursor: wait; opacity: .65; }
+.garmin-publish:focus-visible { outline: 2px solid var(--strength-color); outline-offset: 2px; }
 .session-steps { display: grid; gap: 7px; margin: 0 0 0 46px; padding: 0; list-style: none; }
 .session-steps li { display: flex; align-items: flex-start; gap: 8px; color: var(--muted); font-size: 11px; line-height: 1.4; }
 .session-steps li > span { display: grid; width: 17px; height: 17px; flex: 0 0 auto; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; color: var(--ink-soft); font-size: 8px; font-weight: 660; }

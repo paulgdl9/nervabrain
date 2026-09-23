@@ -21,6 +21,7 @@ SCRIPT = Path(__file__).resolve().parent.parent / "scripts" / "garmin-sync-profi
 
 def load_module(vault: Path):
     os.environ["VAULT_PATH"] = str(vault)
+    os.environ["GARMINTOKENS"] = str(vault / "tokens")
     spec = importlib.util.spec_from_file_location(f"garmin_sync_{vault.name}", SCRIPT)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -129,6 +130,28 @@ def test_missing_or_broken_setup_leaves_the_sync_on():
     with tempfile.TemporaryDirectory() as tmp:
         m = load_module(make_vault(Path(tmp), modules={"finance": True}))
         assert m.trail_module_enabled() is True
+
+
+def test_publish_request_uploads_and_schedules_without_exposing_tokens_to_dashboard():
+    with tempfile.TemporaryDirectory() as tmp:
+        m = load_module(make_vault(Path(tmp)))
+        m.PUBLISH_REQUESTS.mkdir(parents=True)
+        (m.PUBLISH_REQUESTS / "w1-d0-run-2026-09-28.json").write_text(json.dumps({
+            "scheduled_date": "2026-09-28",
+            "workout": {"workoutName": "Course facile"},
+        }))
+
+        class Api:
+            def upload_workout(self, workout):
+                assert workout["workoutName"] == "Course facile"
+                return {"workoutId": 123}
+
+            def schedule_workout(self, workout_id, scheduled_date):
+                assert (workout_id, scheduled_date) == (123, "2026-09-28")
+
+        m.process_publish_requests(Api())
+        result = json.loads((m.PUBLISH_RESULTS / "w1-d0-run-2026-09-28.json").read_text())
+        assert result == {"ok": True, "workout_id": 123, "scheduled_date": "2026-09-28"}
 
 
 if __name__ == "__main__":
