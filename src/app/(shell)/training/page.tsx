@@ -2,7 +2,7 @@ import { ActionDialog } from "@/components/ActionDialog";
 import { GarminResyncButton } from "@/components/GarminResyncButton";
 import { ObjectiveSetup } from "@/components/ObjectiveSetup";
 import { TrailWorkspace, type TrailTab } from "@/components/TrailWorkspace";
-import { computeTrailStats, hasTrainingPlan, maybeRefreshTrailCoachDecision } from "@/lib/trail";
+import { computeTrailStats, hasTrainingPlan } from "@/lib/trail";
 import { selectedTrailWeek } from "@/lib/trail-format";
 import { getLocale, getTranslations } from "@/lib/i18n-server";
 import { Cloud, Flag, Mountain } from "lucide-react";
@@ -38,7 +38,6 @@ export default async function TrailPage({ searchParams }: { searchParams: Promis
   const stats = await computeTrailStats();
   const { objective } = stats.plan;
   const selectedWeek = selectedTrailWeek(params.week, stats.currentWeek, objective.weeksTotal);
-  const { stale: coachStale, running: coachRunning } = maybeRefreshTrailCoachDecision(stats);
 
   return (
     <div className="dash trail-workspace">
@@ -61,7 +60,7 @@ export default async function TrailPage({ searchParams }: { searchParams: Promis
           </div>
         </div>
       </header>
-      <TrailWorkspace stats={stats} labels={t} locale={locale} selectedWeek={selectedWeek} tab={validTrailTab(params.tab)} coachStale={coachStale} coachRunning={coachRunning} />
+      <TrailWorkspace stats={stats} labels={t} locale={locale} selectedWeek={selectedWeek} tab={validTrailTab(params.tab)} />
     </div>
   );
 }

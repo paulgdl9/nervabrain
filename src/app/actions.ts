@@ -83,7 +83,6 @@ import {
   clearPlanOverrides,
   fallbackTrainingPlan,
   generateAiTrainingPlan,
-  generateTrailCoachDecision,
   saveTrainingPlan,
   type PlanObjective,
   type SportKind,
@@ -1181,27 +1180,10 @@ export async function generateWeeklyReviewAction() {
   try {
     await processInbox(10);
     const note = await generateWeeklyReview({ force: true, requireAi: true });
-    const coachError = await generateTrailCoachDecision()
-      .then(() => "")
-      .catch((error) => error instanceof Error ? error.message : "Analyse coach impossible");
     revalidateApp();
-    return { ok: true as const, path: note.relativePath, generatedBy: String(note.data.generated_by || "ai"), coachError };
+    return { ok: true as const, path: note.relativePath, generatedBy: String(note.data.generated_by || "ai") };
   } catch (error) {
     return { ok: false as const, error: error instanceof Error ? error.message : "Génération IA impossible" };
-  }
-}
-
-export async function generateTrailCoachDecisionAction() {
-  try {
-    const decision = await generateTrailCoachDecision();
-    revalidatePath("/training");
-    return { ok: true as const, engine: decision.engine };
-  } catch (error) {
-    return {
-      ok: false as const,
-      error: error instanceof Error ? error.message : "Analyse coach impossible",
-      code: error instanceof AiEngineError ? error.code : undefined,
-    };
   }
 }
 

@@ -175,7 +175,7 @@ const TOOLS = [
   },
   {
     name: "get_training_status",
-    description: "Read the live training plan, every planned session for a requested week, current-week Garmin matches, health signals, feedback still needed, and latest coach decision.",
+    description: "Read the live training plan, every planned session for a requested week, current-week Garmin matches, health signals, and feedback still needed.",
     inputSchema: {
       type: "object",
       properties: { week: { type: "integer", minimum: 1, description: "Plan week to inspect; defaults to the current week" } },
@@ -624,7 +624,6 @@ async function callTool(name: string, args: Record<string, unknown>) {
         pending_feedback: stats.pendingFeedback.slice(0, 8).map(activity),
         latest_health: stats.health.days.at(-1) || null,
         readiness: stats.performance.readiness,
-        coach_decision: stats.coachDecision,
         insights: stats.insights,
         next_session: stats.nextSession,
       };

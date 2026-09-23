@@ -8,7 +8,6 @@ import {
   ChevronRight,
   Droplets,
   Dumbbell,
-  Download,
   Footprints,
   Gauge,
   Mountain,
@@ -27,7 +26,6 @@ import { MetricCards, ProgressRing } from "@/components/ui/Analytics";
 import { sessionDifficulty } from "@/lib/trail-difficulty";
 import { HealthTrendChart, MultisportLoadSection } from "@/components/TrainingCharts";
 import { WeeklyActivityMiniChart, type WeeklyActivityPoint } from "@/components/WeeklyActivityMiniChart";
-import { CoachDecisionCard } from "@/components/CoachDecisionCard";
 import type { Locale, TranslationKey } from "@/lib/i18n";
 import {
   DAY_NAMES,
@@ -68,16 +66,7 @@ function WeekSchedule({ stats, days, selectedWeek, labels }: { stats: TrailStats
               </div>
               <span className="week-day-status">{complete && dayElapsed ? <Check size={15} /> : dayElapsed ? "—" : <ChevronRight size={15} />}</span>
             </summary>
-            {sessions.length ? <div className="week-day-details">{sessions.map((session) => <article key={session.id}><strong>{session.title}</strong><span>{session.durationMin ? fmtMinutes(session.durationMin) : labels["training.session.freeDuration"]} · {session.intensity}</span><ul>{session.details.map((detail) => <li key={detail}>{detail}</li>)}</ul>{session.sport !== "recovery" && (
-              <div className="session-downloads">
-                <a className="session-fit-download is-json" href={`/api/trail/workout?session=${encodeURIComponent(session.id)}&format=json`} download>
-                  <Download size={14} /> JSON
-                </a>
-                <a className="session-fit-download" href={`/api/trail/workout?session=${encodeURIComponent(session.id)}&format=fit`} download>
-                  <Download size={14} /> FIT
-                </a>
-              </div>
-            )}</article>)}</div> : <p className="week-day-rest">{labels["training.lightRecovery"]}</p>}
+            {sessions.length ? <div className="week-day-details">{sessions.map((session) => <article key={session.id}><strong>{session.title}</strong><span>{session.durationMin ? fmtMinutes(session.durationMin) : labels["training.session.freeDuration"]} · {session.intensity}</span><ul>{session.details.map((detail) => <li key={detail}>{detail}</li>)}</ul></article>)}</div> : <p className="week-day-rest">{labels["training.lightRecovery"]}</p>}
           </details>
         );
       })}
@@ -500,10 +489,9 @@ function RegularityHeatmap({ stats, selectedWeek, labels }: { stats: TrailStats;
   );
 }
 
-export function TrailWorkspace({ stats, labels, locale, selectedWeek, tab, coachStale, coachRunning }: { stats: TrailStats; labels: TrainingLabels; locale: Locale; selectedWeek: number; tab: TrailTab; coachStale: boolean; coachRunning: boolean }) {
+export function TrailWorkspace({ stats, labels, locale, selectedWeek, tab }: { stats: TrailStats; labels: TrainingLabels; locale: Locale; selectedWeek: number; tab: TrailTab }) {
   const selected = stats.weeks[selectedWeek - 1];
   const feedbackActivities = [...stats.allActivities].reverse();
-  const lastRun = latest(stats.allRuns);
   const days = planDays(stats, locale);
   const weekDays = currentWeekDays(days, selectedWeek);
   const selectedPlanWeek = stats.plan.weeks[selectedWeek - 1];
@@ -584,8 +572,6 @@ export function TrailWorkspace({ stats, labels, locale, selectedWeek, tab, coach
           </section>
 
           <FuelingStrategy stats={stats} selectedWeek={selectedWeek} labels={labels} />
-
-          <CoachDecisionCard decision={stats.coachDecision} fallback={stats.insights} lastRun={lastRun} stale={coachStale} running={coachRunning} />
 
           <MultisportJournal key={selectedWeek} activities={feedbackActivities} initialFeedback={stats.feedback} currentWeek={stats.currentWeek} initialWeek={selectedWeek} />
         </section>

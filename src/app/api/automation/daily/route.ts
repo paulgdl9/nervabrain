@@ -7,7 +7,6 @@ import {
 } from "@/lib/vault";
 import { authenticateRequest, unauthorizedResponse } from "@/lib/auth";
 import { bodyErrorResponse, readJsonObject } from "@/lib/http-security";
-import { generateTrailCoachDecision } from "@/lib/trail";
 
 export const runtime = "nodejs";
 
@@ -58,10 +57,6 @@ export async function POST(request: NextRequest) {
     const weekly = shouldGenerateWeekly
       ? await generateWeeklyReview({ force: body?.forceWeekly === true })
       : null;
-    const coach = weekly ? await generateTrailCoachDecision().catch((error) => {
-      errors.coach = errorMessage(error);
-      return null;
-    }) : null;
 
     const generatedBy = String(brief?.data.generated_by || "unknown");
     const fallbackCount = processedInbox.filter((note) =>
@@ -84,7 +79,6 @@ export async function POST(request: NextRequest) {
       generatedBy,
       weekly: weekly?.relativePath || null,
       weeklyGeneratedBy,
-      coachEngine: coach?.engine || null,
       errors,
     }, { status: degraded ? 503 : 200 });
   } catch (error) {

@@ -283,14 +283,6 @@
 .session-prescription { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 15px 0 13px 46px; }
 .session-prescription div { display: flex; align-items: center; gap: 6px; color: var(--ink-soft); font-size: 11px; font-weight: 580; }
 .session-prescription svg { color: var(--muted); }
-.session-downloads { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; }
-/* 44px is the tap-target floor, not a visual choice: these are the only two
-   links inside a dense metrics row and a 25px chip is missed by a thumb. */
-.session-fit-download { display: inline-flex; min-height: 44px; align-items: center; gap: 5px; border: 1px solid color-mix(in srgb, var(--ride-color) 20%, transparent); border-radius: 8px; background: color-mix(in srgb, var(--ride-color) 7%, transparent); color: var(--ride-color); font-size: 9px; font-weight: 660; padding: 0 10px; text-decoration: none; }
-.session-fit-download:focus-visible { outline: 2px solid var(--ride-color); outline-offset: 2px; }
-.session-fit-download:hover { border-color: color-mix(in srgb, var(--ride-color) 42%, transparent); background: color-mix(in srgb, var(--ride-color) 13%, transparent); }
-.session-fit-download.is-json { border-color: rgba(var(--run-rgb), .22); background: rgba(var(--run-rgb), .07); color: var(--run-color); }
-.session-fit-download.is-json:hover { border-color: rgba(var(--run-rgb), .42); background: rgba(var(--run-rgb), .13); }
 .session-steps { display: grid; gap: 7px; margin: 0 0 0 46px; padding: 0; list-style: none; }
 .session-steps li { display: flex; align-items: flex-start; gap: 8px; color: var(--muted); font-size: 11px; line-height: 1.4; }
 .session-steps li > span { display: grid; width: 17px; height: 17px; flex: 0 0 auto; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; color: var(--ink-soft); font-size: 8px; font-weight: 660; }
@@ -302,6 +294,8 @@
 .strength-exercise > div:first-child { display: grid; min-width: 0; gap: 2px; }
 .strength-exercise strong { color: var(--ink-soft); font-size: 11px; font-weight: 640; }
 .strength-exercise small { color: var(--muted); font-size: 9.5px; line-height: 1.35; }
+.strength-targets { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+.strength-targets span { border: 1px solid color-mix(in srgb, var(--strength-color) 35%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--strength-color) 14%, transparent); color: var(--strength-color); font-size: 9.5px; font-weight: 700; padding: 3px 7px; }
 .strength-sets { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
 .strength-sets span { border: 1px solid color-mix(in srgb, var(--strength-color) 22%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--strength-color) 8%, transparent); color: var(--ink-soft); font-size: 9.5px; font-weight: 620; padding: 3px 7px; }
 .strength-sets span.is-empty { border-color: var(--line-soft); background: transparent; color: var(--muted-2); }
@@ -512,7 +506,6 @@
 .week-day-details strong { color: var(--ink-soft); font-size: 10px; }
 .week-day-details span { color: var(--run-color); font-size: 9px; font-weight: 620; }
 .week-day-details ul { display: grid; gap: 3px; margin: 3px 0 0; color: var(--muted); font-size: 9px; line-height: 1.4; padding-left: 15px; }
-.week-day-details .session-downloads { margin: 4px 0 0 0; }
 .week-day-rest { margin: 8px 0 0 55px; color: var(--muted); font-size: 9px; }
 
 .cycle-session { display: block; border-bottom: 1px solid var(--line-soft); }
@@ -774,38 +767,6 @@
 .week-day-status { display: grid; place-items: center; color: var(--muted-2); font-size: 10px; }
 .week-day.is-complete .week-day-status { color: var(--done-color); }
 
-.coach-summary { margin: 0 0 14px; color: var(--ink-soft); font-size: 13px; line-height: 1.55; }
-.coaching-card ul { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
-.coaching-card li { display: grid; grid-template-columns: 6px minmax(0, 1fr); gap: 9px; align-items: start; }
-.coaching-card li > span { width: 5px; height: 5px; margin-top: 6px; border-radius: 50%; background: var(--run-color); box-shadow: 0 0 8px rgba(var(--run-rgb), .5); }
-.coaching-card li p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
-.coach-evidence { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
-.coach-evidence summary { cursor: pointer; color: var(--muted); font-size: 11px; font-weight: 580; }
-.coach-evidence ul { margin-top: 10px; gap: 8px; }
-.coach-evidence li { display: list-item; margin-left: 16px; color: var(--muted); font-size: 11px; line-height: 1.45; list-style: disc; }
-.coach-next { display: grid; gap: 4px; margin-top: 14px; border-radius: 12px; background: rgba(var(--accent-rgb), .08); padding: 12px; }
-.coach-next span { color: var(--muted); font-size: 9px; font-weight: 660; letter-spacing: .09em; text-transform: uppercase; }
-.coach-next strong { color: var(--ink-soft); font-size: 12px; line-height: 1.45; }
-.coach-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
-.coach-actions .button { min-height: 34px; padding: 7px 11px; font-size: 11px; }
-.coach-actions small { color: var(--muted); font-size: 9px; text-align: right; }
-.coach-error { margin: 8px 0 0; color: var(--danger, var(--tone-negative)); font-size: 11px; line-height: 1.4; }
-.coaching-rule { display: flex; align-items: flex-start; gap: 9px; margin-top: 16px; border: 1px solid color-mix(in srgb, var(--recovery-color) 18%, transparent); border-radius: 11px; background: color-mix(in srgb, var(--recovery-color) 6%, transparent); color: var(--recovery-color); padding: 10px; }
-.coaching-rule p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
-.coaching-rule strong { display: block; color: var(--ink-soft); font-size: 11px; }
-
-.coach-lastrun { display: grid; gap: 8px; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--line-soft); }
-.coach-lastrun-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 7px; }
-.coach-lastrun-head > span { color: var(--muted); font-size: 9px; font-weight: 660; letter-spacing: .07em; text-transform: uppercase; }
-.coach-lastrun-head > strong { overflow: hidden; color: var(--ink-soft); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-.coach-lastrun-head > small { margin-left: auto; color: var(--muted); font-size: 10px; }
-.coach-lastrun-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-.coach-lastrun-metrics > div { min-width: 0; border: 1px solid var(--line-soft); border-radius: 10px; background: rgba(0,0,0,.12); padding: 7px 8px; }
-[data-theme="light"] .coach-lastrun-metrics > div { background: rgba(255,255,255,.38); }
-.coach-lastrun-metrics span { display: block; overflow: hidden; color: var(--muted); font-size: 8px; font-weight: 660; letter-spacing: .05em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
-.coach-lastrun-metrics strong { display: block; overflow: hidden; margin-top: 2px; color: var(--ink-soft); font-size: 12px; font-weight: 660; text-overflow: ellipsis; white-space: nowrap; }
-.coach-stale-badge { display: inline-flex; align-items: center; margin-left: 8px; border: 1px solid color-mix(in srgb, var(--recovery-color) 30%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--recovery-color) 8%, transparent); color: var(--recovery-color); font-size: 9px; font-weight: 620; padding: 2px 8px; vertical-align: middle; animation: coach-stale-pulse 1.4s ease-in-out infinite; }
-@keyframes coach-stale-pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
 
 .activity-log-card { overflow: hidden; }
 .activity-log { display: grid; }
@@ -990,13 +951,11 @@
   .today-week-badge span { display: none; }
   .today-session-grid { grid-template-columns: minmax(0, 1fr); }
   .session-status { font-size: 0; padding: 6px; }
-  .session-fit-download { min-height: 44px; padding-inline: 11px; }
   .session-prescription, .session-steps, .strength-workout, .session-adjustment, .session-result { margin-left: 0; }
   .strength-workout-head, .strength-exercise { grid-template-columns: 1fr; gap: 7px; }
   .strength-workout-head span:last-child { display: none; }
   .strength-sets { justify-content: flex-start; }
   .training-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .coach-lastrun-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   /* Fit the chart inside the card instead of forcing a 590px min-width with a
      horizontal swipe: the swipe pattern read as a broken, giant chart on
      phones. The chart itself redraws at the card width (TrainingCharts.tsx). */
@@ -1035,7 +994,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .is-spinning, .coach-stale-badge { animation: none; }
+  .is-spinning { animation: none; }
 }
 
 
