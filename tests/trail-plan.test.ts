@@ -226,6 +226,25 @@ test("custom sessions replace and delete plan slots structurally", async () => {
   });
 });
 
+test("an explicit empty strength exercise list clears a replaced session", async () => {
+  await withTempVault(async () => {
+    const plan = fallbackTrainingPlan(objective({ sport: "trail", weeksTotal: 6 }));
+    await saveTrainingPlan(plan);
+    const previous = plan.weeks[0].sessions.find((item) => item.sport === "strength");
+    assert.ok(previous);
+    const session = await editTrainingSession(1, {
+      weekday: previous.weekday, sport: "strength", title: "Stabilité", subtitle: "Prévention", durationMin: 20, intensity: "Facile", details: ["Gainage"],
+      strengthExercises: [{ label: "Gainage latéral", category: "PLANK", exerciseName: "SIDE_PLANK", sets: 2, seconds: 30, restSeconds: 45 }],
+    }, previous.id);
+    await editTrainingSession(1, {
+      weekday: previous.weekday, sport: "strength", title: "Stabilité", subtitle: "Prévention", durationMin: 20, intensity: "Facile", details: ["Gainage"],
+      strengthExercises: [],
+    }, session.id);
+    const reloaded = await loadTrainingPlan();
+    assert.equal(reloaded.weeks[0].sessions.find((item) => item.id === session.id)?.strengthExercises, undefined);
+  });
+});
+
 for (const sport of ["trail", "run", "ride", "hybrid"] as const) {
   test(`fallbackTrainingPlan(${sport}) produces a structurally valid, weeksTotal-week plan`, () => {
     const plan = fallbackTrainingPlan(objective({ sport, weeksTotal: 10 }));

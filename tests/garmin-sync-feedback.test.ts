@@ -174,3 +174,18 @@ print(module.build_json(acts, goal))
     { stamina_start: 99, stamina_end: 16, stamina_min: 14 },
   ]);
 });
+
+test("generic profile sync stores detailed stability sets", async () => {
+  const vault = await scratchVault();
+  const output = runPython(vault, String.raw`
+import importlib.util
+spec = importlib.util.spec_from_file_location("sync", "scripts/garmin-sync-profile.py")
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+activity = {"activityId": 42, "activityName": "Stabilité trail", "activityType": {"typeKey": "strength_training"}}
+payload = {"exerciseSets": [{"setType": "ACTIVE", "wktStepIndex": 1, "repetitionCount": 8, "weight": 0.0, "duration": 20.0}]}
+import json
+print(json.dumps(module.normalize_strength_sets(activity, payload), ensure_ascii=False))
+`);
+  assert.deepEqual(JSON.parse(output), [{ exercise: "Step-up", step_index: 1, reps: 8, weight_kg: 0, seconds: null }]);
+});

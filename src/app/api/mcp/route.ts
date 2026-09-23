@@ -72,7 +72,7 @@ function trainingSessionInput(args: Record<string, unknown>): Omit<PlanSessionDa
   const id = String(args.session_id || "").trim();
   return {
     sport, weekday, title, subtitle, durationMin, intensity, details,
-    ...(strengthExercises?.length ? { strengthExercises } : {}),
+    ...(strengthExercises !== undefined ? { strengthExercises } : {}),
     ...(args.optional === true ? { optional: true } : {}),
     ...(id ? { id } : {}),
   };

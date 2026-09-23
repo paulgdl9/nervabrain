@@ -1506,7 +1506,7 @@ export async function setTrainingWeek(
       && item.weekday === session.weekday && item.sport === session.sport);
     const id = session.id || existing?.id || randomUUID();
     reused.add(id);
-    return { ...session, ...(!session.strengthExercises?.length && existing?.strengthExercises?.length ? { strengthExercises: existing.strengthExercises } : {}), id };
+    return { ...session, ...(session.strengthExercises === undefined && existing?.strengthExercises?.length ? { strengthExercises: existing.strengthExercises } : {}), id };
   }).sort((left, right) => left.weekday - right.weekday);
   const week: PlanWeekData = {
     week: weekNumber,
@@ -1555,7 +1555,7 @@ export async function editTrainingSession(
   if (sessionId && index < 0) throw new Error("Séance introuvable dans le plan");
 
   const existing = index >= 0 ? week.sessions[index] : undefined;
-  const edited = { ...session, ...(!session.strengthExercises?.length && existing?.strengthExercises?.length ? { strengthExercises: existing.strengthExercises } : {}), id: sessionId || randomUUID() };
+  const edited = { ...session, ...(session.strengthExercises === undefined && existing?.strengthExercises?.length ? { strengthExercises: existing.strengthExercises } : {}), id: sessionId || randomUUID() };
   if (index < 0) week.sessions.push(edited);
   else week.sessions[index] = edited;
   week.sessions.sort((left, right) => left.weekday - right.weekday);

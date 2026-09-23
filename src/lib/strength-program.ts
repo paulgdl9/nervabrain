@@ -30,7 +30,7 @@ export type StrengthProgram = {
   exercises: StrengthExercisePlan[];
 };
 
-const PROGRAMS: Record<"push" | "pull" | "legs", StrengthProgram> = {
+const PROGRAMS: Record<"push" | "pull" | "legs" | "stability", StrengthProgram> = {
   push: {
     name: "PUSH masse",
     description: "Hypertrophie haut du corps · RIR 2 sur les développés, 1–2 sur l’isolation",
@@ -71,11 +71,23 @@ const PROGRAMS: Record<"push" | "pull" | "legs", StrengthProgram> = {
       { label: "Éversion du pied à l’élastique", category: "BANDED_EXERCISES", exerciseName: "", sets: 2, repsMin: 15, repsMax: 20, restSeconds: 60 },
     ],
   },
+  stability: {
+    name: "Stabilité trail",
+    description: "Chevilles, mollets et gainage · technique propre, sans fatigue résiduelle",
+    exercises: [
+      { label: "Step-up", category: "SQUAT", exerciseName: "ALTERNATING_BOX_DUMBBELL_STEP_UPS", sets: 2, repsMin: 8, repsMax: 8, weightKg: 0, restSeconds: 45 },
+      { label: "Soulevé de terre unipodal", category: "DEADLIFT", exerciseName: "SINGLE_LEG_DEADLIFT", sets: 2, repsMin: 8, repsMax: 8, weightKg: 0, restSeconds: 45 },
+      { label: "Mollets isométriques", category: "CALF_RAISE", exerciseName: "SINGLE_LEG_STANDING_DUMBBELL_CALF_RAISE", sets: 2, seconds: 30, weightKg: 0, restSeconds: 45 },
+      { label: "Éversion du pied à l’élastique", category: "BANDED_EXERCISES", exerciseName: "", sets: 2, repsMin: 15, repsMax: 15, restSeconds: 45 },
+      { label: "Marche latérale à l’élastique", category: "BANDED_EXERCISES", exerciseName: "", sets: 2, repsMin: 10, repsMax: 10, restSeconds: 45 },
+      { label: "Gainage latéral", category: "PLANK", exerciseName: "SIDE_PLANK", sets: 2, seconds: 30, weightKg: 0, restSeconds: 45 },
+    ],
+  },
 };
 
 export function strengthProgramFor(session: { title: string; subtitle?: string; strengthExercises?: StrengthExercisePlan[] }): StrengthProgram | null {
   const label = `${session.title} ${session.subtitle || ""}`;
-  const base = /push/i.test(label) ? PROGRAMS.push : /pull/i.test(label) ? PROGRAMS.pull : /jambes?/i.test(label) ? PROGRAMS.legs : null;
+  const base = /push/i.test(label) ? PROGRAMS.push : /pull/i.test(label) ? PROGRAMS.pull : /jambes?/i.test(label) ? PROGRAMS.legs : /stabilit/i.test(label) ? PROGRAMS.stability : null;
   if (!base) return null;
   return session.strengthExercises?.length ? { ...base, exercises: session.strengthExercises } : base;
 }

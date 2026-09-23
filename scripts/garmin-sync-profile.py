@@ -44,6 +44,7 @@ STRENGTH_STEPS = {
     "PUSH": {1: "Développé couché haltères", 4: "Élévations latérales", 7: "Développé incliné haltères", 10: "Extension triceps au-dessus de la tête", 13: "Développé épaules assis", 16: "Pompes"},
     "PULL": {1: "Tractions", 4: "Oiseau assis, buste penché", 7: "Rowing unilatéral haltère", 10: "Curl incliné haltères", 13: "Rowing buste penché", 16: "Curl marteau", 19: "Hanging knee raises", 22: "Side plank"},
     "JAMBES": {1: "Bulgarian split squat", 4: "Soulevé de terre roumain (RDL)", 7: "Step-up", 10: "Hip thrust", 13: "Mollets debout unilatéraux", 16: "Mollets assis", 19: "Tibialis raise", 22: "Éversion du pied à l’élastique"},
+    "STABILIT": {1: "Step-up", 4: "Soulevé de terre unipodal", 7: "Mollets isométriques", 10: "Éversion du pied à l’élastique", 13: "Marche latérale à l’élastique", 16: "Gainage latéral"},
 }
 
 
