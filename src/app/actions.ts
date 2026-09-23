@@ -172,7 +172,7 @@ export async function saveAssistantSettingsAction(formData: FormData) {
   const briefTime = text(formData, "briefTime");
   const briefTime2 = text(formData, "briefTime2");
   const dailyBriefEngine = text(formData, "dailyBriefEngine");
-  const dailyBriefPrompt = text(formData, "dailyBriefPrompt");
+  const dailyBriefPrompt = text(formData, "dailyBriefPrompt").replace(/\r\n?/g, "\n");
   const briefDetail = (["concise", "balanced", "detailed"] as const)[Number(text(formData, "briefDetail"))];
   const separator = dailyBriefEngine.indexOf(":");
   const dailyBriefProvider = dailyBriefEngine === "inherit" ? "" : aiProvider(dailyBriefEngine.slice(0, separator));
