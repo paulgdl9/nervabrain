@@ -5,6 +5,7 @@ import path from "node:path";
 import test from "node:test";
 import {
   PLAN,
+  alignActivitiesToPlanStart,
   loadTrailData,
   loadPlanOverrides,
   loadTrailFeedback,
@@ -69,6 +70,28 @@ test("a long run done Saturday fills the Sunday-planned slot as 'moved'", () => 
   assert.equal(longRun.outcome, "moved");
   assert.equal(longRun.actualWeekday, 5);
   assert.equal(match.extras.length, 0, "the run should be consumed, not left as a bonus");
+});
+
+test("activity weeks are rebased from their dates when a new plan starts", () => {
+  const oldPlanActivity = {
+    ...act("run", 2, "old-plan-run"),
+    date: "2026-07-01",
+    week: 1,
+  };
+  const currentPlanActivity = {
+    ...act("run", 0, "current-plan-run"),
+    date: "2026-09-21",
+    week: 13,
+  };
+
+  const aligned = alignActivitiesToPlanStart(
+    [oldPlanActivity, currentPlanActivity],
+    new Date("2026-09-21T00:00:00"),
+  );
+
+  assert.equal(aligned[0].week, -11, "the July activity must stay before the September plan");
+  assert.equal(aligned[1].week, 1, "the activity dated on the new plan start belongs to week 1");
+  assert.deepEqual(aligned.filter((activity) => activity.week === 1).map((activity) => activity.id), ["current-plan-run"]);
 });
 
 test("an activity recorded on its planned day is 'done', not 'moved'", () => {

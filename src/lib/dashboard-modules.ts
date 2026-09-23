@@ -241,14 +241,15 @@ export function summarizeDashboardModules(
   // then falls back to the note-text heuristic it always used.
   trailStats?: TrailStats,
   trailHealth?: TrailHealth,
+  financePositions?: VaultNote[],
 ): DashboardModuleSummary {
   const notes = allNotes.filter(isLiving);
   const normalizedCurrency = currency.trim().toUpperCase() || "EUR";
   const result: DashboardModuleSummary = {};
 
   if (evidence.finance) {
-    const positions = notes.filter((note) => note.data.type === "finance-position");
-    const included = positions.filter((note) => (text(note.data.currency).toUpperCase() || normalizedCurrency) === normalizedCurrency);
+    const positions = (financePositions || notes.filter((note) => note.data.type === "finance-position")).filter(isLiving);
+    const included = positions.filter((note) => (text(note.data.base_currency).toUpperCase() || text(note.data.currency).toUpperCase() || normalizedCurrency) === normalizedCurrency);
     const allocation = new Map<string, number>();
     let total = 0;
     let unvalued = 0;

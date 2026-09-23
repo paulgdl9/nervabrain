@@ -35,7 +35,7 @@ import {
   summarizeDashboardModules,
   type DashboardWidgetId,
 } from "@/lib/dashboard-modules";
-import { activeModuleEvidence, getDashboard, noteHref, readFinanceHistory, readSetupState } from "@/lib/vault";
+import { activeModuleEvidence, getDashboard, listFinancePositionsWithLivePrices, noteHref, readFinanceHistory, readSetupState } from "@/lib/vault";
 import { computeTrailStats, fmtKm, fmtMinutes, hasTrainingPlan, loadTrailHealth } from "@/lib/trail";
 import { getLocale, getTranslations } from "@/lib/i18n-server";
 import { readDashboardLayoutPreference } from "@/lib/ui-preferences";
@@ -122,8 +122,11 @@ export default async function DashboardPage() {
     trainingPlanReady ? computeTrailStats() : Promise.resolve(undefined),
     moduleEvidence.training ? loadTrailHealth() : Promise.resolve(undefined),
   ]);
-  const moduleSummary = summarizeDashboardModules(data.allNotes, moduleEvidence, setup.currency, today, trailStats, trailHealth);
-  const financeHistory = moduleEvidence.finance ? await readFinanceHistory(setup.currency) : [];
+  const [financePositions, financeHistory] = await Promise.all([
+    moduleEvidence.finance ? listFinancePositionsWithLivePrices(setup.currency) : Promise.resolve([]),
+    moduleEvidence.finance ? readFinanceHistory(setup.currency) : Promise.resolve([]),
+  ]);
+  const moduleSummary = summarizeDashboardModules(data.allNotes, moduleEvidence, setup.currency, today, trailStats, trailHealth, financePositions);
   const openTasks = data.tasks.filter((note) => ["todo", "doing", "active"].includes(note.status));
   const activeObjectives = data.objectives.filter((note) =>
     isSelectableDashboardObjective(note.status, note.data.priority),

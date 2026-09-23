@@ -954,7 +954,13 @@
   .today-title-row { width: 100%; flex-wrap: wrap; }
   .today-week-badge span { display: none; }
   .today-session-grid { grid-template-columns: minmax(0, 1fr); }
-  .session-status { font-size: 0; padding: 6px; }
+  .today-session-top { display: grid; grid-template-columns: 34px minmax(0, 1fr) 44px; gap: 8px 10px; }
+  .today-session-top > .sport-icon { grid-column: 1; grid-row: 1; }
+  .today-session-title { grid-column: 2; grid-row: 1; }
+  .session-status { grid-column: 2; grid-row: 2; width: fit-content; border: 0; background: transparent; padding: 0; }
+  .session-menu-root { grid-column: 3; grid-row: 1; margin-left: 0; }
+  .session-menu-button { margin: -5px 0 0; }
+  .session-fit-download { min-height: 44px; padding-inline: 11px; }
   .session-prescription, .session-steps, .strength-workout, .session-adjustment, .session-result { margin-left: 0; }
   .strength-workout-head, .strength-exercise { grid-template-columns: 1fr; gap: 7px; }
   .strength-workout-head span:last-child { display: none; }

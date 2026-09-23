@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import test, { after } from "node:test";
 import { createWorkoutFit, createWorkoutGarminJson, findPlannedSession, validateWorkoutFit } from "../src/lib/fit-workout";
+import type { PlannedSession } from "../src/lib/trail";
 
 // findPlannedSession loads the vault training plan (auto-migrating it on first
 // read), so point the whole file at a scratch vault, never the real one.
@@ -91,6 +92,71 @@ test("Push Garmin Connect JSON uses exercise repeat groups from Garmin catalog",
   assert.deepEqual(exerciseNames.filter(Boolean).slice(0, 4), ["DUMBBELL_BENCH_PRESS", "DUMBBELL_LATERAL_RAISE", "INCLINE_DUMBBELL_BENCH_PRESS", "SEATED_DUMBBELL_SHOULDER_PRESS"]);
   assert.deepEqual(groups.slice(0, 3).map((group) => group.type === "RepeatGroupDTO" ? group.workoutSteps[0].weightValue : null), [8, 4.5, 8.5]);
   assert.equal(groups.at(-1)?.type === "RepeatGroupDTO" && groups.at(-1)?.skipLastRestStep, true);
+});
+
+test("structured Garmin running recipe exports exact steps and duration", () => {
+  const session: PlannedSession = {
+    id: "w2-d3-run",
+    sport: "run",
+    title: "Endurance + lignes droites",
+    subtitle: "45 min · 6 × 20 s",
+    durationMin: 45,
+    intensity: "Facile + vitesse gestuelle",
+    details: [
+      "Garmin: WU=10m;Z2=18m;REP=6x20s@OPEN/100s;CD=5m",
+      "Accélérations fluides et jamais sprintées",
+    ],
+  };
+
+  const fit = createWorkoutFit(session, CREATED_AT);
+  const json = createWorkoutGarminJson(session);
+  const seconds = fit.steps.reduce((sum, step) => sum + (step.durationType === 0 ? step.durationValue / 1000 : 0), 0);
+
+  assert.equal(fit.steps.length, 15);
+  assert.equal(seconds, 45 * 60);
+  assert.equal(validateWorkoutFit(fit.bytes).valid, true);
+  assert.equal(json.data.estimatedDurationInSecs, 45 * 60);
+  assert.equal(json.data.workoutSegments[0].workoutSteps.length, 15);
+  const zoneStep = json.data.workoutSegments[0].workoutSteps[1];
+  assert.equal(zoneStep.type === "ExecutableStepDTO" && zoneStep.targetType.workoutTargetTypeKey, "heart.rate.zone");
+  assert.equal(zoneStep.type === "ExecutableStepDTO" && zoneStep.zoneNumber, 2);
+});
+
+test("home-trainer Garmin recipe keeps warmup, open block and cooldown", () => {
+  const accentedCoaching = "Cadence régulière, résistance légère et récupération maîtrisée. ".repeat(6);
+  const session: PlannedSession = {
+    id: "w2-d0-ride",
+    sport: "ride",
+    title: "Home trainer · endurance facile",
+    subtitle: "40 min souples",
+    durationMin: 40,
+    intensity: "RPE 2–3 · respiration facile",
+    details: [
+      "Garmin: WU=10m;OPEN=20m;CD=10m",
+      accentedCoaching,
+    ],
+  };
+
+  const fit = createWorkoutFit(session, CREATED_AT);
+  const json = createWorkoutGarminJson(session);
+  const seconds = fit.steps.reduce((sum, step) => sum + (step.durationType === 0 ? step.durationValue / 1000 : 0), 0);
+
+  assert.equal(fit.steps.length, 3);
+  assert.equal(seconds, 40 * 60);
+  assert.equal(validateWorkoutFit(fit.bytes).valid, true);
+  assert.deepEqual(fit.steps.map((step) => step.intensity), [2, 0, 3]);
+  assert.equal(json.data.estimatedDurationInSecs, 40 * 60);
+  assert.ok(json.data.description.includes(accentedCoaching));
+});
+
+test("strength FIT workout contains repetition-counted exercise steps", async () => {
+  const session = await findPlannedSession("w1-d2-strength");
+  assert.ok(session);
+  const workout = createWorkoutFit(session, CREATED_AT);
+
+  assert.equal(validateWorkoutFit(workout.bytes).valid, true);
+  assert.ok(workout.steps.some((step) => step.durationType === 29));
+  assert.ok(workout.steps.some((step) => step.name.includes("Soulevé de terre roumain")));
 });
 
 test("FIT validation rejects a corrupted payload", async () => {

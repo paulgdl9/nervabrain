@@ -154,6 +154,57 @@ def test_publish_request_uploads_and_schedules_without_exposing_tokens_to_dashbo
         assert result == {"ok": True, "workout_id": 123, "scheduled_date": "2026-09-28"}
 
 
+def test_activity_override_reclassifies_a_hike_without_changing_raw_garmin_data():
+    with tempfile.TemporaryDirectory() as tmp:
+        vault = make_vault(Path(tmp))
+        project = vault / "08-Projects/Trail-26K"
+        project.mkdir(parents=True, exist_ok=True)
+        (project / "activity-overrides.json").write_text(json.dumps({"overrides": [{
+            "date": "2026-08-09",
+            "source_type": "trail_running",
+            "name": "Demo Trail",
+            "kind": "other",
+            "type": "hiking",
+        }]}))
+        m = load_module(vault)
+        activity = {
+            "activityId": 1,
+            "startTimeLocal": "2026-08-09 09:00:00",
+            "activityName": "Demo Trail",
+            "activityType": {"typeKey": "trail_running"},
+            "distance": 9520,
+            "duration": 11693,
+        }
+
+        assert m.kind_of(activity) == "other"
+        assert m.activity_type_of(activity) == "hiking"
+        payload = json.loads(m.build_json([activity], {"plan_start": None, "history_start": None, "race_day": None}))
+        assert payload["activities"][0]["kind"] == "other"
+        assert payload["activities"][0]["type"] == "hiking"
+
+
+def test_stamina_uses_current_garmin_api_field_names_with_legacy_fallbacks():
+    with tempfile.TemporaryDirectory() as tmp:
+        m = load_module(make_vault(Path(tmp)))
+        activity = {
+            "activityId": 2,
+            "startTimeLocal": "2026-09-20 08:00:00",
+            "activityName": "Trail",
+            "activityType": {"typeKey": "trail_running"},
+            "distance": 44479,
+            "duration": 27350,
+            "beginPotentialStamina": 99,
+            "endPotentialStamina": 16,
+            "minAvailableStamina": 14,
+        }
+        payload = json.loads(m.build_json([activity], {"plan_start": date(2026, 9, 21), "history_start": None, "race_day": None}))
+        item = payload["activities"][0]
+
+        assert item["stamina_start"] == 99
+        assert item["stamina_end"] == 16
+        assert item["stamina_min"] == 14
+
+
 if __name__ == "__main__":
     for name, fn in sorted(globals().items()):
         if name.startswith("test_"):

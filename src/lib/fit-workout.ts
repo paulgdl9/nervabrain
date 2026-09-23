@@ -10,7 +10,7 @@ const FIT = {
   manufacturer: { development: 255 },
   sport: { running: 1, cycling: 2, training: 10 },
   subSport: { generic: 0, trail: 3, indoorCycling: 6, strengthTraining: 20 },
-  duration: { time: 0, distance: 1 },
+  duration: { time: 0, distance: 1, reps: 29 },
   target: { heartRate: 1, open: 2, power: 4 },
   intensity: { active: 0, rest: 1, warmup: 2, cooldown: 3 },
 } as const;
@@ -18,8 +18,8 @@ const FIT = {
 type Step = {
   name: string;
   notes: string;
-  durationType: 0 | 1;
-  /** Raw FIT value: milliseconds for time, 1/100 m for distance. */
+  durationType: 0 | 1 | 29;
+  /** Raw FIT value: milliseconds for time, 1/100 m for distance, count for reps. */
   durationValue: number;
   targetType: 1 | 2 | 4;
   targetValue: number;
@@ -57,7 +57,7 @@ type GarminConnectWorkoutStep = {
   targetValueOne: null;
   targetValueTwo: number | null;
   targetValueUnit?: null;
-  zoneNumber: null;
+  zoneNumber: number | null;
   secondaryTargetType?: null;
   secondaryTargetValueOne?: null;
   secondaryTargetValueTwo?: null;
@@ -144,8 +144,107 @@ function timeStep(
   };
 }
 
+function repsStep(name: string, reps: number, notes: string): Step {
+  return {
+    name,
+    notes,
+    durationType: FIT.duration.reps,
+    durationValue: Math.max(1, Math.round(reps)),
+    targetType: FIT.target.open,
+    targetValue: 0,
+    targetLow: 0,
+    targetHigh: 0,
+    intensity: FIT.intensity.active,
+  };
+}
+
+function parseRecipeDuration(value: string): number | null {
+  const match = /^(\d+(?:[.,]\d+)?)(m|s)$/i.exec(value.trim());
+  if (!match) return null;
+  const amount = Number(match[1].replace(",", "."));
+  return Math.round(amount * (match[2].toLowerCase() === "m" ? 60 : 1));
+}
+
+function recipeTarget(value: string): Pick<Step, "targetType" | "targetValue"> | null {
+  if (/^open$/i.test(value)) return { targetType: FIT.target.open, targetValue: 0 };
+  const zone = /^z([1-5])$/i.exec(value);
+  return zone ? { targetType: FIT.target.heartRate, targetValue: Number(zone[1]) } : null;
+}
+
+function parseRunRecipe(session: PlannedSession): Step[] | null {
+  const recipeDetail = session.details.find((detail) => /^Garmin\s*:/i.test(detail));
+  if (!recipeDetail) return null;
+  const recipe = recipeDetail.replace(/^Garmin\s*:/i, "").trim();
+  const coaching = session.details.filter((detail) => detail !== recipeDetail).join(" · ").slice(0, 240);
+  const steps: Step[] = [];
+
+  for (const rawPart of recipe.split(";")) {
+    const part = rawPart.trim();
+    if (!part) continue;
+    const separator = part.indexOf("=");
+    if (separator < 1) throw new Error(`Recette Garmin invalide : ${part}`);
+    const key = part.slice(0, separator).trim().toUpperCase();
+    const value = part.slice(separator + 1).trim();
+
+    if (key === "REP") {
+      const repeat = /^(\d+)x(\d+(?:[.,]\d+)?(?:m|s))@(Z[1-5]|OPEN)\/(\d+(?:[.,]\d+)?(?:m|s))$/i.exec(value);
+      if (!repeat) throw new Error(`Répétition Garmin invalide : ${value}`);
+      const count = Number(repeat[1]);
+      const workSeconds = parseRecipeDuration(repeat[2]);
+      const target = recipeTarget(repeat[3]);
+      const restSeconds = parseRecipeDuration(repeat[4]);
+      if (!count || !workSeconds || !target || !restSeconds) throw new Error(`Répétition Garmin invalide : ${value}`);
+      for (let index = 1; index <= count; index++) {
+        steps.push(timeStep(`Effort ${index}/${count}`, workSeconds, FIT.intensity.active, coaching, target.targetType, target.targetValue));
+        steps.push(timeStep(`Recup ${index}/${count}`, restSeconds, FIT.intensity.rest, "Marche ou trot tres facile"));
+      }
+      continue;
+    }
+
+    const seconds = parseRecipeDuration(value);
+    if (!seconds) throw new Error(`Durée Garmin invalide : ${value}`);
+    if (key === "WU") {
+      steps.push(timeStep("Echauffement", seconds, FIT.intensity.warmup, "Progressif et relache"));
+      continue;
+    }
+    if (key === "CD") {
+      steps.push(timeStep("Retour au calme", seconds, FIT.intensity.cooldown, "Tres facile"));
+      continue;
+    }
+    const target = recipeTarget(key);
+    if (!target) throw new Error(`Cible Garmin invalide : ${key}`);
+    steps.push(timeStep(key === "OPEN" ? "Effort libre" : `Zone ${key.slice(1)}`, seconds, FIT.intensity.active, coaching, target.targetType, target.targetValue));
+  }
+
+  const totalSeconds = steps.reduce((sum, step) => sum + (step.durationType === FIT.duration.time ? step.durationValue / 1000 : 0), 0);
+  if (session.durationMin && totalSeconds !== session.durationMin * 60) {
+    throw new Error(`La recette Garmin dure ${totalSeconds / 60} min au lieu de ${session.durationMin} min`);
+  }
+  return steps;
+}
+
+function strengthFitSteps(session: PlannedSession): Step[] {
+  const program = strengthProgramFor(session);
+  if (!program) throw new Error("Programme de musculation structuré introuvable");
+  const steps: Step[] = [timeStep("Échauffement", 5 * 60, FIT.intensity.warmup, "Mobilité et montée en charge progressive")];
+
+  program.exercises.forEach((exercise, exerciseIndex) => {
+    for (let set = 1; set <= exercise.sets; set++) {
+      const notes = strengthTarget(exercise);
+      steps.push(exercise.seconds
+        ? timeStep(`${exercise.label} ${set}/${exercise.sets}`, exercise.seconds, FIT.intensity.active, notes)
+        : repsStep(`${exercise.label} ${set}/${exercise.sets}`, exercise.repsMax || exercise.repsMin || 1, notes));
+      if (set < exercise.sets || exerciseIndex < program.exercises.length - 1) {
+        steps.push(timeStep("Récupération", exercise.restSeconds, FIT.intensity.rest, "Préparer la série suivante"));
+      }
+    }
+  });
+  return steps;
+}
 function sessionSteps(session: PlannedSession): Step[] {
   if (session.sport === "run") {
+    const recipe = parseRunRecipe(session);
+    if (recipe) return recipe;
     const mainNotes = session.details.slice(1).join(" · ");
     const distanceKm = parseDistanceKm(session.subtitle);
     const main: Step = distanceKm
@@ -165,6 +264,8 @@ function sessionSteps(session: PlannedSession): Step[] {
   }
 
   if (session.sport === "ride") {
+    const recipe = parseRunRecipe(session);
+    if (recipe) return recipe;
     if (/sweet spot/i.test(session.title)) {
       const steps: Step[] = [timeStep("Echauffement", 10 * 60, FIT.intensity.warmup, "Progressif et souple")];
       for (let round = 1; round <= 3; round++) {
@@ -178,15 +279,7 @@ function sessionSteps(session: PlannedSession): Step[] {
     return [timeStep(session.title, (session.durationMin || 45) * 60, FIT.intensity.active, session.details.join(" · "), FIT.target.heartRate, 2)];
   }
 
-  if (session.sport === "strength") {
-    const totalSeconds = (session.durationMin || 60) * 60;
-    const warmupSeconds = 5 * 60;
-    const workSeconds = Math.max(5 * 60, Math.floor((totalSeconds - warmupSeconds) / Math.max(1, session.details.length)));
-    return [
-      timeStep("Echauffement", warmupSeconds, FIT.intensity.warmup, "Mobilite et montee en charge progressive"),
-      ...session.details.map((detail, index) => timeStep(`Bloc ${index + 1}`, workSeconds, FIT.intensity.active, detail)),
-    ];
-  }
+  if (session.sport === "strength") return strengthFitSteps(session);
 
   throw new Error("Cette séance ne peut pas être exportée au format FIT");
 }
@@ -211,6 +304,17 @@ function garminConnectSport(session: PlannedSession): GarminConnectSport {
 function workoutName(session: PlannedSession) {
   const prefix = session.sport === "run" ? "RUN" : session.sport === "ride" ? "BIKE" : "MUSCU";
   return `${prefix} ${session.title.replace(/^Musculation · /, "").replace(/^Vélo · /, "")}`.slice(0, 31);
+}
+
+function truncateUtf8(value: string, maxBytes: number) {
+  const encoder = new TextEncoder();
+  if (encoder.encode(value).length <= maxBytes) return value;
+  let result = "";
+  for (const character of value) {
+    if (encoder.encode(result + character).length > maxBytes) break;
+    result += character;
+  }
+  return result;
 }
 
 function fileSlug(session: PlannedSession) {
@@ -272,7 +376,8 @@ export function createWorkoutFit(session: PlannedSession, createdAt = new Date()
       customTargetValueLow: step.targetLow,
       customTargetValueHigh: step.targetHigh,
       intensity: step.intensity,
-      notes: step.notes,
+      ...(step.durationType === FIT.duration.reps ? { durationReps: step.durationValue } : {}),
+      notes: truncateUtf8(step.notes, 240),
     };
     encoder.onMesg(Profile.MesgNum.WORKOUT_STEP, workoutStep);
   });
@@ -303,6 +408,7 @@ function garminEndCondition(step: Step): Pick<GarminConnectWorkoutStep, "endCond
 
 function garminJsonStep(step: Step, index: number): GarminConnectWorkoutStep {
   const condition = garminEndCondition(step);
+  const heartRateZone = step.targetType === FIT.target.heartRate && step.targetValue >= 1 && step.targetValue <= 5;
   return {
     type: "ExecutableStepDTO",
     stepId: null,
@@ -313,10 +419,12 @@ function garminJsonStep(step: Step, index: number): GarminConnectWorkoutStep {
     ...condition,
     endConditionCompare: null,
     endConditionZone: null,
-    targetType: { workoutTargetTypeId: 1, workoutTargetTypeKey: "no.target", displayOrder: 1 },
+    targetType: heartRateZone
+      ? { workoutTargetTypeId: 4, workoutTargetTypeKey: "heart.rate.zone", displayOrder: 4 }
+      : { workoutTargetTypeId: 1, workoutTargetTypeKey: "no.target", displayOrder: 1 },
     targetValueOne: null,
     targetValueTwo: null,
-    zoneNumber: null,
+    zoneNumber: heartRateZone ? step.targetValue : null,
   };
 }
 
@@ -461,7 +569,7 @@ export function createWorkoutGarminJson(session: PlannedSession): GarminConnectW
         workoutId: null,
         ownerId: null,
         workoutName: workoutName(session),
-        description: `${session.subtitle} · ${session.intensity} · ${session.details.join(" · ")}`,
+        description: `${session.subtitle} · ${session.intensity} · ${session.details.filter((detail) => !/^Garmin\s*:/i.test(detail)).join(" · ")}`,
         sportType,
         estimatedDurationInSecs: Math.round((session.durationMin || steps.reduce((sum, step) => sum + (step.durationType === FIT.duration.time ? step.durationValue / 1000 : 0), 0) / 60) * 60),
         workoutSegments: [

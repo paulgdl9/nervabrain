@@ -1801,6 +1801,29 @@ function parseIsoDate(value: string): Date | null {
   return dateOnly(new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
 }
 
+function calendarDayDiff(date: Date, anchor: Date): number {
+  const utcDate = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+  const utcAnchor = Date.UTC(anchor.getFullYear(), anchor.getMonth(), anchor.getDate());
+  return Math.round((utcDate - utcAnchor) / 86400000);
+}
+
+// Garmin's sync file carries cached `week`/`weekday` fields. Those fields are
+// only valid for the plan that was active when the sync ran; changing the
+// objective can otherwise make an old activity complete a slot in a brand-new
+// plan. Calendar dates are the durable source of truth, so every training view
+// rebases activities onto the currently loaded plan before matching them.
+export function alignActivitiesToPlanStart(activities: TrailActivity[], startDate: Date): TrailActivity[] {
+  return activities.map((activity) => {
+    const date = parseIsoDate(activity.date);
+    if (!date) return { ...activity, week: 0 };
+    return {
+      ...activity,
+      week: Math.floor(calendarDayDiff(date, startDate) / 7) + 1,
+      weekday: (date.getDay() + 6) % 7,
+    };
+  });
+}
+
 // Snaps an ISO date back to the Monday of its own week. Every plan-week
 // weekday slot is "days since the objective's start date" and is rendered
 // with real calendar weekday names (DAY_NAMES, WEEKDAY_NAMES) that assume
@@ -2878,9 +2901,10 @@ export async function computeTrailStats(): Promise<TrailStats> {
   const today = dateOnly(new Date());
   const daysToRace = Math.max(0, Math.round((raceDay.getTime() - today.getTime()) / 86400000));
   const currentWeek = Math.min(Math.max(Math.floor((today.getTime() - dateOnly(start).getTime()) / 86400000 / 7) + 1, 1), weeksTotal);
+  const planActivities = alignActivitiesToPlanStart(data.activities, start);
 
   const weeks: WeekStats[] = plan.weeks.map((planWeek) => {
-    const activities = data.activities.filter((activity) => activity.week === planWeek.week);
+    const activities = planActivities.filter((activity) => activity.week === planWeek.week);
     const runs = activities.filter((activity) => activity.kind === "run");
     const rides = activities.filter((activity) => activity.kind === "ride");
     const strength = activities.filter((activity) => activity.kind === "strength");
@@ -2905,7 +2929,7 @@ export async function computeTrailStats(): Promise<TrailStats> {
     };
   });
 
-  const allActivities = [...data.activities].sort((a, b) => a.date.localeCompare(b.date));
+  const allActivities = [...planActivities].sort((a, b) => a.date.localeCompare(b.date));
   const allRuns = allActivities.filter((activity) => activity.kind === "run");
   const allRides = allActivities.filter((activity) => activity.kind === "ride");
   const allStrength = allActivities.filter((activity) => activity.kind === "strength");

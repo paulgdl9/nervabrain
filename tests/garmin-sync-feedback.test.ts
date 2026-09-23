@@ -23,6 +23,20 @@ async function scratchVault() {
   return root;
 }
 
+async function writeActivityOverrides(vault: string) {
+  await writeFile(path.join(vault, "08-Projects/Trail-26K/activity-overrides.json"), JSON.stringify({
+    overrides: [
+      {
+        date: "2026-08-11",
+        source_type: "trail_running",
+        name: "Demo Trail",
+        kind: "other",
+        type: "hiking",
+      },
+    ],
+  }));
+}
+
 function runPython(vault: string, source: string) {
   const probe = spawnSync("python3", ["-c", source], {
     env: { ...process.env, VAULT_PATH: vault },
@@ -100,5 +114,63 @@ print(json.dumps(module.normalize_strength_sets(activity, payload), ensure_ascii
   assert.deepEqual(sets, [
     { exercise: "Tractions", step_index: 1, reps: 5, weight_kg: 0, seconds: null },
     { exercise: "Oiseau assis, buste penché", step_index: 4, reps: 11, weight_kg: 4.5, seconds: null },
+  ]);
+});
+
+test("generic profile sync applies activity overrides before classifying a run", async () => {
+  const vault = await scratchVault();
+  await writeActivityOverrides(vault);
+  const output = runPython(vault, String.raw`
+import importlib.util
+spec = importlib.util.spec_from_file_location("sync", "scripts/garmin-sync-profile.py")
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+goal = {"title": "", "race_day": None, "plan_start": None, "history_start": None, "distance": 10.0, "elevation": 0.0}
+acts = [
+    {"activityId": 811, "startTimeLocal": "2026-08-11 09:00:00", "activityName": "Demo Trail",
+     "activityType": {"typeKey": "trail_running"}, "distance": 18000.0, "duration": 14400.0},
+    {"activityId": 812, "startTimeLocal": "2026-08-12 09:00:00", "activityName": "Demo Trail",
+     "activityType": {"typeKey": "trail_running"}, "distance": 5000.0, "duration": 1800.0},
+]
+print(module.build_json(acts, goal))
+`);
+
+  const rows = JSON.parse(output).activities as Array<{ id: string; kind: string; type: string }>;
+  assert.deepEqual(rows.map(({ id, kind, type }) => ({ id, kind, type })), [
+    { id: "811", kind: "other", type: "hiking" },
+    { id: "812", kind: "run", type: "trail_running" },
+  ]);
+});
+
+test("generic profile sync persists current stamina fields and legacy aliases", async () => {
+  const vault = await scratchVault();
+  const output = runPython(vault, String.raw`
+import importlib.util
+spec = importlib.util.spec_from_file_location("sync", "scripts/garmin-sync-profile.py")
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+goal = {"title": "", "race_day": None, "plan_start": None, "history_start": None, "distance": 10.0, "elevation": 0.0}
+acts = [
+    {"activityId": 1, "startTimeLocal": "2026-08-01 09:00:00", "activityName": "Legacy",
+     "activityType": {"typeKey": "trail_running"}, "staminaStart": 95, "staminaEnd": 40, "staminaMin": 35},
+    {"activityId": 2, "startTimeLocal": "2026-08-02 09:00:00", "activityName": "Current",
+     "activityType": {"typeKey": "trail_running"}, "beginPotentialStamina": 99,
+     "endPotentialStamina": 16, "minAvailableStamina": 14},
+]
+print(module.build_json(acts, goal))
+`);
+
+  const rows = JSON.parse(output).activities as Array<{
+    stamina_start: number;
+    stamina_end: number;
+    stamina_min: number;
+  }>;
+  assert.deepEqual(rows.map(({ stamina_start, stamina_end, stamina_min }) => ({
+    stamina_start,
+    stamina_end,
+    stamina_min,
+  })), [
+    { stamina_start: 95, stamina_end: 40, stamina_min: 35 },
+    { stamina_start: 99, stamina_end: 16, stamina_min: 14 },
   ]);
 });

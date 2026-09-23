@@ -28,12 +28,14 @@ SYNC_JSON = PROJECT_DIR / "sync-data.json"
 FEEDBACK_JSON = PROJECT_DIR / "feedback-data.json"
 PERFORMANCE_JSON = PROJECT_DIR / "performance-data.json"
 GOAL_JSON = PROJECT_DIR / "goal.json"
+ACTIVITY_OVERRIDES_JSON = PROJECT_DIR / "activity-overrides.json"
 PLAN_JSON = VAULT / "08-Projects/Training/plan-data.json"
 SETUP_JSON = VAULT / ".second-brain-setup.json"
 PAGE_MD = VAULT / "11-Custom/_registry/trail-26k.md"
 MARK_START = "<!-- GARMIN-SYNC:START -->"
 MARK_END = "<!-- GARMIN-SYNC:END -->"
 DAY_NAMES = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
+_ACTIVITY_OVERRIDES: dict[tuple[str, str, str], dict] | None = None
 
 # Stable step indexes from the three structured workouts currently sent to the
 # watch. Garmin's detected exercise name is ambiguous for some movements
@@ -163,8 +165,39 @@ def act_date(act: dict) -> date:
     return datetime.strptime(raw[:10], "%Y-%m-%d").date()
 
 
+def load_activity_overrides() -> dict[tuple[str, str, str], dict]:
+    global _ACTIVITY_OVERRIDES
+    if _ACTIVITY_OVERRIDES is not None:
+        return _ACTIVITY_OVERRIDES
+    try:
+        raw = json.loads(ACTIVITY_OVERRIDES_JSON.read_text(encoding="utf-8"))
+        items = raw.get("overrides", []) if isinstance(raw, dict) else []
+    except (OSError, ValueError):
+        items = []
+    _ACTIVITY_OVERRIDES = {
+        (str(item.get("date") or ""), str(item.get("source_type") or ""), str(item.get("name") or "")): item
+        for item in items
+        if isinstance(item, dict)
+    }
+    return _ACTIVITY_OVERRIDES
+
+
+def activity_override(act: dict) -> dict:
+    source_type = (act.get("activityType") or {}).get("typeKey", "")
+    name = str(act.get("activityName") or "").strip()
+    return load_activity_overrides().get((act_date(act).isoformat(), source_type, name), {})
+
+
+def activity_type_of(act: dict) -> str:
+    source_type = (act.get("activityType") or {}).get("typeKey", "")
+    return str(activity_override(act).get("type") or source_type)
+
+
 def kind_of(act: dict) -> str:
-    key = (act.get("activityType") or {}).get("typeKey", "")
+    override_kind = activity_override(act).get("kind")
+    if override_kind in ("run", "ride", "strength", "other"):
+        return override_kind
+    key = activity_type_of(act)
     if key in ("running", "trail_running", "track_running", "virtual_run", "indoor_running", "treadmill_running"):
         return "run"
     if "ride" in key or "cycling" in key:
@@ -304,7 +337,7 @@ def build_sync_md(today: date, acts: list[dict], goal: dict) -> str:
         parts.extend([f"## {month}", "", "| Date | Type | Activite | Distance | Duree | Allure | FC moy | D+ | Douleur | Ressenti |", "|---|---|---|---|---|---|---|---|---|---|"])
         for activity in sorted(by_month[month], key=lambda item: item.get("startTimeLocal") or ""):
             day = act_date(activity)
-            key = (activity.get("activityType") or {}).get("typeKey", "?")
+            key = activity_type_of(activity) or "?"
             dist = float(activity.get("distance") or 0.0)
             dur = float(activity.get("duration") or 0.0)
             hr = activity.get("averageHR")
@@ -408,7 +441,7 @@ def build_json(acts: list[dict], goal: dict, strength_sets: dict[str, list[dict]
             "week": week_of(day, goal["plan_start"]),
             "weekday": day.weekday(),
             "kind": kind_of(activity),
-            "type": (activity.get("activityType") or {}).get("typeKey", ""),
+            "type": activity_type_of(activity),
             "name": (activity.get("activityName") or "").strip(),
             "km": round(dist / 1000, 3),
             "dur_s": round(dur, 1),
@@ -429,9 +462,9 @@ def build_json(acts: list[dict], goal: dict, strength_sets: dict[str, list[dict]
             "aerobic_training_effect": first_value(activity, "aerobicTrainingEffect"),
             "anaerobic_training_effect": first_value(activity, "anaerobicTrainingEffect"),
             "training_effect_label": first_value(activity, "trainingEffectLabel", "trainingEffectMessage"),
-            "stamina_start": first_value(activity, "staminaStart"),
-            "stamina_end": first_value(activity, "staminaEnd"),
-            "stamina_min": first_value(activity, "staminaMin"),
+            "stamina_start": first_value(activity, "beginPotentialStamina", "staminaStart"),
+            "stamina_end": first_value(activity, "endPotentialStamina", "staminaEnd"),
+            "stamina_min": first_value(activity, "minAvailableStamina", "staminaMin"),
             "vo2_max": first_value(activity, "vO2MaxValue", "vo2MaxValue"),
             "hr_zones": zone_items(activity, "hrZones", "heartRateZones", "heart_rate_zones"),
             "power_zones": zone_items(activity, "powerZones", "power_zones"),

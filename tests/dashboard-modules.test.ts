@@ -106,6 +106,24 @@ test("dashboard module summaries use only local Markdown and keep currencies hon
   });
 });
 
+test("dashboard finance summary uses converted live values in the display currency", () => {
+  const evidence: ActiveModuleEvidence = { finance: { state: "ready", total: 1, notes: [] } } as ActiveModuleEvidence;
+  const rawNotes = [note("10-Finance/usd.md", { type: "finance-position", quantity: 50, unit_price: 100, currency: "USD" })];
+  const livePositions = [note("10-Finance/usd.md", {
+    type: "finance-position", quantity: 50, unit_price: 100, currency: "USD", base_currency: "EUR", value_base: 4_300,
+  })];
+
+  const summary = summarizeDashboardModules(rawNotes, evidence, "EUR", "2026-07-21", undefined, undefined, livePositions);
+
+  assert.deepEqual(summary.finance, {
+    total: 4_300,
+    positions: 1,
+    excluded: 0,
+    allocation: [{ label: "other", value: 4_300 }],
+    unvalued: 0,
+  });
+});
+
 test("dashboard training summary prefers real trail stats over the checkbox heuristic when supplied", () => {
   const evidence: ActiveModuleEvidence = { training: { state: "ready", total: 1, notes: [] } } as ActiveModuleEvidence;
   const notes = [
