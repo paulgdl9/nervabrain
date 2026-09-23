@@ -197,9 +197,9 @@ export async function saveAssistantSettingsAction(formData: FormData) {
       dailyBriefPrompt,
     },
   });
-  revalidatePath("/settings");
+  revalidatePath("/settings/assistant");
   revalidatePath("/assistant");
-  redirect("/settings#assistant");
+  redirect("/settings/assistant");
 }
 
 export async function saveModuleSettingsAction(formData: FormData) {
