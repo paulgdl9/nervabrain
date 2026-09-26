@@ -7,19 +7,13 @@ export type StrengthExercisePlan = {
   repsMax?: number;
   seconds?: number;
   weightKg?: number;
-  nextWeightKg?: number;
   restSeconds: number;
   rir?: string;
 };
 
-export type StrengthSetPerformance = {
-  reps: number | null;
-  seconds: number | null;
-  weightKg: number | null;
-};
-
 export type StrengthSetTarget = {
-  reps?: number;
+  repsMin?: number;
+  repsMax?: number;
   seconds?: number;
   weightKg?: number;
 };
@@ -50,7 +44,7 @@ const PROGRAMS: Record<"push" | "pull" | "legs" | "stability", StrengthProgram> 
       { label: "Tractions", category: "PULL_UP", exerciseName: "PULL_UP", sets: 4, repsMin: 4, repsMax: 10, weightKg: 0, restSeconds: 120, rir: "1–2" },
       { label: "Oiseau assis, buste penché", category: "FLYE", exerciseName: "DUMBBELL_FLYE", sets: 3, repsMin: 12, repsMax: 20, weightKg: 4.5, restSeconds: 75, rir: "1–2" },
       { label: "Rowing unilatéral haltère", category: "ROW", exerciseName: "DUMBBELL_ROW", sets: 3, repsMin: 8, repsMax: 12, weightKg: 7, restSeconds: 120, rir: "2" },
-      { label: "Curl incliné haltères", category: "CURL", exerciseName: "DUMBBELL_BICEPS_CURL", sets: 3, repsMin: 8, repsMax: 12, weightKg: 4.5, nextWeightKg: 7, restSeconds: 75, rir: "1–2" },
+      { label: "Curl incliné haltères", category: "CURL", exerciseName: "DUMBBELL_BICEPS_CURL", sets: 3, repsMin: 8, repsMax: 12, weightKg: 4.5, restSeconds: 75, rir: "1–2" },
       { label: "Rowing buste penché", category: "ROW", exerciseName: "BENT_OVER_ROW_WITH_DUMBELL", sets: 2, repsMin: 10, repsMax: 15, weightKg: 6, restSeconds: 120, rir: "2" },
       { label: "Curl marteau", category: "CURL", exerciseName: "DUMBBELL_BICEPS_CURL", sets: 2, repsMin: 10, repsMax: 15, weightKg: 6, restSeconds: 75, rir: "1–2" },
       { label: "Hanging knee raises", category: "CORE", exerciseName: "TOES_TO_ELBOWS", sets: 3, repsMin: 8, repsMax: 15, weightKg: 0, restSeconds: 75 },
@@ -100,29 +94,12 @@ export function strengthTarget(exercise: StrengthExercisePlan): string {
   return `${exercise.sets} × ${effort}${load} · repos ${exercise.restSeconds} s${exercise.rir ? ` · RIR ${exercise.rir}` : ""}`;
 }
 
-export function nextStrengthTargets(exercise: StrengthExercisePlan, previous: StrengthSetPerformance[]): StrengthSetTarget[] {
-  const fallback = Array.from({ length: exercise.sets }, () => ({
-    ...(exercise.seconds ? { seconds: exercise.seconds } : { reps: exercise.repsMin || 1 }),
+export function plannedStrengthTargets(exercise: StrengthExercisePlan): StrengthSetTarget[] {
+  return Array.from({ length: exercise.sets }, () => ({
+    ...(exercise.seconds ? { seconds: exercise.seconds } : {
+      repsMin: exercise.repsMin || exercise.repsMax || 1,
+      repsMax: exercise.repsMax || exercise.repsMin || 1,
+    }),
     ...(exercise.weightKg !== undefined ? { weightKg: exercise.weightKg } : {}),
   }));
-  if (previous.length < exercise.sets) return fallback;
-
-  const sets = previous.slice(0, exercise.sets);
-  if (exercise.seconds) {
-    if (sets.some((set) => set.seconds === null)) return fallback;
-    const targets = sets.map((set) => ({ seconds: Math.round(set.seconds!), ...(set.weightKg !== null ? { weightKg: set.weightKg } : {}) }));
-    targets[0].seconds += 5;
-    return targets;
-  }
-  if (sets.some((set) => set.reps === null)) return fallback;
-
-  const allAtTop = Boolean(exercise.repsMax) && sets.every((set) => set.reps! >= exercise.repsMax!);
-  if (allAtTop && exercise.nextWeightKg !== undefined) {
-    return Array.from({ length: exercise.sets }, () => ({ reps: exercise.repsMin || 1, weightKg: exercise.nextWeightKg }));
-  }
-
-  const targets = sets.map((set) => ({ reps: Math.round(set.reps!), ...(set.weightKg !== null ? { weightKg: set.weightKg } : exercise.weightKg !== undefined ? { weightKg: exercise.weightKg } : {}) }));
-  const index = targets.findIndex((target) => !exercise.repsMax || target.reps! < exercise.repsMax);
-  if (index >= 0) targets[index].reps! += 1;
-  return targets;
 }
