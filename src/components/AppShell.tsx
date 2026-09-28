@@ -13,7 +13,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   const authEnabled = Boolean(configuredDashboardPassword());
 
   return (
-    <AppShellChrome pinnedItems={pinnedItems} customPages={customItems} modules={setup.modules} setupComplete={setup.status === "completed"} authEnabled={authEnabled}>
+    <AppShellChrome pinnedItems={pinnedItems} customPages={customItems} modules={setup.modules} hiddenNavHrefs={setup.navigation.hidden} setupComplete={setup.status === "completed"} authEnabled={authEnabled}>
       {children}
     </AppShellChrome>
   );

@@ -203,6 +203,19 @@ test("reconcile appends newly available module blocks but not hidden or existing
   assert.equal(reconcileAvailableModules(next, ["today", "module:finance", "module:budget", "module:business"]), next);
 });
 
+test("new RSS widgets are available but hidden until the profile enables them", () => {
+  const available = [...DASHBOARD_WIDGET_IDS, "rss:radiology"];
+  const state = normalizeDashboardState(undefined, available, ["rss:radiology"]);
+
+  assert.equal(state.order.includes("rss:radiology"), false);
+  assert.equal(state.hidden.includes("rss:radiology"), true);
+
+  const enabled = restoreDashboardBlock(state, "rss:radiology");
+  const reloaded = normalizeDashboardState(JSON.parse(JSON.stringify(enabled)), available, ["rss:radiology"]);
+  assert.equal(reloaded.order.includes("rss:radiology"), true);
+  assert.equal(reloaded.hidden.includes("rss:radiology"), false);
+});
+
 test("module availability changes do not erase stored placement or hidden state", () => {
   const financeId = MODULE_DASHBOARD_WIDGET_IDS.finance[0];
   const budgetId = MODULE_DASHBOARD_WIDGET_IDS.budget[0];

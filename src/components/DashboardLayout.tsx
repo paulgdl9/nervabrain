@@ -10,6 +10,7 @@ import {
   Inbox,
   ListChecks,
   Plus,
+  Rss,
   RotateCcw,
   SlidersHorizontal,
   Target,
@@ -35,6 +36,7 @@ export type DashboardWidget = {
   visual?: "hero" | "focus" | "landscape" | "compact" | "module";
   /** @deprecated Use `size: "wide"` for new widgets. */
   wide?: boolean;
+  defaultHidden?: boolean;
   content: ReactNode;
 };
 
@@ -71,6 +73,7 @@ const WIDGET_ICONS: Partial<Record<DashboardWidgetId, ReactNode>> = {
 };
 
 function widgetIcon(id: DashboardWidgetId) {
+  if (id.startsWith("rss:")) return <Rss size={19} aria-hidden />;
   if (WIDGET_ICONS[id]) return WIDGET_ICONS[id];
   if (id.startsWith("module:revisions")) return <ListChecks size={19} aria-hidden />;
   if (id.startsWith("module:custom")) return <Inbox size={19} aria-hidden />;
@@ -79,7 +82,11 @@ function widgetIcon(id: DashboardWidgetId) {
   return <ChartNoAxesColumnIncreasing size={19} aria-hidden />;
 }
 
-export function normalizeDashboardState(value: unknown): DashboardState {
+export function normalizeDashboardState(
+  value: unknown,
+  availableWidgetIds: readonly string[] = DASHBOARD_WIDGET_IDS,
+  hiddenByDefaultIds: readonly string[] = [],
+): DashboardState {
   const input = value && typeof value === "object" ? value as Partial<DashboardState> : {};
   const custom = Array.isArray(input.custom)
     ? input.custom.flatMap((item): CustomBlock[] => {
@@ -95,7 +102,7 @@ export function normalizeDashboardState(value: unknown): DashboardState {
         }];
       })
     : [];
-  const valid = new Set<string>([...DASHBOARD_WIDGET_IDS, ...custom.map((block) => block.id)]);
+  const valid = new Set<string>([...availableWidgetIds, ...custom.map((block) => block.id)]);
   const hidden = Array.isArray(input.hidden)
     ? [...new Set(input.hidden.map(String).filter((id) => valid.has(id)))]
     : [];
@@ -104,7 +111,12 @@ export function normalizeDashboardState(value: unknown): DashboardState {
     ? [...new Set(input.order.map(String).filter((id) => valid.has(id) && !hiddenSet.has(id)))]
     : [];
   const seen = new Set([...order, ...hidden]);
-  for (const id of valid) if (!seen.has(id)) order.push(id);
+  const hiddenByDefault = new Set(hiddenByDefaultIds);
+  for (const id of valid) {
+    if (seen.has(id)) continue;
+    if (hiddenByDefault.has(id)) hidden.push(id);
+    else order.push(id);
+  }
   const rawSizes = input.sizes && typeof input.sizes === "object" && !Array.isArray(input.sizes)
     ? input.sizes
     : {};
@@ -257,12 +269,12 @@ export function deletePersonalDashboardBlock(state: DashboardState, id: string):
   };
 }
 
-function loadState(): DashboardState {
+function loadState(availableWidgetIds: readonly string[], hiddenByDefaultIds: readonly string[]): DashboardState {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    return normalizeDashboardState(raw ? JSON.parse(raw) : DEFAULT_STATE);
+    return normalizeDashboardState(raw ? JSON.parse(raw) : DEFAULT_STATE, availableWidgetIds, hiddenByDefaultIds);
   } catch {
-    return DEFAULT_STATE;
+    return normalizeDashboardState(DEFAULT_STATE, availableWidgetIds, hiddenByDefaultIds);
   }
 }
 
@@ -353,9 +365,13 @@ export function DashboardLayout({ widgets, initialState }: { widgets: DashboardW
     [state.custom, state.hidden],
   );
   useLayoutEffect(() => {
+    const availableWidgetIds = widgets.map((widget) => widget.id);
+    const hiddenByDefaultIds = widgets.filter((widget) => widget.defaultHidden).map((widget) => widget.id);
     // The vault is authoritative once it contains a layout. On the first run
     // after this migration, promote the browser-only v7 layout into the vault.
-    const stored = initialState === null ? loadState() : normalizeDashboardState(initialState);
+    const stored = initialState === null
+      ? loadState(availableWidgetIds, hiddenByDefaultIds)
+      : normalizeDashboardState(initialState, availableWidgetIds, hiddenByDefaultIds);
     // A returning user's saved order predates any newly-available connected
     // module block; surface the new ones without a manual re-add.
     const reconciled = compactDashboardStateOrder(
@@ -449,12 +465,12 @@ export function DashboardLayout({ widgets, initialState }: { widgets: DashboardW
   }
 
   function reset() {
-    update(compactDashboardStateOrder({
+    update(compactDashboardStateOrder(normalizeDashboardState({
       order: [...DEFAULT_STATE.order, ...state.custom.map((block) => block.id)],
       hidden: [...DEFAULT_STATE.hidden],
       custom: state.custom,
       sizes: {},
-    }, widgets));
+    }, widgets.map((widget) => widget.id), widgets.filter((widget) => widget.defaultHidden).map((widget) => widget.id)), widgets));
     setCatalogOpen(false);
   }
 

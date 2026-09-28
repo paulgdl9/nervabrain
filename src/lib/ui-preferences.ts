@@ -44,6 +44,12 @@ function uniqueStrings(value: unknown, limit = 100): string[] {
   return [...new Set(value.map(String).map((item) => item.trim()).filter(Boolean))].slice(0, limit);
 }
 
+function isPersistableDashboardWidgetId(id: string, customIds: ReadonlySet<string>) {
+  return (DASHBOARD_WIDGET_IDS as readonly string[]).includes(id)
+    || customIds.has(id)
+    || /^rss:[a-zA-Z0-9_-]{1,100}$/.test(id);
+}
+
 export function normalizeDashboardLayoutPreference(value: unknown): DashboardLayoutPreference {
   const input = record(value);
   const custom = Array.isArray(input.custom)
@@ -61,7 +67,13 @@ export function normalizeDashboardLayoutPreference(value: unknown): DashboardLay
         }];
       }).slice(0, 100)
     : [];
-  const valid = new Set<string>([...DASHBOARD_WIDGET_IDS, ...custom.map((block) => block.id)]);
+  const customIds = new Set(custom.map((block) => block.id));
+  const submitted = uniqueStrings([...(Array.isArray(input.order) ? input.order : []), ...(Array.isArray(input.hidden) ? input.hidden : [])], 200);
+  const valid = new Set<string>([
+    ...DASHBOARD_WIDGET_IDS,
+    ...customIds,
+    ...submitted.filter((id) => isPersistableDashboardWidgetId(id, customIds)),
+  ]);
   const hidden = uniqueStrings(input.hidden).filter((id) => valid.has(id));
   const hiddenSet = new Set(hidden);
   const order = uniqueStrings(input.order).filter((id) => valid.has(id) && !hiddenSet.has(id));

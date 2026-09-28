@@ -27,17 +27,18 @@ test("dashboard layout persists in the vault across reads", () => scratchVault(a
   assert.equal(await readDashboardLayoutPreference(), null);
 
   await saveDashboardLayoutPreference({
-    order: ["brief", "today"],
+    order: ["brief", "today", "rss:radiology"],
     hidden: ["areas"],
     custom: [{ id: "custom:focus", kind: "text", title: "Focus", body: "Ship it", value: "" }],
-    sizes: { today: "wide", brief: "standard", unknown: "wide" },
+    sizes: { today: "wide", brief: "standard", "rss:radiology": "wide", "rss:../../unsafe": "wide", unknown: "wide" },
   });
 
   const reloaded = await readDashboardLayoutPreference();
   assert.deepEqual(reloaded?.order.slice(0, 2), ["brief", "today"]);
   assert.equal(reloaded?.hidden.includes("areas"), true);
+  assert.equal(reloaded?.order.includes("rss:radiology"), true);
   assert.equal(reloaded?.custom[0]?.body, "Ship it");
-  assert.deepEqual(reloaded?.sizes, { today: "wide", brief: "standard" });
+  assert.deepEqual(reloaded?.sizes, { today: "wide", brief: "standard", "rss:radiology": "wide" });
   assert.equal(JSON.parse(await fs.readFile(path.join(root, ".second-brain-dashboard-layout.json"), "utf8")).version, 1);
 }));
 

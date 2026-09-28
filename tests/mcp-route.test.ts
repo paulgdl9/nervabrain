@@ -64,8 +64,11 @@ test("tools/list exposes the ChatGPT-required search and fetch tools to read sco
   assert.ok(names.includes("search"), `missing "search" in ${names}`);
   assert.ok(names.includes("fetch"), `missing "fetch" in ${names}`);
   assert.ok(names.includes("get_training_status"));
-  assert.ok(!names.includes("create_task"), "write tools must not be listed for read-only scope");
   assert.ok(!names.includes("record_training_feedback"));
+  assert.ok(names.includes("list_rss_sources"), "read scope should expose RSS sources");
+  assert.ok(names.includes("list_rss_digests"), "read scope should expose RSS digests");
+  assert.ok(!names.includes("create_task"), "write tools must not be listed for read-only scope");
+  assert.ok(!names.includes("add_rss_source"), "RSS mutations must not be listed for read-only scope");
 });
 
 test("search and fetch return the OpenAI connector document shape", async () => {
@@ -353,4 +356,184 @@ test("save_daily_chat_digest validates and replaces one deterministic Raw note",
   assert.match(note, /date: 2026-08-02/);
   assert.match(note, /Version remplacée/);
   assert.doesNotMatch(note, /Première version/);
+});
+
+test("RSS MCP tools separate read and write scopes and return structured state", async () => {
+  resetOAuthStateForTests();
+  fs.writeFileSync(path.join(scratchVault, ".rss-config.json"), `${JSON.stringify({
+    version: 2,
+    enabled: true,
+    sources: [{ id: "radiology", label: "Radiology", url: "https://example.com/radiology.xml", enabled: true, topics: ["radiology"] }],
+    profiles: [],
+    lastCollectionAt: "",
+    lastCollectionCount: 0,
+  }, null, 2)}\n`);
+
+  const readToken = bearerToken(["read"]);
+  const sourcesResponse = await POST(rpc(
+    { jsonrpc: "2.0", id: 4, method: "tools/call", params: { name: "list_rss_sources", arguments: {} } },
+    readToken,
+  ));
+  const sourcesRpc = await sourcesResponse.json();
+  const sources = JSON.parse(sourcesRpc.result.content[0].text);
+  assert.equal(sources.sources[0].id, "radiology");
+  assert.equal(sources.sources[0].topics[0], "radiology");
+
+  const deniedResponse = await POST(rpc(
+    {
+      jsonrpc: "2.0",
+      id: 5,
+      method: "tools/call",
+      params: { name: "upsert_rss_digest_profile", arguments: { title: "Veille radio", cadence: "daily" } },
+    },
+    readToken,
+  ));
+  assert.equal((await deniedResponse.json()).error.message, "Insufficient OAuth scope");
+
+  const writeResponse = await POST(rpc(
+    {
+      jsonrpc: "2.0",
+      id: 6,
+      method: "tools/call",
+      params: {
+        name: "upsert_rss_digest_profile",
+        arguments: { title: "Veille radio", cadence: "weekly", sourceIds: ["radiology"], maxItems: 4 },
+      },
+    },
+    bearerToken(["write"]),
+  ));
+  const created = JSON.parse((await writeResponse.json()).result.content[0].text);
+  assert.equal(created.title, "Veille radio");
+  assert.equal(created.cadence, "weekly");
+  assert.deepEqual(created.sourceIds, ["radiology"]);
+});
+
+test("RSS MCP source writes reject private network URLs", async () => {
+  resetOAuthStateForTests();
+  const response = await POST(rpc(
+    {
+      jsonrpc: "2.0",
+      id: 7,
+      method: "tools/call",
+      params: { name: "add_rss_source", arguments: { url: "http://127.0.0.1/private.xml" } },
+    },
+    bearerToken(["write"]),
+  ));
+  const payload = await response.json();
+  assert.equal(payload.result.isError, true);
+});
+
+test("RSS MCP tools list, add, run, rate-limit, validate, and remove resources", async () => {
+  resetOAuthStateForTests();
+  fs.writeFileSync(path.join(scratchVault, ".rss-config.json"), `${JSON.stringify({
+    version: 2,
+    enabled: true,
+    sources: [],
+    profiles: [],
+    lastCollectionAt: "",
+    lastCollectionCount: 0,
+  }, null, 2)}\n`);
+  const writeToken = bearerToken(["write"]);
+  const readToken = bearerToken(["read"]);
+
+  const addResponse = await POST(rpc({
+    jsonrpc: "2.0",
+    id: 8,
+    method: "tools/call",
+    params: {
+      name: "add_rss_source",
+      arguments: { url: "https://1.1.1.1/feed.xml", label: "Public feed", topics: ["security"], enabled: false },
+    },
+  }, writeToken));
+  const addRpc = await addResponse.json();
+  assert.equal(addRpc.result.isError, undefined);
+  const source = JSON.parse(addRpc.result.content[0].text);
+  assert.equal(source.label, "Public feed");
+  assert.equal(source.enabled, false);
+
+  const sourceListResponse = await POST(rpc({
+    jsonrpc: "2.0",
+    id: 9,
+    method: "tools/call",
+    params: { name: "list_rss_sources", arguments: {} },
+  }, readToken));
+  const sourceList = JSON.parse((await sourceListResponse.json()).result.content[0].text);
+  assert.deepEqual(sourceList.sources.map((item: { id: string }) => item.id), [source.id]);
+
+  const profileId = `mcp-digest-${randomUUID().replaceAll("-", "")}`;
+  const profileResponse = await POST(rpc({
+    jsonrpc: "2.0",
+    id: 10,
+    method: "tools/call",
+    params: {
+      name: "upsert_rss_digest_profile",
+      arguments: { id: profileId, title: "MCP digest", cadence: "daily", sourceIds: [source.id] },
+    },
+  }, writeToken));
+  const profile = JSON.parse((await profileResponse.json()).result.content[0].text);
+  assert.equal(profile.id, profileId);
+
+  const digestListResponse = await POST(rpc({
+    jsonrpc: "2.0",
+    id: 11,
+    method: "tools/call",
+    params: { name: "list_rss_digests", arguments: {} },
+  }, readToken));
+  const digestList = JSON.parse((await digestListResponse.json()).result.content[0].text);
+  assert.deepEqual(digestList.profiles.map((item: { id: string }) => item.id), [profileId]);
+  assert.deepEqual(digestList.digests, []);
+
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const runResponse = await POST(rpc({
+      jsonrpc: "2.0",
+      id: 12 + attempt,
+      method: "tools/call",
+      params: { name: "run_rss_digest", arguments: { id: profileId } },
+    }, writeToken));
+    const runRpc = await runResponse.json();
+    assert.equal(runRpc.result.isError, undefined, `attempt ${attempt + 1} should be allowed`);
+    const digest = JSON.parse(runRpc.result.content[0].text);
+    assert.equal(digest.profileId, profileId);
+    assert.equal(digest.engine, "none");
+  }
+
+  const limitedResponse = await POST(rpc({
+    jsonrpc: "2.0",
+    id: 16,
+    method: "tools/call",
+    params: { name: "run_rss_digest", arguments: { id: profileId } },
+  }, writeToken));
+  assert.equal((await limitedResponse.json()).result.isError, true);
+
+  for (const [id, args] of [
+    [17, { title: "Bad cadence", cadence: "hourly" }],
+    [18, { title: "Bad count", maxItems: 0 }],
+    [19, { title: "Bad sources", sourceIds: "not-an-array" }],
+  ] as const) {
+    const invalidResponse = await POST(rpc({
+      jsonrpc: "2.0",
+      id,
+      method: "tools/call",
+      params: { name: "upsert_rss_digest_profile", arguments: args },
+    }, writeToken));
+    assert.equal((await invalidResponse.json()).result.isError, true);
+  }
+
+  const removeProfileResponse = await POST(rpc({
+    jsonrpc: "2.0",
+    id: 20,
+    method: "tools/call",
+    params: { name: "remove_rss_digest_profile", arguments: { id: profileId } },
+  }, writeToken));
+  const profilesAfterRemoval = JSON.parse((await removeProfileResponse.json()).result.content[0].text);
+  assert.deepEqual(profilesAfterRemoval.profiles, []);
+
+  const removeSourceResponse = await POST(rpc({
+    jsonrpc: "2.0",
+    id: 21,
+    method: "tools/call",
+    params: { name: "remove_rss_source", arguments: { id: source.id } },
+  }, writeToken));
+  const sourcesAfterRemoval = JSON.parse((await removeSourceResponse.json()).result.content[0].text);
+  assert.deepEqual(sourcesAfterRemoval.sources, []);
 });

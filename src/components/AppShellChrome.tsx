@@ -19,6 +19,7 @@ export function AppShellChrome({
   pinnedItems,
   customPages = [],
   modules,
+  hiddenNavHrefs = [],
   setupComplete = false,
   authEnabled = false,
 }: {
@@ -26,6 +27,7 @@ export function AppShellChrome({
   pinnedItems: { href: string; label: string }[];
   customPages?: CustomPageEntry[];
   modules?: EnabledModules;
+  hiddenNavHrefs?: string[];
   setupComplete?: boolean;
   authEnabled?: boolean;
 }) {
@@ -102,13 +104,13 @@ export function AppShellChrome({
           </button>
         </div>
         <div className="sidebar-scroll">
-          <AppNav customPages={customPages} modules={modules} />
+          <AppNav customPages={customPages} modules={modules} hiddenHrefs={hiddenNavHrefs} />
           <PinnedNav items={pinnedItems} />
           <form action="/search" className="side-search">
             <span className="nf nav-icon" aria-hidden><Search size={14} /></span>
             <input name="q" placeholder={t("nav.search")} aria-label={t("nav.search")} />
           </form>
-          <AppUtilityNav showSetup={!setupComplete} />
+          <AppUtilityNav showSetup={!setupComplete} hiddenHrefs={hiddenNavHrefs} />
           <Link href="/settings" className="nav-item subtle-link">
             <span className="nf nav-icon" aria-hidden><Settings size={15} /></span>
             <span className="nav-label">{t("nav.settings")}</span>

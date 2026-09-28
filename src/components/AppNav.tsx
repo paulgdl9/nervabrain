@@ -147,9 +147,11 @@ function NewPageButton() {
 export function AppNav({
   customPages = [],
   modules = { finance: true, budget: true, trail: true, business: true, applications: false, revisions: false },
+  hiddenHrefs = [],
 }: {
   customPages?: CustomPageEntry[];
   modules?: EnabledModules;
+  hiddenHrefs?: string[];
 }) {
   const pathname = usePathname();
   const { t } = useLanguage();
@@ -174,7 +176,8 @@ export function AppNav({
     label: page.title,
     icon: page.icon || "📄",
   }));
-  const { items, reorder } = useOrderedItems(NAV_ORDER_KEY, navItems);
+  const hidden = new Set(hiddenHrefs);
+  const { items, reorder } = useOrderedItems(NAV_ORDER_KEY, navItems.filter((item) => !hidden.has(item.href)));
   const allItems = [...items, ...customItems];
 
   return (
@@ -207,7 +210,7 @@ export function PinnedNav({ items }: { items: { href: string; label: string }[] 
   );
 }
 
-export function AppUtilityNav({ showSetup = true }: { showSetup?: boolean }) {
+export function AppUtilityNav({ showSetup = true, hiddenHrefs = [] }: { showSetup?: boolean; hiddenHrefs?: string[] }) {
   const pathname = usePathname();
   const { t } = useLanguage();
   const utilityItems: NavEntry[] = [
@@ -216,7 +219,8 @@ export function AppUtilityNav({ showSetup = true }: { showSetup?: boolean }) {
     { href: "/feeds", label: t("nav.feeds"), icon: <Rss size={15} /> },
     { href: "/trash", label: t("nav.trash"), icon: <Trash2 size={15} /> },
   ];
-  const { items, reorder } = useOrderedItems(UTILITY_ORDER_KEY, utilityItems);
+  const hidden = new Set(hiddenHrefs);
+  const { items, reorder } = useOrderedItems(UTILITY_ORDER_KEY, utilityItems.filter((item) => !hidden.has(item.href)));
 
   return (
     <ReorderableNavList

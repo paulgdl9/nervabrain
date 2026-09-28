@@ -17,6 +17,13 @@ import {
   createApplicationDocument,
   updateApplicationStage,
   linkApplicationDocument,
+  readFeedIntelligence,
+  upsertFeedSource,
+  removeFeedSource,
+  upsertFeedDigestProfile,
+  removeFeedDigestProfile,
+  runFeedDigest,
+  type FeedDigestCadence,
 } from "@/lib/vault";
 import {
   computeTrailStats,
@@ -37,6 +44,7 @@ import { authenticateRequest, type AuthContext } from "@/lib/auth";
 import { readRequestText, RequestBodyError } from "@/lib/http-security";
 import type { OAuthScope } from "@/lib/oauth-codes";
 import { strengthProgramFor, type StrengthExercisePlan } from "@/lib/strength-program";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -270,6 +278,58 @@ const TOOLS = [
     },
   },
   {
+    name: "list_rss_sources",
+    description: "List configured RSS sources and collection status.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "add_rss_source",
+    description: "Add an RSS source, or update it when an existing source id is supplied. Public HTTP(S) feed URLs only.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "Optional existing source id" },
+        url: { type: "string", description: "Public RSS or Atom feed URL" },
+        label: { type: "string", description: "Optional display name" },
+        topics: { type: "array", items: { type: "string" }, description: "Optional topic labels" },
+        enabled: { type: "boolean", description: "Whether this source is collected" },
+      },
+      required: ["url"],
+    },
+  },
+  {
+    name: "remove_rss_source",
+    description: "Remove an RSS source by id and detach it from digest profiles.",
+    inputSchema: {
+      type: "object",
+      properties: { id: { type: "string", description: "RSS source id" } },
+      required: ["id"],
+    },
+  },
+  {
+    name: "list_rss_digests",
+    description: "List RSS digest profiles, schedules, and their latest successful AI digests.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "upsert_rss_digest_profile",
+    description: "Create or update a configurable AI digest profile for selected RSS sources.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "Optional existing profile id" },
+        title: { type: "string" },
+        enabled: { type: "boolean" },
+        sourceIds: { type: "array", items: { type: "string" }, description: "Empty means all enabled sources" },
+        instructions: { type: "string", description: "What the AI should prioritize and explain" },
+        cadence: { type: "string", enum: ["manual", "multiple_daily", "daily", "weekly"] },
+        maxItems: { type: "integer", minimum: 1, maximum: 20 },
+        lookbackHours: { type: "integer", minimum: 1, maximum: 720 },
+      },
+      required: ["title"],
+    },
+  },
+  {
     name: "update_objective_status",
     description: "Update the status of an existing objective without changing its content.",
     inputSchema: {
@@ -413,6 +473,24 @@ const TOOLS = [
       required: ["application_path", "document_path"],
     },
   },
+  {
+    name: "remove_rss_digest_profile",
+    description: "Remove an RSS digest profile and its generated digest state.",
+    inputSchema: {
+      type: "object",
+      properties: { id: { type: "string", description: "Digest profile id" } },
+      required: ["id"],
+    },
+  },
+  {
+    name: "run_rss_digest",
+    description: "Generate one RSS digest profile immediately. This can invoke an AI model and is rate-limited.",
+    inputSchema: {
+      type: "object",
+      properties: { id: { type: "string", description: "Digest profile id" } },
+      required: ["id"],
+    },
+  },
 ];
 
 const WRITE_TOOLS = new Set([
@@ -430,6 +508,11 @@ const WRITE_TOOLS = new Set([
   "update_application_stage",
   "create_application_document",
   "link_application_document",
+  "add_rss_source",
+  "remove_rss_source",
+  "upsert_rss_digest_profile",
+  "remove_rss_digest_profile",
+  "run_rss_digest",
 ]);
 
 function toolScope(name: string): OAuthScope {
@@ -439,6 +522,58 @@ function toolScope(name: string): OAuthScope {
 function noteUrl(relativePath: string) {
   const base = process.env.NEXT_PUBLIC_MCP_BASE_URL ?? "";
   return base ? `${base}${noteHref({ relativePath })}` : relativePath;
+}
+
+function requiredString(args: Record<string, unknown>, key: string, maxLength = 2_048) {
+  const value = args[key];
+  if (typeof value !== "string" || !value.trim() || value.length > maxLength) {
+    throw new Error(`${key} must be a non-empty string`);
+  }
+  return value.trim();
+}
+
+function optionalString(args: Record<string, unknown>, key: string, maxLength: number) {
+  const value = args[key];
+  if (value === undefined) return undefined;
+  if (typeof value !== "string" || value.length > maxLength) throw new Error(`${key} must be a string`);
+  return value.trim();
+}
+
+function optionalEntityId(args: Record<string, unknown>, key = "id") {
+  const value = optionalString(args, key, 100);
+  if (value !== undefined && !/^[a-zA-Z0-9_-]{1,100}$/.test(value)) throw new Error(`${key} is invalid`);
+  return value;
+}
+
+function requiredEntityId(args: Record<string, unknown>, key = "id") {
+  const value = requiredString(args, key, 100);
+  if (!/^[a-zA-Z0-9_-]{1,100}$/.test(value)) throw new Error(`${key} is invalid`);
+  return value;
+}
+
+function optionalBoolean(args: Record<string, unknown>, key: string) {
+  const value = args[key];
+  if (value === undefined) return undefined;
+  if (typeof value !== "boolean") throw new Error(`${key} must be a boolean`);
+  return value;
+}
+
+function optionalInteger(args: Record<string, unknown>, key: string, minimum: number, maximum: number) {
+  const value = args[key];
+  if (value === undefined) return undefined;
+  if (!Number.isInteger(value) || Number(value) < minimum || Number(value) > maximum) {
+    throw new Error(`${key} must be an integer between ${minimum} and ${maximum}`);
+  }
+  return Number(value);
+}
+
+function optionalStringArray(args: Record<string, unknown>, key: string, maxItems: number, maxLength: number) {
+  const value = args[key];
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value) || value.length > maxItems || value.some((item) => typeof item !== "string" || item.length > maxLength)) {
+    throw new Error(`${key} must be an array of strings`);
+  }
+  return value.map((item) => String(item).trim()).filter(Boolean);
 }
 
 async function callTool(name: string, args: Record<string, unknown>) {
@@ -824,6 +959,75 @@ async function callTool(name: string, args: Record<string, unknown>) {
         args.linked !== false,
       );
       return { content: [{ type: "text", text: `Application documents updated: ${note?.relativePath || ""}` }] };
+    }
+
+    case "list_rss_sources": {
+      const intelligence = await readFeedIntelligence();
+      const payload = {
+        enabled: intelligence.enabled,
+        sources: intelligence.sources,
+        lastCollectionAt: intelligence.lastCollectionAt,
+        lastCollectionCount: intelligence.lastCollectionCount,
+      };
+      return { content: [{ type: "text", text: JSON.stringify(payload) }] };
+    }
+
+    case "add_rss_source": {
+      const source = await upsertFeedSource({
+        id: optionalEntityId(args),
+        url: requiredString(args, "url"),
+        label: optionalString(args, "label", 120),
+        topics: optionalStringArray(args, "topics", 12, 60),
+        enabled: optionalBoolean(args, "enabled"),
+      });
+      return { content: [{ type: "text", text: JSON.stringify(source) }] };
+    }
+
+    case "remove_rss_source": {
+      const intelligence = await removeFeedSource(requiredEntityId(args));
+      return { content: [{ type: "text", text: JSON.stringify({ sources: intelligence.sources }) }] };
+    }
+
+    case "list_rss_digests": {
+      const intelligence = await readFeedIntelligence();
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({ profiles: intelligence.profiles, digests: intelligence.digests }),
+        }],
+      };
+    }
+
+    case "upsert_rss_digest_profile": {
+      const cadence = optionalString(args, "cadence", 32);
+      const allowedCadences = new Set<FeedDigestCadence>(["manual", "multiple_daily", "daily", "weekly"]);
+      if (cadence !== undefined && !allowedCadences.has(cadence as FeedDigestCadence)) {
+        throw new Error("Unsupported RSS digest cadence");
+      }
+      const profile = await upsertFeedDigestProfile({
+        id: optionalEntityId(args),
+        title: requiredString(args, "title", 160),
+        enabled: optionalBoolean(args, "enabled"),
+        sourceIds: optionalStringArray(args, "sourceIds", 100, 100),
+        instructions: optionalString(args, "instructions", 8_000),
+        cadence: cadence as FeedDigestCadence | undefined,
+        maxItems: optionalInteger(args, "maxItems", 1, 20),
+        lookbackHours: optionalInteger(args, "lookbackHours", 1, 720),
+      });
+      return { content: [{ type: "text", text: JSON.stringify(profile) }] };
+    }
+
+    case "remove_rss_digest_profile": {
+      const intelligence = await removeFeedDigestProfile(requiredEntityId(args));
+      return { content: [{ type: "text", text: JSON.stringify({ profiles: intelligence.profiles }) }] };
+    }
+
+    case "run_rss_digest": {
+      const profileId = requiredEntityId(args);
+      const allowed = rateLimit(`mcp:rss-digest:${profileId}`, { limit: 4, windowMs: 15 * 60_000 });
+      if (!allowed.ok) throw new Error(`RSS digest rate limit reached; retry in ${allowed.retryAfter}s`);
+      const digest = await runFeedDigest(profileId, { force: true });
+      return { content: [{ type: "text", text: JSON.stringify(digest) }] };
     }
 
     default:

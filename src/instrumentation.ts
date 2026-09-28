@@ -2,20 +2,39 @@ export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
   const minutes = Number(process.env.RSS_POLL_MINUTES ?? 30);
-  const { ingestFeeds, ingestJobFeeds, readNote, readSetupState } = await import("@/lib/vault");
+  const { ingestFeeds, ingestJobFeeds, readNote, readSetupState, runDueFeedDigests } = await import("@/lib/vault");
   const { briefScheduleSlot } = await import("@/lib/brief-schedule");
   const { mkdir, readFile, writeFile } = await import("node:fs/promises");
   const { join } = await import("node:path");
   const briefMarker = join(process.cwd(), "data", "brief-schedule-slot");
   if (Number.isFinite(minutes) && minutes > 0) {
+    let cycleRunning = false;
     const runFeeds = async () => {
-      const setup = await readSetupState();
-      const [rss, jobs] = await Promise.all([
-        ingestFeeds(),
-        setup.modules.applications ? ingestJobFeeds() : null,
-      ]);
-      if (rss.added) console.log(`[rss] ingested ${rss.added} new item(s)`);
-      if (jobs?.added) console.log(`[jobs] ingested ${jobs.added} new offer(s)`);
+      if (cycleRunning) return;
+      cycleRunning = true;
+      try {
+        const setup = await readSetupState();
+        try {
+          const rss = await ingestFeeds();
+          if (rss.added) console.log(`[rss] cached ${rss.added} new item(s)`);
+        } catch (error) {
+          console.error("[rss] collection failed:", error);
+        }
+        try {
+          const jobs = setup.modules.applications ? await ingestJobFeeds() : null;
+          if (jobs?.added) console.log(`[jobs] ingested ${jobs.added} new offer(s)`);
+        } catch (error) {
+          console.error("[jobs] ingest failed:", error);
+        }
+        try {
+          const digests = await runDueFeedDigests();
+          if (digests.length) console.log(`[rss] ran ${digests.length} due digest(s)`);
+        } catch (error) {
+          console.error("[rss] due digest scan failed:", error);
+        }
+      } finally {
+        cycleRunning = false;
+      }
     };
     const pollFeeds = () => runFeeds()
       .catch((error) => console.error("[rss] ingest failed:", error));

@@ -44,9 +44,48 @@ test("a fresh seeded vault starts setup at the language step", () => scratchVaul
   );
   assert.deepEqual(state.ai.models, { claude: "", codex: "" });
   assert.deepEqual(state.modules, { finance: false, budget: false, trail: false, trailSync: true, business: false, applications: false, revisions: false, custom: [] });
+  assert.deepEqual(state.navigation, { hidden: [] });
   assert.equal((await listNotes("objectives")).length, 0);
   assert.equal((await listNotes("tasks")).length, 0);
-  assert.equal(JSON.parse(await fs.readFile(path.join(root, ".second-brain-setup.json"), "utf8")).version, 1);
+  assert.equal(JSON.parse(await fs.readFile(path.join(root, ".second-brain-setup.json"), "utf8")).version, 2);
+}));
+
+test("setup v1 migrates navigation once and keeps explicit visibility choices", () => scratchVault(async (root) => {
+  const state = await readSetupState();
+  await fs.writeFile(path.join(root, ".second-brain-setup.json"), JSON.stringify({
+    ...state,
+    version: 1,
+    navigation: { hidden: ["/trail", "/wiki", "/trail", "/not-a-route"] },
+  }), "utf8");
+
+  const migrated = await readSetupState();
+  const persisted = JSON.parse(await fs.readFile(path.join(root, ".second-brain-setup.json"), "utf8"));
+  assert.equal(migrated.version, 2);
+  assert.deepEqual(migrated.navigation.hidden, ["/training", "/wiki"]);
+  assert.equal(persisted.version, 2);
+  assert.deepEqual(persisted.navigation.hidden, ["/training", "/wiki"]);
+  assert.deepEqual((await readSetupState()).navigation.hidden, ["/training", "/wiki"]);
+}));
+
+test("setup v2 canonicalizes retired navigation routes already stored by another build", () => scratchVault(async (root) => {
+  const state = await readSetupState();
+  await fs.writeFile(path.join(root, ".second-brain-setup.json"), JSON.stringify({
+    ...state,
+    navigation: { hidden: ["/wiki", "/trail"] },
+  }), "utf8");
+
+  assert.deepEqual((await readSetupState()).navigation.hidden, ["/wiki", "/training"]);
+  const persisted = JSON.parse(await fs.readFile(path.join(root, ".second-brain-setup.json"), "utf8"));
+  assert.deepEqual(persisted.navigation.hidden, ["/wiki", "/training"]);
+}));
+
+test("a corrupt setup file recovers with every navigation destination visible", () => scratchVault(async (root) => {
+  await readSetupState();
+  await fs.writeFile(path.join(root, ".second-brain-setup.json"), "{broken", "utf8");
+  const recovered = await readSetupState();
+  assert.equal(recovered.version, 2);
+  assert.deepEqual(recovered.navigation.hidden, []);
+  assert.equal(JSON.parse(await fs.readFile(path.join(root, ".second-brain-setup.json"), "utf8")).version, 2);
 }));
 
 test("brief detail defaults safely and persists all three supported levels", () => scratchVault(async (root) => {

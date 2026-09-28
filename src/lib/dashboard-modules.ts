@@ -27,7 +27,7 @@ export const DASHBOARD_WIDGET_IDS = [
   ...Object.values(MODULE_DASHBOARD_WIDGET_IDS).flat(),
 ] as const;
 
-export type DashboardWidgetId = (typeof DASHBOARD_WIDGET_IDS)[number];
+export type DashboardWidgetId = (typeof DASHBOARD_WIDGET_IDS)[number] | `rss:${string}`;
 export type DashboardModuleFlags = {
   finance: boolean;
   budget: boolean;

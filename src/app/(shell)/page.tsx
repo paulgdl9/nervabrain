@@ -19,6 +19,7 @@ import {
   DashboardLayout,
   type DashboardWidget,
 } from "@/components/DashboardLayout";
+import { FeedDigestCarousel, FeedDigestPreview } from "@/components/FeedDigestCarousel";
 import { DashboardAreaChart } from "@/components/DashboardVisualizations";
 import { DonutChart } from "@/components/ui/DonutChart";
 import { budgetCategoryColor } from "@/lib/budget-categories";
@@ -35,7 +36,7 @@ import {
   summarizeDashboardModules,
   type DashboardWidgetId,
 } from "@/lib/dashboard-modules";
-import { activeModuleEvidence, getDashboard, listFinancePositionsWithLivePrices, noteHref, readFinanceHistory, readSetupState } from "@/lib/vault";
+import { activeModuleEvidence, getDashboard, listFinancePositionsWithLivePrices, noteHref, readFeedIntelligence, readFinanceHistory, readSetupState } from "@/lib/vault";
 import { computeTrailStats, fmtKm, fmtMinutes, hasTrainingPlan, loadTrailHealth } from "@/lib/trail";
 import { getLocale, getTranslations } from "@/lib/i18n-server";
 import { readDashboardLayoutPreference } from "@/lib/ui-preferences";
@@ -104,11 +105,12 @@ function normKey(value: unknown): string {
 }
 
 export default async function DashboardPage() {
-  const [setup, t, locale, dashboardLayout] = await Promise.all([
+  const [setup, t, locale, dashboardLayout, feedIntelligence] = await Promise.all([
     readSetupState(),
     getTranslations(),
     getLocale(),
     readDashboardLayoutPreference(),
+    readFeedIntelligence(),
   ]);
   const data = await getDashboard();
   const today = todayISO();
@@ -728,6 +730,21 @@ export default async function DashboardPage() {
         </section>
       ),
     });
+  }
+
+  if (feedIntelligence.enabled && feedIntelligence.sources.length) {
+    for (const profile of feedIntelligence.profiles.filter((candidate) => candidate.enabled)) {
+      const digest = feedIntelligence.digests.find((candidate) => candidate.profileId === profile.id);
+      widgets.push({
+        id: `rss:${profile.id}`,
+        title: profile.title,
+        description: profile.instructions || t["rssWidget.description"],
+        preview: <FeedDigestPreview key={`rss-preview:${profile.id}`} digest={digest} />,
+        wide: true,
+        defaultHidden: true,
+        content: <FeedDigestCarousel key={`rss-content:${profile.id}`} profile={profile} digest={digest} />,
+      });
+    }
   }
 
   return (

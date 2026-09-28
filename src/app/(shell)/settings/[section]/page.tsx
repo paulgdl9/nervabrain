@@ -9,11 +9,13 @@ import { CustomPagesSettings } from "@/components/CustomPages";
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { BriefDetailSetting } from "@/components/BriefDetailSetting";
 import { ModuleSettings } from "@/components/ModuleSettings";
+import { NavigationSettings } from "@/components/NavigationSettings";
+import { RssIntelligenceSettings } from "@/components/RssIntelligenceSettings";
 import { CustomSelect } from "@/components/CustomSelect";
 import { getTranslations } from "@/lib/i18n-server";
 import { readAiBridgeStatus } from "@/lib/ai-bridge";
 import { readBackgroundSettings } from "@/lib/background";
-import { getDailyBriefBasePrompt, getDashboard, listAllCustomPages, readSetupState } from "@/lib/vault";
+import { getDailyBriefBasePrompt, getDashboard, listAllCustomPages, readFeedIntelligence, readSetupState } from "@/lib/vault";
 import { SETTINGS_SECTIONS, isSettingsSectionId } from "../sections";
 
 export const dynamic = "force-dynamic";
@@ -45,6 +47,8 @@ export default async function SettingsSectionPage({ params }: { params: Promise<
       <div className="settings-detail">
         {raw === "appearance" && <AppearanceSection />}
         {raw === "modules" && <ModuleSettings modules={setup!.modules} />}
+        {raw === "navigation" && <NavigationSettings hidden={setup!.navigation.hidden} />}
+        {raw === "feeds" && <RssIntelligenceSettings intelligence={await readFeedIntelligence()} />}
         {raw === "assistant" && <AssistantSection />}
         {raw === "pages" && <CustomPagesSettings pages={await listAllCustomPages()} />}
         {raw === "advanced" && <AdvancedSection />}

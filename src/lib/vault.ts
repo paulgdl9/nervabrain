@@ -1,7 +1,10 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { createHash, randomUUID } from "node:crypto";
+import { isIP } from "node:net";
 import { todayISO, weekEndISO, weekId, weekStartISO } from "@/lib/dates";
-import { fetchFeed, fetchJobSource } from "@/lib/rss";
+import { assertSafeFeedUrl, fetchFeed, fetchJobSource, isPrivateAddress, type FeedItem } from "@/lib/rss";
+import { normalizeHiddenNavigation, type ConfigurableNavHref } from "@/lib/navigation";
 import { atomicWriteFile, withFileWriteLock } from "@/lib/atomic-write";
 import { isSyncConflictPath } from "@/lib/vault-lint";
 import { planAllowsAiSynthesis, planAllowsAssistant, assistantMonthlyQuota } from "@/lib/plan";
@@ -236,11 +239,15 @@ const BRIEF_DETAIL_CAPS: Record<BriefDetail, { links: number; risks: number; pag
 
 const FEEDS_NOTE = `${VAULT_FOLDERS.system}/Feeds.md`;
 const BUDGET_NOTE = `${VAULT_FOLDERS.system}/Budget.md`;
-const FEED_STATE_FILE = ".rss-state.json";
-const FEED_STATE_CAP = 300;
+const FEED_CONFIG_FILE = ".rss-config.json";
+const FEED_ARTICLES_FILE = ".rss-articles.json";
+const FEED_DIGESTS_FILE = ".rss-digests.json";
+const FEED_CONFIG_VERSION = 2 as const;
+const FEED_ARTICLE_CACHE_CAP = 500;
+const FEED_ARTICLE_RETENTION_DAYS = 30;
 const SETUP_STATE_FILE = ".second-brain-setup.json";
 const LEGACY_DEMO_CLEANUP_MARKER = ".second-brain-demo-cleanup-v1";
-const SETUP_STATE_VERSION = 1 as const;
+const SETUP_STATE_VERSION = 2 as const;
 const DEFAULT_CONTEXT_BODY = [
   "# System Context",
   "",
@@ -297,6 +304,7 @@ export type SetupState = {
     currentPriorities: string[];
   };
   modules: { finance: boolean; budget: boolean; trail: boolean; trailSync: boolean; business: boolean; applications: boolean; revisions: boolean; custom: string[] };
+  navigation: { hidden: ConfigurableNavHref[] };
   feeds: { enabled: boolean; urls: string[] };
   ai: {
     primary: "" | AiProvider;
@@ -339,6 +347,76 @@ export type FeedsConfig = {
   lastRun: string;
   lastCount: number;
   relativePath: string;
+};
+
+export type FeedSource = {
+  id: string;
+  label: string;
+  url: string;
+  enabled: boolean;
+  topics: string[];
+};
+
+export type FeedDigestCadence = "manual" | "multiple_daily" | "daily" | "weekly";
+
+export type FeedDigestProfile = {
+  id: string;
+  title: string;
+  enabled: boolean;
+  sourceIds: string[];
+  instructions: string;
+  cadence: FeedDigestCadence;
+  maxItems: number;
+  lookbackHours: number;
+  lastRun: string;
+  nextDue: string;
+};
+
+export type FeedArticle = {
+  id: string;
+  sourceId: string;
+  title: string;
+  url: string;
+  summary: string;
+  published: string;
+  discoveredAt: string;
+};
+
+export type FeedDigestItem = {
+  articleId: string;
+  title: string;
+  summary: string;
+  whyItMatters: string;
+  url: string;
+  source: string;
+  published: string;
+};
+
+export type FeedDigest = {
+  profileId: string;
+  generatedAt: string;
+  engine: string;
+  overview: string;
+  items: FeedDigestItem[];
+  error?: string;
+  warning?: string;
+  partial?: boolean;
+};
+
+export type FeedSourceRunState = {
+  lastAttempt: string;
+  lastSuccess: string;
+  error?: string;
+};
+
+export type FeedIntelligence = {
+  enabled: boolean;
+  sources: FeedSource[];
+  sourceState: Record<string, FeedSourceRunState>;
+  profiles: FeedDigestProfile[];
+  digests: FeedDigest[];
+  lastCollectionAt: string;
+  lastCollectionCount: number;
 };
 
 export type IngestResult = {
@@ -447,6 +525,7 @@ function defaultSetupState(): SetupState {
       currentPriorities: [],
     },
     modules: { finance: false, budget: false, trail: false, trailSync: true, business: false, applications: false, revisions: false, custom: [] },
+    navigation: { hidden: [] },
     feeds: { enabled: false, urls: [] },
     ai: { primary: "", fallback: "", verified: [], models: { claude: "", codex: "" } },
     automation: {
@@ -502,6 +581,7 @@ function normalizeSetupState(value: unknown, legacyCompleted = false): SetupStat
   const defaults = defaultSetupState();
   const context = record(raw.context);
   const modules = record(raw.modules);
+  const navigation = record(raw.navigation);
   const feeds = record(raw.feeds);
   const ai = record(raw.ai);
   const aiModels = record(ai.models);
@@ -544,6 +624,9 @@ function normalizeSetupState(value: unknown, legacyCompleted = false): SetupStat
         : Boolean(process.env.REVISION_PROJECT_DIR?.trim()
           && process.env.REVISION_PROJECT_DIR.trim().replace(/^\/+|\/+$/g, "") !== DEFAULT_REVISION_PROJECT_DIR),
       custom: setupLines(modules.custom),
+    },
+    navigation: {
+      hidden: normalizeHiddenNavigation(navigation.hidden),
     },
     feeds: {
       enabled: typeof feeds.enabled === "boolean" ? feeds.enabled : defaults.feeds.enabled,
@@ -642,7 +725,17 @@ export async function readSetupState(): Promise<SetupState> {
     found = (error as NodeJS.ErrnoException).code !== "ENOENT";
     raw = undefined;
   }
-  if (found && raw !== undefined) return normalizeSetupState(raw);
+  if (found && raw !== undefined) {
+    const normalized = normalizeSetupState(raw);
+    const stored = record(raw);
+    const storedNavigation = record(stored.navigation);
+    const hiddenNeedsNormalization = !Array.isArray(storedNavigation.hidden)
+      || JSON.stringify(storedNavigation.hidden) !== JSON.stringify(normalized.navigation.hidden);
+    if (stored.version !== SETUP_STATE_VERSION || hiddenNeedsNormalization) {
+      return saveSetupState(normalized);
+    }
+    return normalized;
+  }
 
   const context = await readNote(`${VAULT_FOLDERS.system}/Context.md`);
   const legacyCompleted = !found && isLegacySetupComplete(context);
@@ -3471,92 +3564,682 @@ export async function archivePendingRssCapturesBefore(beforeDate: string) {
   return candidates.map((capture) => capture.relativePath);
 }
 
-export async function readFeeds(): Promise<FeedsConfig> {
-  await ensureVault();
-  const existing = await readNote(FEEDS_NOTE);
-  if (existing) {
-    return {
-      feeds: normalizeFeedList(existing.data.feeds),
-      enabled: existing.data.enabled !== false,
-      lastRun: stringValue(existing.data.last_run),
-      lastCount: Number(existing.data.last_count) || 0,
-      relativePath: FEEDS_NOTE,
-    };
-  }
-  const seeded = await defaultFeeds();
-  await writeFeedsNote({ feeds: seeded, enabled: true, lastRun: "", lastCount: 0 });
-  return { feeds: seeded, enabled: true, lastRun: "", lastCount: 0, relativePath: FEEDS_NOTE };
+type FeedConfigDocument = {
+  version: typeof FEED_CONFIG_VERSION;
+  enabled: boolean;
+  sources: FeedSource[];
+  sourceState: Record<string, FeedSourceRunState>;
+  profiles: FeedDigestProfile[];
+  lastCollectionAt: string;
+  lastCollectionCount: number;
+};
+
+type FeedDigestRun = {
+  lastAttempt: string;
+  lastSuccess: string;
+  nextDue: string;
+  error?: string;
+  partial?: boolean;
+  consecutiveFailures: number;
+};
+type FeedDigestState = {
+  version: 1;
+  latestSuccess: Record<string, FeedDigest>;
+  runState: Record<string, FeedDigestRun>;
+};
+
+type FeedArticleState = { version: 1; articles: FeedArticle[] };
+
+type BridgeDigestResponse = {
+  ok?: boolean;
+  engine?: string;
+  overview?: string;
+  partial?: boolean;
+  validation_errors?: string[];
+  items?: Array<{
+    article_id?: string;
+    articleId?: string;
+    url?: string;
+    summary?: string;
+    why_it_matters?: string;
+    whyItMatters?: string;
+  }>;
+};
+
+function stableFeedSourceId(url: string) {
+  return `feed-${createHash("sha256").update(url).digest("hex").slice(0, 16)}`;
 }
 
-export async function addFeed(url: string): Promise<FeedsConfig> {
-  const clean = url.trim();
-  if (!clean) return readFeeds();
-  let parsed: string;
+function validFeedEntityId(value: unknown) {
+  const id = String(value || "").trim();
+  return /^[a-zA-Z0-9_-]{1,100}$/.test(id) ? id : "";
+}
+
+function normalizeFeedUrl(value: unknown) {
+  let parsed: URL;
   try {
-    parsed = new URL(clean).toString();
+    parsed = new URL(String(value || "").trim());
   } catch {
     throw new Error("Invalid feed URL");
   }
-  const config = await readFeeds();
-  if (config.feeds.some((feed) => feed === parsed)) return config;
-  const next = { ...config, feeds: [...config.feeds, parsed] };
-  await writeFeedsNote(next);
-  return next;
+  if ((parsed.protocol !== "http:" && parsed.protocol !== "https:") || parsed.username || parsed.password) {
+    throw new Error("Feed URL must be an unauthenticated HTTP(S) URL");
+  }
+  if (parsed.port && !((parsed.protocol === "http:" && parsed.port === "80") || (parsed.protocol === "https:" && parsed.port === "443"))) {
+    throw new Error("Feed URL uses a disallowed port");
+  }
+  const hostname = parsed.hostname.replace(/^\[|\]$/g, "").toLowerCase();
+  if (hostname === "localhost" || hostname.endsWith(".localhost") || hostname.endsWith(".local")
+      || (isIP(hostname) !== 0 && isPrivateAddress(hostname))) {
+    throw new Error("Feed URL resolves to a private host");
+  }
+  parsed.hash = "";
+  return parsed.toString();
+}
+
+function normalizeArticleUrl(value: unknown) {
+  try {
+    const parsed = new URL(String(value || "").trim());
+    if ((parsed.protocol !== "http:" && parsed.protocol !== "https:") || parsed.username || parsed.password) return "";
+    parsed.hash = "";
+    return parsed.toString();
+  } catch {
+    return "";
+  }
+}
+
+function feedStrings(value: unknown, maxItems = 20, maxLength = 80) {
+  if (!Array.isArray(value)) return [];
+  return uniqueStrings(value.map(String).map((item) => item.trim().slice(0, maxLength)).filter(Boolean)).slice(0, maxItems);
+}
+
+function clampInteger(value: unknown, fallback: number, minimum: number, maximum: number) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.min(maximum, Math.max(minimum, Math.round(number))) : fallback;
+}
+
+function normalizeFeedSource(value: unknown, fallbackUrl = ""): FeedSource | null {
+  const raw = record(value);
+  let url: string;
+  try {
+    url = normalizeFeedUrl(raw.url ?? fallbackUrl);
+  } catch {
+    return null;
+  }
+  return {
+    id: validFeedEntityId(raw.id) || stableFeedSourceId(url),
+    label: String(raw.label || feedHost(url)).trim().slice(0, 120) || feedHost(url),
+    url,
+    enabled: raw.enabled !== false,
+    topics: feedStrings(raw.topics, 12, 60),
+  };
+}
+
+function normalizeDigestCadence(value: unknown): FeedDigestCadence {
+  return value === "manual" || value === "multiple_daily" || value === "weekly" ? value : "daily";
+}
+
+function normalizeFeedDigestProfile(value: unknown): FeedDigestProfile | null {
+  const raw = record(value);
+  const title = String(raw.title || "").trim().slice(0, 160);
+  if (!title) return null;
+  return {
+    id: validFeedEntityId(raw.id) || `digest-${randomUUID()}`,
+    title,
+    enabled: raw.enabled !== false,
+    sourceIds: feedStrings(raw.sourceIds, 100, 100).filter(validFeedEntityId),
+    instructions: String(raw.instructions || "").trim().slice(0, 8_000),
+    cadence: normalizeDigestCadence(raw.cadence),
+    maxItems: clampInteger(raw.maxItems, 5, 1, 20),
+    lookbackHours: clampInteger(raw.lookbackHours, 48, 1, 24 * 30),
+    lastRun: stringValue(raw.lastRun),
+    nextDue: stringValue(raw.nextDue),
+  };
+}
+
+function normalizeFeedSourceState(stateValue: unknown, sourceIds: Set<string>) {
+  const sourceState: Record<string, FeedSourceRunState> = {};
+  for (const [id, value] of Object.entries(record(stateValue))) {
+    if (!sourceIds.has(id)) continue;
+    const raw = record(value);
+    sourceState[id] = {
+      lastAttempt: stringValue(raw.lastAttempt),
+      lastSuccess: stringValue(raw.lastSuccess),
+      ...(stringValue(raw.error) ? { error: stringValue(raw.error).slice(0, 500) } : {}),
+    };
+  }
+  return sourceState;
+}
+
+function parseFeedConfigBody(content: string): Partial<FeedConfigDocument> {
+  const match = content.match(/```json\r?\n([\s\S]*?)```/);
+  if (!match) return {};
+  try {
+    const parsed = JSON.parse(match[1]);
+    return parsed && typeof parsed === "object" ? parsed as Partial<FeedConfigDocument> : {};
+  } catch {
+    return {};
+  }
+}
+
+function uniqueFeedSources(sources: Array<FeedSource | null>) {
+  const urls = new Set<string>();
+  const ids = new Set<string>();
+  return sources.flatMap((source) => {
+    if (!source || urls.has(source.url)) return [];
+    urls.add(source.url);
+    let id = source.id;
+    if (ids.has(id)) id = stableFeedSourceId(source.url);
+    ids.add(id);
+    return [{ ...source, id }];
+  });
+}
+
+async function readFeedConfiguration(): Promise<{
+  enabled: boolean;
+  sources: FeedSource[];
+  sourceState: Record<string, FeedSourceRunState>;
+  profiles: FeedDigestProfile[];
+  lastCollectionAt: string;
+  lastCollectionCount: number;
+}> {
+  await ensureVault();
+  let canonicalRaw = "";
+  try {
+    canonicalRaw = await fs.readFile(path.join(vaultRoot(), FEED_CONFIG_FILE), "utf8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+  }
+  if (canonicalRaw) {
+    let raw: unknown;
+    try {
+      raw = JSON.parse(canonicalRaw);
+    } catch {
+      throw new Error("RSS configuration is corrupt; refusing to overwrite it");
+    }
+    const document = record(raw);
+    if (document.version !== FEED_CONFIG_VERSION) {
+      throw new Error(`Unsupported RSS configuration version: ${String(document.version || "missing")}`);
+    }
+    const sources = uniqueFeedSources((Array.isArray(document.sources) ? document.sources : [])
+      .map((source) => normalizeFeedSource(source)));
+    const sourceIds = new Set(sources.map((source) => source.id));
+    const profiles = (Array.isArray(document.profiles) ? document.profiles : [])
+      .map(normalizeFeedDigestProfile)
+      .filter((profile): profile is FeedDigestProfile => Boolean(profile))
+      .map((profile) => ({ ...profile, sourceIds: profile.sourceIds.filter((id) => sourceIds.has(id)) }));
+    return {
+      enabled: document.enabled !== false,
+      sources,
+      sourceState: normalizeFeedSourceState(document.sourceState, sourceIds),
+      profiles,
+      lastCollectionAt: stringValue(document.lastCollectionAt),
+      lastCollectionCount: Number(document.lastCollectionCount) || 0,
+    };
+  }
+  // Only a genuinely absent canonical file may migrate from the legacy note.
+  // Corrupt/future state above fails closed so a subsequent mutation cannot
+  // silently overwrite profiles with the Markdown compatibility view.
+  const existing = await readNote(FEEDS_NOTE);
+  if (!existing) {
+    const urls = await defaultFeeds();
+    return {
+      enabled: true,
+      sources: uniqueFeedSources(urls.map((url) => normalizeFeedSource({ url }))),
+      sourceState: {},
+      profiles: [],
+      lastCollectionAt: "",
+      lastCollectionCount: 0,
+    };
+  }
+  const document = parseFeedConfigBody(existing.content);
+  const bodySources = Array.isArray(document.sources) ? document.sources : [];
+  const legacySources = normalizeFeedList(existing.data.feeds).map((url) => normalizeFeedSource({ url }));
+  const sources = uniqueFeedSources(bodySources.length
+    ? bodySources.map((source) => normalizeFeedSource(source))
+    : legacySources);
+  const sourceIds = new Set(sources.map((source) => source.id));
+  const profiles = (Array.isArray(document.profiles) ? document.profiles : [])
+    .map(normalizeFeedDigestProfile)
+    .filter((profile): profile is FeedDigestProfile => Boolean(profile))
+    .map((profile) => ({ ...profile, sourceIds: profile.sourceIds.filter((id) => sourceIds.has(id)) }));
+  return {
+    enabled: existing.data.enabled !== false,
+    sources,
+    sourceState: normalizeFeedSourceState(document.sourceState, sourceIds),
+    profiles,
+    lastCollectionAt: stringValue(existing.data.last_run),
+    lastCollectionCount: Number(existing.data.last_count) || 0,
+  };
+}
+
+async function writeFeedConfiguration(config: Awaited<ReturnType<typeof readFeedConfiguration>>) {
+  const existing = await readNote(FEEDS_NOTE);
+  const sources = uniqueFeedSources(config.sources.map((source) => normalizeFeedSource(source)));
+  const sourceIds = new Set(sources.map((source) => source.id));
+  const profiles = config.profiles
+    .map(normalizeFeedDigestProfile)
+    .filter((profile): profile is FeedDigestProfile => Boolean(profile))
+    .map((profile) => ({ ...profile, sourceIds: profile.sourceIds.filter((id) => sourceIds.has(id)), lastRun: "", nextDue: "" }));
+  const document: FeedConfigDocument = {
+    version: FEED_CONFIG_VERSION,
+    enabled: config.enabled,
+    sources,
+    sourceState: normalizeFeedSourceState(config.sourceState, sourceIds),
+    profiles,
+    lastCollectionAt: config.lastCollectionAt,
+    lastCollectionCount: config.lastCollectionCount,
+  };
+  await atomicWriteFile(
+    path.join(vaultRoot(), FEED_CONFIG_FILE),
+    `${JSON.stringify(document, null, 2)}\n`,
+  );
+  const data = compactObject({
+    type: "system",
+    role: "feeds",
+    title: "RSS Feeds",
+    created: existing?.data.created || new Date().toISOString(),
+    updated: new Date().toISOString(),
+    enabled: config.enabled,
+    last_run: config.lastCollectionAt,
+    last_count: config.lastCollectionCount,
+    // Kept flat in frontmatter so older Nerva versions can still use every URL.
+    feeds: sources.map((source) => source.url),
+  });
+  const body = [
+    "# RSS Feeds",
+    "",
+    "Generated view of .rss-config.json. Sources are collected into a bounded cache; collection does not create Inbox notes.",
+    "",
+    "## Sources",
+    ...(sources.length ? sources.map((source) => `- ${source.enabled ? "[x]" : "[ ]"} ${source.label} — ${source.url}`) : ["No RSS source configured."]),
+    "",
+    "## Digest profiles",
+    ...(profiles.length ? profiles.map((profile) => `- ${profile.enabled ? "[x]" : "[ ]"} ${profile.title} (${profile.cadence})`) : ["No digest profile configured."]),
+  ].join("\n");
+  await writeRawNote(FEEDS_NOTE, data, body, { expectedMtime: existing?.mtime });
+}
+
+async function mutateFeedConfiguration<T>(
+  mutate: (config: Awaited<ReturnType<typeof readFeedConfiguration>>) => Promise<T> | T,
+) {
+  return withFileWriteLock(path.join(vaultRoot(), `${FEED_CONFIG_FILE}.mutation`), async () => {
+    const config = await readFeedConfiguration();
+    const result = await mutate(config);
+    await writeFeedConfiguration(config);
+    return result;
+  });
+}
+
+async function readFeedDigestState(): Promise<FeedDigestState> {
+  let raw: string;
+  try {
+    raw = await fs.readFile(path.join(vaultRoot(), FEED_DIGESTS_FILE), "utf8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return { version: 1, latestSuccess: {}, runState: {} };
+    }
+    throw error;
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed?.version !== 1) {
+      throw new Error(`Unsupported RSS digest state version: ${String(parsed?.version || "missing")}`);
+    }
+    const legacyDigests = record(parsed?.digests) as Record<string, FeedDigest>;
+    const legacyRuns = record(parsed?.runs);
+    const latestSuccess = record(parsed?.latestSuccess) as Record<string, FeedDigest>;
+    const rawRunState = record(parsed?.runState);
+    const runState: Record<string, FeedDigestRun> = {};
+    for (const [id, value] of Object.entries(Object.keys(rawRunState).length ? rawRunState : legacyRuns)) {
+      const run = record(value);
+      runState[id] = {
+        lastAttempt: stringValue(run.lastAttempt ?? run.lastRun),
+        lastSuccess: stringValue(run.lastSuccess),
+        nextDue: stringValue(run.nextDue),
+        error: stringValue(run.error) || undefined,
+        partial: run.partial === true,
+        consecutiveFailures: clampInteger(run.consecutiveFailures, run.error ? 1 : 0, 0, 1000),
+      };
+    }
+    return {
+      version: 1,
+      latestSuccess: Object.keys(latestSuccess).length ? latestSuccess : legacyDigests,
+      runState,
+    };
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("Unsupported RSS digest state version:")) throw error;
+    throw new Error("RSS digest state is corrupt; refusing to overwrite it", { cause: error });
+  }
+}
+
+async function writeFeedDigestState(state: FeedDigestState) {
+  await atomicWriteFile(path.join(vaultRoot(), FEED_DIGESTS_FILE), `${JSON.stringify(state, null, 2)}\n`);
+}
+
+async function mutateFeedDigestState<T>(mutate: (state: FeedDigestState) => Promise<T> | T) {
+  return withFileWriteLock(path.join(vaultRoot(), `${FEED_DIGESTS_FILE}.mutation`), async () => {
+    const release = await acquireFeedDigestStateLock();
+    try {
+      const state = await readFeedDigestState();
+      const result = await mutate(state);
+      await writeFeedDigestState(state);
+      return result;
+    } finally {
+      await release();
+    }
+  });
+}
+
+async function acquireFeedDigestStateLock() {
+  const lockPath = path.join(vaultRoot(), `${FEED_DIGESTS_FILE}.lock`);
+  const token = randomUUID();
+  const deadline = Date.now() + 10_000;
+  await fs.mkdir(path.dirname(lockPath), { recursive: true });
+  while (true) {
+    try {
+      const handle = await fs.open(lockPath, "wx", 0o600);
+      try {
+        await handle.writeFile(JSON.stringify({ token, acquiredAt: new Date().toISOString() }), "utf8");
+      } catch (error) {
+        await handle.close().catch(() => undefined);
+        await fs.unlink(lockPath).catch(() => undefined);
+        throw error;
+      }
+      await handle.close();
+      return async () => {
+        try {
+          const current = JSON.parse(await fs.readFile(lockPath, "utf8"));
+          if (current?.token === token) await fs.unlink(lockPath);
+        } catch {
+          // Never remove a lock whose ownership cannot be proven.
+        }
+      };
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+      const stat = await fs.stat(lockPath).catch(() => null);
+      if (stat && Date.now() - stat.mtimeMs > 30_000) {
+        await fs.unlink(lockPath).catch(() => undefined);
+        continue;
+      }
+      if (Date.now() >= deadline) throw new Error("Timed out waiting for RSS digest state lock");
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
+  }
+}
+
+export async function readFeedArticles(): Promise<FeedArticle[]> {
+  let raw: string;
+  try {
+    raw = await fs.readFile(path.join(vaultRoot(), FEED_ARTICLES_FILE), "utf8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+    throw error;
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed?.version !== 1) {
+      throw new Error(`Unsupported RSS article state version: ${String(parsed?.version || "missing")}`);
+    }
+    if (!Array.isArray(parsed.articles)) throw new Error("RSS article state has no article list");
+    return parsed.articles.flatMap((value: unknown): FeedArticle[] => {
+      const raw = record(value);
+      const id = String(raw.id || "").trim();
+      const sourceId = validFeedEntityId(raw.sourceId);
+      const url = normalizeArticleUrl(raw.url);
+      if (!id || !sourceId || !url) return [];
+      return [{
+        id: id.slice(0, 120),
+        sourceId,
+        title: String(raw.title || url).trim().slice(0, 500),
+        url,
+        summary: String(raw.summary || "").trim().slice(0, 2_000),
+        published: stringValue(raw.published),
+        discoveredAt: stringValue(raw.discoveredAt) || new Date(0).toISOString(),
+      }];
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("Unsupported RSS article state version:")) throw error;
+    throw new Error("RSS article state is corrupt; refusing to overwrite it", { cause: error });
+  }
+}
+
+async function writeFeedArticles(articles: FeedArticle[]) {
+  const state: FeedArticleState = { version: 1, articles };
+  await atomicWriteFile(path.join(vaultRoot(), FEED_ARTICLES_FILE), `${JSON.stringify(state, null, 2)}\n`);
+}
+
+function articleTime(article: FeedArticle) {
+  const published = Date.parse(article.published);
+  const discovered = Date.parse(article.discoveredAt);
+  return Number.isFinite(published) ? published : Number.isFinite(discovered) ? discovered : 0;
+}
+
+export function mergeFeedArticles(
+  current: FeedArticle[],
+  incoming: FeedArticle[],
+  options: { cap?: number; retentionDays?: number; now?: Date } = {},
+) {
+  const cap = clampInteger(options.cap, FEED_ARTICLE_CACHE_CAP, 1, 10_000);
+  const retentionDays = clampInteger(options.retentionDays, FEED_ARTICLE_RETENTION_DAYS, 1, 3650);
+  const cutoff = (options.now ?? new Date()).getTime() - retentionDays * 86_400_000;
+  const byId = new Map<string, FeedArticle>();
+  // Incoming records win so corrected titles and summaries propagate.
+  for (const article of [...current, ...incoming]) {
+    if (article.id && article.url && article.sourceId) byId.set(article.id, article);
+  }
+  return [...byId.values()]
+    .filter((article) => {
+      const discovered = Date.parse(article.discoveredAt);
+      return !Number.isFinite(discovered) || discovered >= cutoff;
+    })
+    .sort((a, b) => articleTime(b) - articleTime(a))
+    .slice(0, cap);
+}
+
+function feedItemToArticle(source: FeedSource, item: FeedItem, discoveredAt: string): FeedArticle | null {
+  const url = normalizeArticleUrl(item.link);
+  const rawId = String(item.id || url).trim();
+  if (!url || !rawId) return null;
+  return {
+    id: createHash("sha256").update(`${source.id}\0${rawId}`).digest("hex"),
+    sourceId: source.id,
+    title: String(item.title || url).trim().slice(0, 500),
+    url,
+    summary: String(item.summary || "").trim().slice(0, 2_000),
+    published: item.published || "",
+    discoveredAt,
+  };
+}
+
+export async function readFeedIntelligence(): Promise<FeedIntelligence> {
+  const [config, digestState] = await Promise.all([readFeedConfiguration(), readFeedDigestState()]);
+  const profiles = config.profiles.map((profile) => {
+    const run = digestState.runState[profile.id];
+    return { ...profile, lastRun: run?.lastAttempt || "", nextDue: run?.nextDue || "" };
+  });
+  const digests = profiles.flatMap((profile): FeedDigest[] => {
+    const success = digestState.latestSuccess[profile.id];
+    const run = digestState.runState[profile.id];
+    if (!success && !run?.error) return [];
+    return [{
+      ...(success || { profileId: profile.id, generatedAt: "", engine: "none", overview: "", items: [] }),
+      ...(run?.error ? { error: run.error, partial: run.partial === true || Boolean(success) } : {}),
+    }];
+  });
+  return { ...config, profiles, digests };
+}
+
+export async function upsertFeedSource(input: Partial<FeedSource> & { url: string }): Promise<FeedSource> {
+  const url = (await assertSafeFeedUrl(input.url)).toString();
+  return mutateFeedConfiguration((config) => {
+    const requestedId = validFeedEntityId(input.id);
+    const existing = config.sources.find((source) => (requestedId && source.id === requestedId) || source.url === url);
+    const source = normalizeFeedSource({
+      ...existing,
+      ...input,
+      id: existing?.id || requestedId || stableFeedSourceId(url),
+      url,
+    });
+    if (!source) throw new Error("Invalid feed source");
+    config.sources = existing
+      ? config.sources.map((value) => value.id === existing.id ? source : value)
+      : [...config.sources, source];
+    return source;
+  });
+}
+
+export async function removeFeedSource(id: string): Promise<FeedIntelligence> {
+  let source: FeedSource | undefined;
+  await mutateFeedConfiguration((config) => {
+    source = config.sources.find((item) => item.id === id);
+    if (!source) return;
+    config.sources = config.sources.filter((item) => item.id !== id);
+    delete config.sourceState[id];
+    config.profiles = config.profiles.map((profile) => ({
+      ...profile,
+      sourceIds: profile.sourceIds.filter((sourceId) => sourceId !== id),
+    }));
+  });
+  if (!source) return readFeedIntelligence();
+  const articles = (await readFeedArticles()).filter((article) => article.sourceId !== id);
+  await writeFeedArticles(articles);
+  return readFeedIntelligence();
+}
+
+export async function upsertFeedDigestProfile(
+  input: Partial<FeedDigestProfile> & { title: string },
+): Promise<FeedDigestProfile> {
+  const profile = await mutateFeedConfiguration((config) => {
+    const requestedId = validFeedEntityId(input.id);
+    const existing = requestedId ? config.profiles.find((item) => item.id === requestedId) : undefined;
+    const normalized = normalizeFeedDigestProfile({ ...existing, ...input, id: existing?.id || requestedId || `digest-${randomUUID()}` });
+    if (!normalized) throw new Error("Digest title is required");
+    const knownSources = new Set(config.sources.map((source) => source.id));
+    normalized.sourceIds = normalized.sourceIds.filter((id) => knownSources.has(id));
+    config.profiles = existing
+      ? config.profiles.map((value) => value.id === existing.id ? normalized : value)
+      : [...config.profiles, normalized];
+    return normalized;
+  });
+  const run = (await readFeedDigestState()).runState[profile.id];
+  return { ...profile, lastRun: run?.lastAttempt || "", nextDue: run?.nextDue || "" };
+}
+
+export async function removeFeedDigestProfile(id: string): Promise<FeedIntelligence> {
+  await mutateFeedConfiguration((config) => {
+    config.profiles = config.profiles.filter((profile) => profile.id !== id);
+  });
+  await mutateFeedDigestState((state) => {
+    delete state.latestSuccess[id];
+    delete state.runState[id];
+  });
+  return readFeedIntelligence();
+}
+
+export async function readFeeds(): Promise<FeedsConfig> {
+  const config = await readFeedConfiguration();
+  return {
+    feeds: config.sources.map((source) => source.url),
+    enabled: config.enabled,
+    lastRun: config.lastCollectionAt,
+    lastCount: config.lastCollectionCount,
+    relativePath: FEEDS_NOTE,
+  };
+}
+
+export async function addFeed(url: string): Promise<FeedsConfig> {
+  if (!url.trim()) return readFeeds();
+  await upsertFeedSource({ url });
+  return readFeeds();
 }
 
 export async function removeFeed(url: string): Promise<FeedsConfig> {
-  const config = await readFeeds();
-  const next = { ...config, feeds: config.feeds.filter((feed) => feed !== url) };
-  await writeFeedsNote(next);
-  return next;
+  const config = await readFeedConfiguration();
+  const normalized = (() => {
+    try { return normalizeFeedUrl(url); } catch { return url; }
+  })();
+  const source = config.sources.find((item) => item.url === normalized);
+  if (source) await removeFeedSource(source.id);
+  return readFeeds();
 }
 
 export async function setFeedsEnabled(enabled: boolean): Promise<FeedsConfig> {
-  const config = await readFeeds();
-  const next = { ...config, enabled };
-  await writeFeedsNote(next);
-  return next;
+  await mutateFeedConfiguration((config) => { config.enabled = enabled; });
+  return readFeeds();
 }
 
-export async function ingestFeeds(options: { force?: boolean } = {}): Promise<IngestResult> {
-  const ranAt = new Date().toISOString();
+// Kept for compatibility with the legacy feed-state migration and its
+// regression tests. The current article cache has its own bounded merge, but
+// a legacy feed larger than 300 entries must never forget an item that is
+// still present or it will import that tail again on every poll.
+export function mergeFeedState(currentIds: string[], previous: string[]): string[] {
+  return uniqueStrings([...currentIds, ...previous]).slice(0, Math.max(300, currentIds.length));
+}
+
+export async function ingestFeeds(options: {
+  force?: boolean;
+  fetcher?: (url: string) => Promise<FeedItem[]>;
+  now?: Date;
+} = {}): Promise<IngestResult> {
+  const ranAt = (options.now ?? new Date()).toISOString();
   if (ingestRunning) return { ranAt, added: 0, perFeed: {} };
   ingestRunning = true;
   try {
-    const config = await readFeeds();
+    const config = await readFeedConfiguration();
     if (!config.enabled && !options.force) return { ranAt, added: 0, perFeed: {} };
-
-    const state = await readFeedState();
-    const initialCap = Number(process.env.RSS_INITIAL_IMPORT ?? 3);
-    const recurringCap = Math.min(Math.max(Number(process.env.RSS_MAX_IMPORT_PER_FEED ?? 3), 0), 20);
+    const sources = config.sources.filter((source) => source.enabled);
+    const current = await readFeedArticles();
+    const known = new Set(current.map((article) => article.id));
+    const incoming: FeedArticle[] = [];
     const perFeed: IngestResult["perFeed"] = {};
+    const fetcher = options.fetcher || ((url: string) => fetchFeed(url));
     let added = 0;
 
-    for (const url of config.feeds) {
+    for (const source of sources) {
       try {
-        const items = await fetchFeed(url);
-        const firstRun = !(url in state);
-        const seen = new Set(state[url] || []);
-        const fresh = items.filter((item) => item.id && !seen.has(item.id));
-        // A busy feed must not flood the personal Inbox between two polls.
-        // Keep only its newest bounded sample; AI routing will decide whether
-        // those few items deserve a task, note, Wiki entry, or archive.
-        const toImport = fresh.slice(0, firstRun ? Math.max(0, initialCap) : recurringCap);
-        const host = feedHost(url);
-        for (const item of toImport) {
-          await createFeedCapture(item, url, host);
+        const items = await fetcher(source.url);
+        const articles = items.flatMap((item): FeedArticle[] => {
+          const article = feedItemToArticle(source, item, ranAt);
+          return article ? [article] : [];
+        });
+        const fresh = articles.filter((article) => {
+          if (known.has(article.id)) return false;
+          known.add(article.id);
+          return true;
+        });
+        incoming.push(...articles);
+        perFeed[source.url] = { added: fresh.length };
+        added += fresh.length;
+        if (process.env.RSS_CAPTURE_TO_INBOX === "true") {
+          for (const article of fresh) {
+            await createFeedCapture({
+              title: article.title,
+              link: article.url,
+              summary: article.summary,
+              published: article.published,
+            }, source.url, feedHost(source.url));
+          }
         }
-        const ids = items.map((item) => item.id).filter(Boolean);
-        state[url] = mergeFeedState(ids, state[url] || []);
-        perFeed[url] = { added: toImport.length };
-        added += toImport.length;
       } catch (error) {
-        perFeed[url] = { added: 0, error: error instanceof Error ? error.message : "fetch failed" };
+        perFeed[source.url] = { added: 0, error: error instanceof Error ? error.message : "fetch failed" };
       }
     }
 
-    await writeFeedState(state);
-    await writeFeedsNote({ ...config, lastRun: ranAt, lastCount: added });
+    const cap = clampInteger(process.env.RSS_ARTICLE_CACHE_CAP, FEED_ARTICLE_CACHE_CAP, 1, 10_000);
+    const retentionDays = clampInteger(process.env.RSS_ARTICLE_RETENTION_DAYS, FEED_ARTICLE_RETENTION_DAYS, 1, 3650);
+    await writeFeedArticles(mergeFeedArticles(current, incoming, { cap, retentionDays, now: options.now }));
+    await mutateFeedConfiguration((latest) => {
+      latest.lastCollectionAt = ranAt;
+      latest.lastCollectionCount = added;
+      for (const source of sources) {
+        const result = perFeed[source.url];
+        const previous = latest.sourceState[source.id];
+        latest.sourceState[source.id] = result?.error
+          ? { lastAttempt: ranAt, lastSuccess: previous?.lastSuccess || "", error: result.error.slice(0, 500) }
+          : { lastAttempt: ranAt, lastSuccess: ranAt };
+      }
+    });
     return { ranAt, added, perFeed };
   } finally {
     ingestRunning = false;
@@ -3585,25 +4268,260 @@ async function createFeedCapture(item: { title: string; link: string; summary?: 
   });
 }
 
-async function writeFeedsNote(config: Omit<FeedsConfig, "relativePath">) {
-  const existing = await readNote(FEEDS_NOTE);
-  const data = compactObject({
-    type: "system",
-    role: "feeds",
-    title: "RSS Feeds",
-    created: existing?.data.created || new Date().toISOString(),
-    updated: new Date().toISOString(),
-    enabled: config.enabled,
-    last_run: config.lastRun,
-    last_count: config.lastCount,
-    feeds: config.feeds,
+// Cadences are elapsed intervals, deliberately independent from process restarts:
+// several times/day = 6h, daily = 24h, weekly = 7d. nextDue is persisted.
+const FEED_CADENCE_MS: Record<FeedDigestCadence, number> = {
+  manual: Number.POSITIVE_INFINITY,
+  multiple_daily: 6 * 60 * 60_000,
+  daily: 24 * 60 * 60_000,
+  weekly: 7 * 24 * 60 * 60_000,
+};
+
+export function feedDigestNextDue(cadence: FeedDigestCadence, lastRun: string, now = new Date()) {
+  if (cadence === "manual") return "";
+  const last = Date.parse(lastRun);
+  const base = Number.isFinite(last) ? last : now.getTime();
+  return new Date(base + FEED_CADENCE_MS[cadence]).toISOString();
+}
+
+export function isFeedDigestDue(profile: FeedDigestProfile, now = new Date()) {
+  if (!profile.enabled || profile.cadence === "manual") return false;
+  if (!profile.lastRun) return true;
+  const due = Date.parse(profile.nextDue || feedDigestNextDue(profile.cadence, profile.lastRun, now));
+  return !Number.isFinite(due) || due <= now.getTime();
+}
+
+function failedDigestNextDue(profile: FeedDigestProfile, lastAttempt: string, failures: number) {
+  if (profile.cadence === "manual") return "";
+  const cadenceDelay = FEED_CADENCE_MS[profile.cadence];
+  const backoff = Math.min(cadenceDelay, 15 * 60_000 * (2 ** Math.min(8, Math.max(0, failures - 1))));
+  return new Date(Date.parse(lastAttempt) + backoff).toISOString();
+}
+
+async function acquireFeedDigestLease(profileId: string, now: Date) {
+  if (!validFeedEntityId(profileId)) throw new Error("Invalid digest profile id");
+  const leasePath = path.join(vaultRoot(), `.rss-digest-${profileId}.lock`);
+  const token = randomUUID();
+  const staleMs = clampInteger(process.env.RSS_DIGEST_LEASE_MS, 30 * 60_000, 60_000, 2 * 60 * 60_000);
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const handle = await fs.open(leasePath, "wx", 0o600);
+      await handle.writeFile(`${JSON.stringify({ token, acquiredAt: now.toISOString(), pid: process.pid })}\n`);
+      await handle.close();
+      return async () => {
+        const current = await fs.readFile(leasePath, "utf8").catch(() => "");
+        if (current.includes(token)) await fs.unlink(leasePath).catch(() => undefined);
+      };
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+      const stat = await fs.stat(leasePath).catch(() => null);
+      if (!stat || now.getTime() - stat.mtimeMs <= staleMs) return null;
+      await fs.unlink(leasePath).catch(() => undefined);
+    }
+  }
+  return null;
+}
+
+function recentArticlesForProfile(
+  profile: FeedDigestProfile,
+  sources: FeedSource[],
+  articles: FeedArticle[],
+  now: Date,
+) {
+  const enabled = sources.filter((source) => source.enabled);
+  const allowed = new Set((profile.sourceIds.length
+    ? enabled.filter((source) => profile.sourceIds.includes(source.id))
+    : enabled).map((source) => source.id));
+  const cutoff = now.getTime() - profile.lookbackHours * 60 * 60_000;
+  return articles
+    .filter((article) => allowed.has(article.sourceId) && articleTime(article) >= cutoff)
+    .sort((a, b) => articleTime(b) - articleTime(a))
+    .slice(0, Math.min(120, Math.max(20, profile.maxItems * 8)));
+}
+
+export function validateFeedDigestOutput(
+  profile: FeedDigestProfile,
+  candidates: FeedArticle[],
+  sources: FeedSource[],
+  output: BridgeDigestResponse,
+  generatedAt: string,
+): FeedDigest {
+  const byId = new Map(candidates.map((article) => [article.id, article]));
+  const sourceById = new Map(sources.map((source) => [source.id, source]));
+  const seen = new Set<string>();
+  let dropped = 0;
+  const items = (Array.isArray(output.items) ? output.items : []).flatMap((raw): FeedDigestItem[] => {
+    const articleId = String(raw.article_id || raw.articleId || "");
+    const candidate = byId.get(articleId);
+    const returnedUrl = raw.url === undefined ? candidate?.url || "" : normalizeArticleUrl(raw.url);
+    if (!candidate || returnedUrl !== candidate.url || seen.has(articleId)) {
+      dropped += 1;
+      return [];
+    }
+    seen.add(articleId);
+    return [{
+      articleId,
+      title: candidate.title,
+      summary: String(raw.summary || candidate.summary).trim().slice(0, 2_000),
+      whyItMatters: String(raw.why_it_matters || raw.whyItMatters || "").trim().slice(0, 2_000),
+      url: candidate.url,
+      source: sourceById.get(candidate.sourceId)?.label || feedHost(candidate.url),
+      published: candidate.published,
+    }];
+  }).slice(0, profile.maxItems);
+  const bridgeErrors = Array.isArray(output.validation_errors) ? output.validation_errors.length : 0;
+  return {
+    profileId: profile.id,
+    generatedAt,
+    engine: String(output.engine || "none").slice(0, 80),
+    overview: String(output.overview || "").trim().slice(0, 4_000),
+    items,
+    partial: output.partial === true || dropped > 0 || bridgeErrors > 0,
+    ...(dropped || bridgeErrors ? { warning: `${dropped + bridgeErrors} invalid AI item(s) dropped` } : {}),
+  };
+}
+
+async function generateFeedDigest(
+  profile: FeedDigestProfile,
+  sources: FeedSource[],
+  candidates: FeedArticle[],
+  generatedAt: string,
+) {
+  const config = await memoBridgeConfig();
+  if (!config) throw new Error("bridge IA non configuré");
+  const ai = await aiSetupPreferences(process.env.DIGEST_MODEL);
+  if (!ai.engineOrder.length) throw new Error("aucun moteur IA connecté ou vérifié");
+  const setup = await readSetupState();
+  const sourceById = new Map(sources.map((source) => [source.id, source]));
+  const response = await fetch(`${config.url.replace(/\/+$/, "")}/digest`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${config.token}` },
+    body: JSON.stringify({
+      profile: {
+        id: profile.id,
+        title: profile.title,
+        instructions: profile.instructions,
+        max_items: profile.maxItems,
+        lookback_hours: profile.lookbackHours,
+      },
+      candidates: candidates.map((article) => ({
+        id: article.id,
+        title: article.title,
+        url: article.url,
+        summary: article.summary,
+        published: article.published,
+        source: sourceById.get(article.sourceId)?.label || "RSS",
+      })),
+      language: setup.locale,
+      engine_order: ai.engineOrder,
+      models: ai.models,
+    }),
+    signal: AbortSignal.timeout(Number(process.env.AI_DIGEST_TIMEOUT_MS || 240000)),
   });
-  const body = [
-    "# RSS Feeds",
-    "",
-    "Managed from the Feeds page. When enabled, each URL is polled on a schedule and new items enter the automatic capture history.",
-  ].join("\n");
-  await writeRawNote(FEEDS_NOTE, data, body, { expectedMtime: existing?.mtime });
+  if (!response.ok) {
+    const failure = await response.json().catch(() => null) as { error?: string } | null;
+    throw new Error(failure?.error || `bridge IA HTTP ${response.status}`);
+  }
+  const output = await response.json().catch(() => null) as BridgeDigestResponse | null;
+  if (!output?.ok || !Array.isArray(output.items)) throw new Error("réponse digest IA vide ou invalide");
+  return validateFeedDigestOutput(profile, candidates, sources, output, generatedAt);
+}
+
+export async function runFeedDigest(
+  profileId: string,
+  options: { force?: boolean; now?: Date } = {},
+): Promise<FeedDigest> {
+  const now = options.now ?? new Date();
+  const generatedAt = now.toISOString();
+  const beforeLease = await readFeedIntelligence();
+  if (!beforeLease.profiles.some((profile) => profile.id === profileId)) throw new Error("Digest profile not found");
+  const releaseLease = await acquireFeedDigestLease(profileId, now);
+  if (!releaseLease) {
+    return beforeLease.digests.find((digest) => digest.profileId === profileId) || {
+      profileId,
+      generatedAt: "",
+      engine: "none",
+      overview: "",
+      items: [],
+    };
+  }
+  try {
+    // Re-read due state only after the cross-process lease is held. This closes
+    // the scheduler restart race where two app processes observe the same due profile.
+    const [intelligence, articles] = await Promise.all([
+      readFeedIntelligence(),
+      readFeedArticles(),
+    ]);
+    const profile = intelligence.profiles.find((item) => item.id === profileId);
+    if (!profile) throw new Error("Digest profile not found");
+    if (!options.force && !isFeedDigestDue(profile, now)) {
+      return intelligence.digests.find((digest) => digest.profileId === profileId) || {
+        profileId,
+        generatedAt: "",
+        engine: "none",
+        overview: "",
+        items: [],
+      };
+    }
+    const candidates = recentArticlesForProfile(profile, intelligence.sources, articles, now);
+    try {
+      const digest = candidates.length
+        ? await generateFeedDigest(profile, intelligence.sources, candidates, generatedAt)
+        : { profileId, generatedAt, engine: "none", overview: "", items: [] } satisfies FeedDigest;
+      await mutateFeedDigestState((state) => {
+        state.latestSuccess[profileId] = digest;
+        state.runState[profileId] = {
+          lastAttempt: generatedAt,
+          lastSuccess: generatedAt,
+          nextDue: feedDigestNextDue(profile.cadence, generatedAt, now),
+          error: undefined,
+          partial: digest.partial === true,
+          consecutiveFailures: 0,
+        };
+      });
+      return digest;
+    } catch (error) {
+      const message = (error instanceof Error ? error.message : "digest generation failed").slice(0, 500);
+      return mutateFeedDigestState((state) => {
+        const previous = state.latestSuccess[profileId] || {
+          profileId,
+          generatedAt: "",
+          engine: "none",
+          overview: "",
+          items: [],
+        };
+        const failures = (state.runState[profileId]?.consecutiveFailures || 0) + 1;
+        state.runState[profileId] = {
+          lastAttempt: generatedAt,
+          lastSuccess: state.runState[profileId]?.lastSuccess || "",
+          nextDue: failedDigestNextDue(profile, generatedAt, failures),
+          error: message,
+          partial: previous.items.length > 0,
+          consecutiveFailures: failures,
+        };
+        return { ...previous, error: message, partial: previous.items.length > 0 };
+      });
+    }
+  } finally {
+    await releaseLease();
+  }
+}
+
+export async function runDueFeedDigests(options: { now?: Date } = {}) {
+  const now = options.now ?? new Date();
+  const intelligence = await readFeedIntelligence();
+  if (!intelligence.enabled) return [];
+  const due = intelligence.profiles.filter((profile) => isFeedDigestDue(profile, now));
+  const results: FeedDigest[] = [];
+  // Sequential by design: local provider CLIs are expensive, while failures remain isolated.
+  for (const profile of due) {
+    try {
+      results.push(await runFeedDigest(profile.id, { now }));
+    } catch (error) {
+      console.error(`[rss] digest ${profile.id} failed:`, error);
+    }
+  }
+  return results;
 }
 
 export type BudgetLineItem = {
@@ -3738,32 +4656,6 @@ export async function writeMonthlyBudget(input: MonthlyBudgetState): Promise<Mon
   });
   await writeRawNote(BUDGET_NOTE, data, budgetNoteBody(input), { expectedMtime: existing?.mtime });
   return { ...input, relativePath: BUDGET_NOTE };
-}
-
-// Remember every id currently in the feed, plus a margin of recent history.
-// Capping below the feed size (FEED_STATE_CAP) drops still-present items from
-// the seen-set, so a feed larger than the cap re-imports its tail on every
-// poll. Keeping at least ids.length guarantees a present item is never
-// forgotten and re-imported.
-export function mergeFeedState(currentIds: string[], previous: string[]): string[] {
-  return uniqueStrings([...currentIds, ...previous]).slice(0, Math.max(FEED_STATE_CAP, currentIds.length));
-}
-
-async function readFeedState(): Promise<Record<string, string[]>> {
-  const filePath = path.join(vaultRoot(), FEED_STATE_FILE);
-  try {
-    const raw = await fs.readFile(filePath, "utf8");
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-async function writeFeedState(state: Record<string, string[]>) {
-  const filePath = path.join(vaultRoot(), FEED_STATE_FILE);
-  await fs.mkdir(path.dirname(filePath), { recursive: true });
-  await atomicWriteFile(filePath, JSON.stringify(state));
 }
 
 async function defaultFeeds(): Promise<string[]> {

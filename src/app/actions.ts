@@ -1,10 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { refresh, revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { LOCALE_COOKIE } from "@/lib/i18n";
+import { CONFIGURABLE_NAV_HREFS } from "@/lib/navigation";
 import {
   createCapture,
   createFinancePosition,
@@ -25,6 +26,11 @@ import {
   removeFeed,
   setFeedsEnabled,
   ingestFeeds,
+  upsertFeedSource,
+  removeFeedSource,
+  upsertFeedDigestProfile,
+  removeFeedDigestProfile,
+  runFeedDigest,
   setNotePinned,
   refreshFinancePositionPrice,
   refreshAllFinancePositionPrices,
@@ -63,6 +69,7 @@ import {
   type SetupGoal,
   type SetupState,
   type SetupStep,
+  type FeedDigestCadence,
   askAssistant,
   configureRevisionProgram,
 } from "@/lib/vault";
@@ -74,7 +81,6 @@ import {
   type StoredAssistantChat,
 } from "@/lib/assistant-chats";
 import {
-  AiEngineError,
   deleteTrainingSession,
   editTrainingSession,
   savePlanOverride,
@@ -1263,6 +1269,78 @@ export async function toggleFeedsAction(formData: FormData) {
 export async function refreshFeedsAction() {
   await ingestFeeds({ force: true });
   revalidateApp();
+}
+
+export async function saveNavigationAction(formData: FormData) {
+  const visible = new Set(formData.getAll("visibleNav").map(String));
+  const state = await readSetupState();
+  await saveSetupState({
+    ...state,
+    navigation: { hidden: CONFIGURABLE_NAV_HREFS.filter((href) => !visible.has(href)) },
+  });
+  revalidatePath("/settings");
+  revalidatePath("/", "layout");
+  refresh();
+}
+
+function revalidateFeedIntelligence() {
+  revalidatePath("/");
+  revalidatePath("/settings");
+  revalidatePath("/feeds");
+}
+
+export async function saveFeedSourceAction(formData: FormData) {
+  const url = text(formData, "url");
+  if (!url) return;
+  await upsertFeedSource({
+    id: text(formData, "id") || undefined,
+    label: text(formData, "label"),
+    url,
+    enabled: formData.get("enabled") === "true",
+    topics: lines(text(formData, "topics")),
+  });
+  revalidateFeedIntelligence();
+}
+
+export async function removeFeedSourceAction(formData: FormData) {
+  const id = text(formData, "id");
+  if (!id) return;
+  await removeFeedSource(id);
+  revalidateFeedIntelligence();
+}
+
+export async function saveFeedDigestProfileAction(formData: FormData) {
+  const title = text(formData, "title");
+  if (!title) return;
+  const cadenceValue = text(formData, "cadence");
+  const cadence: FeedDigestCadence = ["manual", "multiple_daily", "daily", "weekly"].includes(cadenceValue)
+    ? cadenceValue as FeedDigestCadence
+    : "daily";
+  await upsertFeedDigestProfile({
+    id: text(formData, "id") || undefined,
+    title,
+    enabled: formData.get("enabled") === "true",
+    sourceIds: formData.getAll("sourceIds").map(String),
+    instructions: text(formData, "instructions"),
+    cadence,
+    maxItems: Number(text(formData, "maxItems")) || 5,
+    lookbackHours: Number(text(formData, "lookbackHours")) || 48,
+  });
+  revalidateFeedIntelligence();
+}
+
+export async function removeFeedDigestProfileAction(formData: FormData) {
+  const id = text(formData, "id");
+  if (!id) return;
+  await removeFeedDigestProfile(id);
+  revalidateFeedIntelligence();
+}
+
+export async function runFeedDigestAction(formData: FormData) {
+  const id = text(formData, "id");
+  if (!id) return;
+  await runFeedDigest(id, { force: true });
+  revalidateFeedIntelligence();
 }
 
 export async function togglePinNoteAction(formData: FormData) {
